@@ -36,6 +36,9 @@ export interface BrandProduct {
   secondary_color_2: string | null;
   accent_color_1: string | null;
   accent_color_2: string | null;
+  attributes: string | null;
+  target_audience: string | null;
+  selling_points: string | null;
   created_at: string;
 }
 

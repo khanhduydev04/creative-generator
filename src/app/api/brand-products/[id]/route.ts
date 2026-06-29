@@ -31,10 +31,14 @@ export async function PUT(
   try {
     const { userId } = await requireUser(request)
     const { id } = await params
+    // Safe: request.json() returns unknown at runtime; shape validated by required fields before use
     const body = await request.json() as {
       name?: string
       description?: string | null
       images?: string[]
+      attributes?: string | null
+      target_audience?: string | null
+      selling_points?: string | null
     }
 
     if (body.images && body.images.length > 5) {

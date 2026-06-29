@@ -268,6 +268,9 @@ function ProductForm({ brandId, product, onSaved, onCancel }: ProductFormProps) 
   const [name, setName] = useState(product?.name ?? "");
   const [description, setDescription] = useState(product?.description ?? "");
   const [productUrl, setProductUrl] = useState(product?.product_url ?? "");
+  const [attributes, setAttributes] = useState(product?.attributes ?? "");
+  const [targetAudience, setTargetAudience] = useState(product?.target_audience ?? "");
+  const [sellingPoints, setSellingPoints] = useState(product?.selling_points ?? "");
   const [images, setImages] = useState<string[]>(product?.images ?? []);
   const [colors, setColors] = useState({
     primary1: product?.primary_color_1 ?? "",
@@ -359,6 +362,9 @@ function ProductForm({ brandId, product, onSaved, onCancel }: ProductFormProps) 
           description: description.trim() || null,
           images,
           product_url: urlValue,
+          attributes: attributes.trim() || null,
+          target_audience: targetAudience.trim() || null,
+          selling_points: sellingPoints.trim() || null,
           ...colorFields,
         });
       } else {
@@ -368,6 +374,9 @@ function ProductForm({ brandId, product, onSaved, onCancel }: ProductFormProps) 
           description: description.trim() || null,
           images,
           product_url: urlValue,
+          attributes: attributes.trim() || null,
+          target_audience: targetAudience.trim() || null,
+          selling_points: sellingPoints.trim() || null,
           ...colorFields,
         });
       }
@@ -425,6 +434,41 @@ function ProductForm({ brandId, product, onSaved, onCancel }: ProductFormProps) 
         <p className="text-[10px] text-foreground-subtle mt-1">
           {t.brand.productPageUrlHint}
         </p>
+      </div>
+
+      {/* Marketing Config */}
+      <div className="mb-4 space-y-4 rounded-lg border border-border-subtle bg-background-elevated p-3">
+        <p className="text-sm font-semibold text-foreground-muted">{t.brand.marketingConfig}</p>
+        <div>
+          <label className="block text-xs font-semibold text-foreground-muted mb-1.5">{t.brand.productAttributes}</label>
+          <textarea
+            value={attributes}
+            onChange={(e) => setAttributes(e.target.value)}
+            placeholder={t.brand.productAttributesPlaceholder}
+            rows={2}
+            className="w-full rounded-lg border border-border bg-background text-foreground px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-foreground-muted mb-1.5">{t.brand.targetAudience}</label>
+          <textarea
+            value={targetAudience}
+            onChange={(e) => setTargetAudience(e.target.value)}
+            placeholder={t.brand.targetAudiencePlaceholder}
+            rows={2}
+            className="w-full rounded-lg border border-border bg-background text-foreground px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-foreground-muted mb-1.5">{t.brand.sellingPoints}</label>
+          <textarea
+            value={sellingPoints}
+            onChange={(e) => setSellingPoints(e.target.value)}
+            placeholder={t.brand.sellingPointsPlaceholder}
+            rows={2}
+            className="w-full rounded-lg border border-border bg-background text-foreground px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none"
+          />
+        </div>
       </div>
 
       {/* Product Colors */}

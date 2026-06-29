@@ -23,11 +23,16 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await requireUser(request)
+    // Safe: request.json() returns unknown at runtime; shape validated by required fields before use
     const body = await request.json() as {
       brand_id: string
       name: string
       description?: string | null
       images: string[]
+      product_url?: string | null
+      attributes?: string | null
+      target_audience?: string | null
+      selling_points?: string | null
     }
 
     if (!body.brand_id || !body.name || !body.images?.length) {
@@ -51,6 +56,9 @@ export async function POST(request: NextRequest) {
       name: body.name,
       description: body.description ?? null,
       images: body.images,
+      attributes: body.attributes ?? null,
+      target_audience: body.target_audience ?? null,
+      selling_points: body.selling_points ?? null,
     })
 
     return NextResponse.json({ product }, { status: 201 })
