@@ -3,7 +3,8 @@
 
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { Trophy, XCircle, Loader2, X, Play } from "lucide-react";
+import Link from "next/link";
+import { Trophy, XCircle, Loader2, X, Play, ArrowRight } from "lucide-react";
 import { useT } from "@/lib/i18n/useTranslation";
 import { VideoPlayer } from "@/features/video/components/VideoPlayer";
 import type { CompetitorVideo, VideoStatus } from "@/features/video/types";
@@ -112,6 +113,17 @@ export function CompetitorVideoCard({ video, onStatusChange }: CompetitorVideoCa
         {/* Actions */}
         <td className="py-2 pr-4">
           <div className="flex items-center gap-1.5">
+            <Link
+              href={`/app/video/${video.id}`}
+              className={`flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium ${
+                video.status === "winner"
+                  ? "bg-primary/10 text-primary hover:bg-primary/20"
+                  : "text-foreground-subtle hover:bg-black/[0.04]"
+              }`}
+            >
+              {t.video.openPipeline}
+              <ArrowRight className="h-3 w-3" />
+            </Link>
             {video.status !== "winner" && (
               <button
                 type="button"

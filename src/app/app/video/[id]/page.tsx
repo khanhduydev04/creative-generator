@@ -1,7 +1,7 @@
 // Client Component: pipeline detail uses state for transcript init, SSE script generation
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use, useState, useEffect, useRef } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useT } from "@/lib/i18n/useTranslation";
 import { useApp } from "@/features/app/context";
@@ -11,11 +11,15 @@ import { ScriptEditor } from "@/features/video/components/ScriptEditor";
 import { VoiceGenerationPanel } from "@/features/video/components/VoiceGenerationPanel";
 import {
   useCreateTranscript,
+  useRunTranscription,
   useTranscriptStatus,
 } from "@/hooks/api/useTranscripts";
 import { useScripts } from "@/hooks/api/useScripts";
+import { useGeneratedAudiosByScript } from "@/hooks/api/useGeneratedAudios";
 import { apiFetch } from "@/lib/api";
 import type { CompetitorVideo } from "@/features/video/types";
+import { PipelineStageBar } from "@/features/video/components/PipelineStageBar";
+import type { StageKey } from "@/features/video/utils/pipelineStages";
 
 const DEFAULT_LOCALE = "vi-VN";
 
@@ -26,6 +30,9 @@ interface VideoDetailPageProps {
 interface ProductOption {
   id: string;
   name: string;
+  attributes: string | null;
+  target_audience: string | null;
+  selling_points: string | null;
 }
 
 export default function VideoDetailPage({ params }: VideoDetailPageProps) {
@@ -39,10 +46,16 @@ export default function VideoDetailPage({ params }: VideoDetailPageProps) {
   const [products, setProducts] = useState<ProductOption[]>([]);
   const [savedScriptId, setSavedScriptId] = useState<string | null>(null);
 
+  const transcribeRef = useRef<HTMLElement | null>(null);
+  const scriptRef = useRef<HTMLElement | null>(null);
+  const voiceRef = useRef<HTMLElement | null>(null);
+
   const createTranscript = useCreateTranscript();
+  const runTranscription = useRunTranscription();
   const { data: transcript } = useTranscriptStatus(transcriptId);
   const { data: scripts = [] } = useScripts(transcriptId);
   const latestScript = scripts[0] ?? null;
+  const { data: audios = [] } = useGeneratedAudiosByScript(savedScriptId);
 
   useEffect(() => {
     setLoadingVideo(true);
@@ -78,8 +91,21 @@ export default function VideoDetailPage({ params }: VideoDetailPageProps) {
   }, [id]);
 
   async function handleCreateTranscript() {
-    const data = await createTranscript.mutateAsync(id);
-    setTranscriptId(data.transcript.id);
+    try {
+      const data = await createTranscript.mutateAsync(id);
+      setTranscriptId(data.transcript.id);
+      await runTranscription.mutateAsync(data.transcript.id);
+    } catch (err) {
+      console.error("Failed to create or run transcription:", err);
+    }
+  }
+
+  function handleStageClick(key: StageKey) {
+    const target =
+      key === "transcribe" ? transcribeRef.current
+      : key === "script" ? scriptRef.current
+      : voiceRef.current;
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   if (loadingVideo) {
@@ -117,7 +143,14 @@ export default function VideoDetailPage({ params }: VideoDetailPageProps) {
           {video.scraped_at && new Date(video.scraped_at).toLocaleDateString(DEFAULT_LOCALE)}
         </p>
 
-        <section className="mb-8 rounded-2xl border border-border-strong/20 bg-background-subtle p-6">
+        <PipelineStageBar
+          whisperStatus={transcript?.whisper_status ?? null}
+          hasSavedScript={Boolean(savedScriptId ?? latestScript)}
+          hasAudio={audios.length > 0}
+          onStageClick={handleStageClick}
+        />
+
+        <section ref={transcribeRef} className="mb-8 rounded-2xl border border-border-strong/20 bg-background-subtle p-6">
           <h2 className="mb-4 text-base font-semibold text-foreground">
             {t.video.stage3Title}
           </h2>
@@ -128,7 +161,12 @@ export default function VideoDetailPage({ params }: VideoDetailPageProps) {
           />
         </section>
 
-        <section className="mb-8 rounded-2xl border border-border-strong/20 bg-background-subtle p-6">
+        <section
+          ref={scriptRef}
+          className={`mb-8 rounded-2xl border border-border-strong/20 bg-background-subtle p-6 transition-opacity ${
+            transcript?.whisper_status === "done" ? "" : "pointer-events-none opacity-50"
+          }`}
+        >
           <h2 className="mb-4 text-base font-semibold text-foreground">
             {t.video.stage4Title}
           </h2>
@@ -144,7 +182,12 @@ export default function VideoDetailPage({ params }: VideoDetailPageProps) {
         </section>
 
         {/* Stage 5: Voice Generation */}
-        <section className="rounded-2xl border border-border-strong/20 bg-background-subtle p-6">
+        <section
+          ref={voiceRef}
+          className={`rounded-2xl border border-border-strong/20 bg-background-subtle p-6 transition-opacity ${
+            savedScriptId ? "" : "pointer-events-none opacity-50"
+          }`}
+        >
           <h2 className="mb-4 text-base font-semibold text-foreground">
             {t.video.stage5Title}
           </h2>
