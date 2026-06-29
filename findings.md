@@ -1,0 +1,7 @@
+# Findings
+
+## Research
+
+## Discoveries
+
+## Constraints

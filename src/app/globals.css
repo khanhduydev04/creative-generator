@@ -1,0 +1,273 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --background-subtle: 220 14% 96%;
+    --background-elevated: 220 13% 91%;
+    --foreground: 224 71% 4%;
+    --foreground-muted: 220 9% 46%;
+    --foreground-subtle: 220 9% 56%;
+    --border: 220 13% 91%;
+    --border-subtle: 220 13% 95%;
+    --border-strong: 220 13% 80%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+    --accent-subtle: 262 50% 95%;
+    --success: 142 70% 45%;
+    --warning: 38 92% 55%;
+    --danger: 0 72% 51%;
+    --radius: 8px;
+  }
+
+  .dark {
+    --background: 228 25% 6%;
+    --background-subtle: 225 20% 9%;
+    --background-elevated: 224 15% 14%;
+    --foreground: 210 40% 98%;
+    --foreground-muted: 215 20% 65%;
+    --foreground-subtle: 215 16% 47%;
+    --border: 224 15% 15%;
+    --border-subtle: 224 15% 11%;
+    --border-strong: 224 12% 25%;
+    --primary: 262 83% 65%;
+    --primary-foreground: 0 0% 100%;
+    --accent-subtle: 262 40% 15%;
+    --success: 142 70% 50%;
+    --warning: 38 92% 60%;
+    --danger: 0 72% 56%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply bg-background text-foreground;
+    font-feature-settings: "cv11", "ss01", "ss02", "ss03";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-inter), system-ui, sans-serif;
+  }
+
+  ::selection {
+    background-color: hsl(var(--primary) / 0.3);
+    color: hsl(var(--foreground));
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border-strong));
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--foreground-subtle));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  .glass {
+    background: hsl(var(--background-elevated) / 0.5);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid hsl(var(--border) / 0.6);
+  }
+
+  .glass-strong {
+    background: hsl(var(--background-elevated) / 0.75);
+    backdrop-filter: blur(24px) saturate(200%);
+    -webkit-backdrop-filter: blur(24px) saturate(200%);
+    border: 1px solid hsl(var(--border-strong) / 0.4);
+  }
+
+  .mesh-gradient {
+    background-image: radial-gradient(
+        ellipse 80% 50% at 20% 40%,
+        hsl(var(--primary) / 0.08) 0%,
+        transparent 100%
+      ),
+      radial-gradient(
+        ellipse 60% 40% at 80% 20%,
+        hsl(217 91% 60% / 0.06) 0%,
+        transparent 100%
+      ),
+      radial-gradient(
+        ellipse 50% 60% at 50% 90%,
+        hsl(var(--primary) / 0.04) 0%,
+        transparent 100%
+      );
+  }
+
+  .dot-pattern {
+    background-image: radial-gradient(
+      circle,
+      hsl(var(--foreground) / 0.04) 1px,
+      transparent 1px
+    );
+    background-size: 24px 24px;
+  }
+
+  .text-gradient-primary {
+    background: linear-gradient(
+      135deg,
+      hsl(0 0% 100%) 0%,
+      hsl(var(--primary)) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .text-gradient-hero {
+    background: linear-gradient(
+      180deg,
+      hsl(0 0% 100%) 30%,
+      hsl(var(--foreground-muted)) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .glow-primary {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.3),
+      0 0 60px hsl(var(--primary) / 0.1);
+  }
+
+  .glow-primary-sm {
+    box-shadow: 0 0 10px hsl(var(--primary) / 0.15),
+      0 0 40px hsl(var(--primary) / 0.05);
+  }
+}
+
+/* ── Bento card animation states ── */
+
+/* Stacked: cards invisible, piled at center (mobile: rise from below) */
+.bento-stacked {
+  opacity: 0;
+  transform: translateY(60px) scale(0.92);
+  will-change: transform, opacity;
+}
+@media (min-width: 1024px) {
+  .bento-stacked {
+    transform: translateX(var(--bx, 0px)) translateY(var(--by, 0px))
+      rotate(var(--br, 0deg)) scale(0.82);
+  }
+}
+
+/* Spread: cards fly to grid position */
+.bento-spread {
+  opacity: 1;
+  transform: none;
+  transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) var(--bd, 0s),
+    opacity 0.7s ease-out var(--bd, 0s);
+  will-change: transform, opacity;
+}
+
+/* Done: hover-ready, no animation residue */
+.bento-done {
+  opacity: 1;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.bento-done:hover {
+  transform: translateY(-4px);
+}
+
+@keyframes bento-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Login page animations */
+@keyframes login-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(3deg);
+  }
+}
+@keyframes login-float-reverse {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(15px) rotate(-2deg);
+  }
+}
+@keyframes login-pulse-glow {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+@keyframes login-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes login-grid-fade {
+  0%,
+  100% {
+    opacity: 0.03;
+  }
+  50% {
+    opacity: 0.07;
+  }
+}
+.animate-login-float {
+  animation: login-float 6s ease-in-out infinite;
+}
+.animate-login-float-reverse {
+  animation: login-float-reverse 7s ease-in-out infinite;
+}
+.animate-login-pulse-glow {
+  animation: login-pulse-glow 4s ease-in-out infinite;
+}
+.animate-login-slide-up {
+  animation: login-slide-up 0.5s ease-out both;
+}
+.animate-login-grid-fade {
+  animation: login-grid-fade 8s ease-in-out infinite;
+}

@@ -1,0 +1,6 @@
+ad_id,brand,headline,body_text,hook_type,visual_style,emotional_trigger,cta,engagement_score
+1,CompetitorUK1,"Trusted by 10,000+ UK customers","Premium quality, fair prices",social_proof,clean_minimal,trust,Shop Now,88
+2,CompetitorUK2,"NHS practitioners recommend","Evidence-based nutrition",authority,medical_aesthetic,credibility,Learn More,85
+3,CompetitorUK3,"Free next-day delivery on all orders","No minimum spend required",value,product_lineup,convenience,Order Now,82
+4,CompetitorUK4,"Made in Britain, loved worldwide","Sourced from UK farms",origin,heritage,pride,Discover,80
+5,CompetitorUK5,"Before and after: 6 week challenge","Real results from real people",before_after,transformation,hope,Start Now,87

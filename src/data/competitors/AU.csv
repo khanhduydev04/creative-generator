@@ -1,0 +1,6 @@
+ad_id,brand,headline,body_text,hook_type,visual_style,emotional_trigger,cta,engagement_score
+1,CompetitorAU1,"Australia's #1 selling supplement","Over 2 million units sold",social_proof,bold_numbers,trust,Buy Now,89
+2,CompetitorAU2,"TGA listed for your peace of mind","Pharmaceutical grade quality",authority,clean_white,credibility,Shop,84
+3,CompetitorAU3,"From $1.20 per serve","Premium doesn't mean expensive",value,comparison,smart_choice,Try It,82
+4,CompetitorAU4,"Designed for the Australian climate","Heat-stable formula",lifestyle,outdoor,relevance,Learn More,78
+5,CompetitorAU5,"30-day money back guarantee","Risk-free. Results-driven.",urgency,guarantee_badge,confidence,Start Now,86
