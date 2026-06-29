@@ -107,7 +107,6 @@ export default function VideoDetailPage({ params }: VideoDetailPageProps) {
       <div className="mx-auto max-w-3xl px-6 py-8">
         <div className="mb-6 max-w-xs">
           <VideoPlayer
-            videoId={video.video_id}
             tiktokUrl={video.tiktok_url}
             fetchCdnPath={`/api/video/competitors/${video.id}/fetch-cdn`}
           />

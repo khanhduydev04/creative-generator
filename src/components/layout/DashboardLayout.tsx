@@ -119,14 +119,16 @@ function SidebarSection({
   onItemClick,
 }: SidebarSectionProps) {
   const storageKey = `${SIDEBAR_STORAGE_KEY_PREFIX}${sectionKey}`;
-  const [isOpen, setIsOpen] = useState<boolean>(() => {
+  const [isOpen, setIsOpen] = useState<boolean>(defaultOpen);
+
+  useEffect(() => {
     try {
       const stored = localStorage.getItem(storageKey);
-      return stored === null ? defaultOpen : stored === "true";
+      if (stored !== null) setIsOpen(stored === "true");
     } catch {
-      return defaultOpen;
+      // ignore storage errors
     }
-  });
+  }, [storageKey]);
 
   function handleToggle() {
     const next = !isOpen;

@@ -1,84 +1,55 @@
-// Client Component: iframe embed with CDN video fallback on load error
+// Client Component: fetches CDN URL via tikwm on mount, plays video natively
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { ExternalLink, Loader2 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { useT } from "@/lib/i18n/useTranslation";
 
-type PlayerState = "embed" | "loading-cdn" | "cdn" | "failed";
+type PlayerState = "loading" | "loaded" | "failed";
 
 interface VideoPlayerProps {
-  videoId: string | null;
   tiktokUrl: string;
   fetchCdnPath: string;
 }
 
-export function VideoPlayer({ videoId, tiktokUrl, fetchCdnPath }: VideoPlayerProps) {
+export function VideoPlayer({ tiktokUrl, fetchCdnPath }: VideoPlayerProps) {
   const { t } = useT();
-  const [state, setState] = useState<PlayerState>(videoId ? "embed" : "loading-cdn");
+  const [state, setState] = useState<PlayerState>("loading");
   const [cdnUrl, setCdnUrl] = useState<string | null>(null);
-  const cdnFetchedRef = useRef(false);
-
-  const loadCdn = useCallback(async () => {
-    if (cdnFetchedRef.current) return;
-    cdnFetchedRef.current = true;
-    setState("loading-cdn");
-    try {
-      const res = await apiFetch<{ cdnUrl: string | null }>(fetchCdnPath);
-      if (res.cdnUrl) {
-        setCdnUrl(res.cdnUrl);
-        setState("cdn");
-      } else {
-        setState("failed");
-      }
-    } catch {
-      setState("failed");
-    }
-  }, [fetchCdnPath]);
 
   useEffect(() => {
-    if (!videoId) {
-      void loadCdn();
+    let cancelled = false;
+    async function fetchCdn() {
+      try {
+        const res = await apiFetch<{ cdnUrl: string | null }>(fetchCdnPath);
+        if (cancelled) return;
+        if (res.cdnUrl) {
+          setCdnUrl(res.cdnUrl);
+          setState("loaded");
+        } else {
+          setState("failed");
+        }
+      } catch {
+        if (!cancelled) setState("failed");
+      }
     }
-  }, [videoId, loadCdn]);
+    void fetchCdn();
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchCdnPath]);
 
-  if (state === "embed" && videoId) {
+  if (state === "loading") {
     return (
-      <div
-        className="relative w-full overflow-hidden rounded-xl bg-black"
-        style={{ paddingBottom: "177.78%" }}
-      >
-        <iframe
-          src={`https://www.tiktok.com/embed/v2/${videoId}`}
-          className="absolute inset-0 h-full w-full border-0"
-          allow="autoplay; clipboard-write; encrypted-media; picture-in-picture"
-          onError={() => void loadCdn()}
-          title="TikTok video"
-        />
-        <a
-          href={tiktokUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="absolute bottom-2 right-2 flex items-center gap-1 rounded-lg bg-black/70 px-2.5 py-1.5 text-xs text-white hover:bg-black/90"
-        >
-          <ExternalLink className="h-3 w-3" />
-          {t.video.openTikTok}
-        </a>
-      </div>
-    );
-  }
-
-  if (state === "loading-cdn") {
-    return (
-      <div className="flex h-48 w-full items-center justify-center rounded-xl bg-black/10">
+      <div className="flex h-64 w-full items-center justify-center rounded-xl bg-black/10">
         <Loader2 className="h-6 w-6 animate-spin text-foreground-muted" />
         <span className="ml-2 text-sm text-foreground-muted">{t.video.loadingCdn}</span>
       </div>
     );
   }
 
-  if (state === "cdn" && cdnUrl) {
+  if (state === "loaded" && cdnUrl) {
     return (
       <div
         className="relative w-full overflow-hidden rounded-xl bg-black"
@@ -88,6 +59,7 @@ export function VideoPlayer({ videoId, tiktokUrl, fetchCdnPath }: VideoPlayerPro
         <video
           src={cdnUrl}
           controls
+          autoPlay
           className="absolute inset-0 h-full w-full object-contain"
         />
         <a
@@ -104,7 +76,7 @@ export function VideoPlayer({ videoId, tiktokUrl, fetchCdnPath }: VideoPlayerPro
   }
 
   return (
-    <div className="flex h-48 w-full flex-col items-center justify-center gap-3 rounded-xl bg-black/10 text-center">
+    <div className="flex h-64 w-full flex-col items-center justify-center gap-3 rounded-xl bg-black/10 text-center">
       <p className="text-sm text-foreground-muted">{t.video.cdnFailed}</p>
       <a
         href={tiktokUrl}

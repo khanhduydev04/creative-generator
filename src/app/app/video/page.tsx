@@ -88,7 +88,7 @@ export default function CompetitorVideosPage() {
 
   return (
     <DashboardLayout activePath="/app/video">
-      <div className="mx-auto max-w-5xl px-6 py-8">
+      <div className="mx-auto max-w-7xl px-6 py-8">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-foreground">{t.video.pageTitle}</h1>
@@ -130,14 +130,11 @@ export default function CompetitorVideosPage() {
               />
             </div>
 
-            {/* Video grid */}
+            {/* Video table */}
             {isLoading ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className="h-36 animate-pulse rounded-2xl bg-background-elevated"
-                  />
+              <div className="overflow-hidden rounded-2xl border border-border/20">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-14 animate-pulse border-b border-border/10 bg-background-elevated last:border-0" />
                 ))}
               </div>
             ) : filteredVideos.length === 0 ? (
@@ -146,14 +143,30 @@ export default function CompetitorVideosPage() {
                 <p className="max-w-xs text-xs text-foreground-subtle">{t.video.noVideosHint}</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {filteredVideos.map((video: CompetitorVideo) => (
-                  <CompetitorVideoCard
-                    key={video.id}
-                    video={video}
-                    onStatusChange={handleStatusChange}
-                  />
-                ))}
+              <div className="overflow-x-auto rounded-2xl border border-border/20">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-border/20 bg-background-subtle">
+                      <th className="py-2.5 pl-4 pr-3 text-xs font-medium text-foreground-subtle" />
+                      <th className="py-2.5 pr-4 text-xs font-medium text-foreground-subtle">Video</th>
+                      <th className="py-2.5 pr-4 text-right text-xs font-medium text-foreground-subtle">{t.video.views}</th>
+                      <th className="py-2.5 pr-4 text-right text-xs font-medium text-foreground-subtle">{t.video.likes}</th>
+                      <th className="py-2.5 pr-4 text-right text-xs font-medium text-foreground-subtle">{t.video.shares}</th>
+                      <th className="py-2.5 pr-4 text-right text-xs font-medium text-foreground-subtle">{t.video.comments}</th>
+                      <th className="py-2.5 pr-4 text-xs font-medium text-foreground-subtle">Status</th>
+                      <th className="py-2.5 pr-4 text-xs font-medium text-foreground-subtle" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredVideos.map((video: CompetitorVideo) => (
+                      <CompetitorVideoCard
+                        key={video.id}
+                        video={video}
+                        onStatusChange={handleStatusChange}
+                      />
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </>

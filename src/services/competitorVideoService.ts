@@ -8,11 +8,10 @@ export interface ApifyVideoItem {
   diggCount?: number;
   shareCount?: number;
   commentCount?: number;
-  // authorMeta.name = TikTok handle (username), nickName = display name
   authorMeta?: { name?: string; nickName?: string };
-  // clockworks actors return covers as object {default, origin}, some older formats as string[]
-  covers?: { default?: string; origin?: string } | string[];
-  createTime?: number;
+  videoMeta?: { coverUrl?: string; duration?: number };
+  createTimeISO?: string;
+  isAd?: boolean;
   searchKey?: string;
 }
 
@@ -27,7 +26,7 @@ export class CompetitorVideoService {
       .from("competitor_videos")
       .select("*")
       .eq("brand_id", brandId)
-      .order("created_at", { ascending: false });
+      .order("views", { ascending: false, nullsFirst: false });
 
     if (status) {
       query = query.eq("status", status);
@@ -79,7 +78,7 @@ export class CompetitorVideoService {
     if (items.length === 0) return 0;
 
     const rows = items
-      .filter((item) => item.webVideoUrl?.includes("tiktok.com"))
+      .filter((item) => item.isAd === true && item.webVideoUrl?.includes("tiktok.com"))
       .map((item) => ({
         tiktok_url: item.webVideoUrl!,
         video_id: item.id ?? extractTikTokVideoId(item.webVideoUrl!),
@@ -88,13 +87,8 @@ export class CompetitorVideoService {
         shares: item.shareCount ?? null,
         comments: item.commentCount ?? null,
         author_handle: item.authorMeta?.name ?? null,
-        // Safe: handles both object {default} format (clockworks) and legacy string[] format
-        cover_url: Array.isArray(item.covers)
-          ? (item.covers[0] ?? null)
-          : (item.covers?.default ?? null),
-        scraped_at: item.createTime
-          ? new Date(item.createTime * 1000).toISOString()
-          : new Date().toISOString(),
+        cover_url: item.videoMeta?.coverUrl ?? null,
+        scraped_at: item.createTimeISO ?? new Date().toISOString(),
       }));
 
     if (rows.length === 0) return 0;
