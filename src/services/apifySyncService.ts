@@ -18,8 +18,11 @@ export async function fetchLastSucceededRun(
   taskId: string,
   token: string,
 ): Promise<ApifyLastRun | null> {
-  const url = `${APIFY_BASE}/actor-tasks/${encodeURIComponent(taskId)}/runs/last?status=SUCCEEDED&token=${token}`;
-  const res = await fetch(url, { signal: AbortSignal.timeout(RUN_FETCH_TIMEOUT_MS) });
+  const url = `${APIFY_BASE}/actor-tasks/${encodeURIComponent(taskId)}/runs/last?status=SUCCEEDED`;
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+    signal: AbortSignal.timeout(RUN_FETCH_TIMEOUT_MS),
+  });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`apify_run_fetch_failed_${res.status}`);
 
@@ -36,8 +39,11 @@ export async function fetchDatasetItems(
   datasetId: string,
   token: string,
 ): Promise<ApifyVideoItem[]> {
-  const url = `${APIFY_BASE}/datasets/${encodeURIComponent(datasetId)}/items?clean=true&format=json&token=${token}`;
-  const res = await fetch(url, { signal: AbortSignal.timeout(DATASET_FETCH_TIMEOUT_MS) });
+  const url = `${APIFY_BASE}/datasets/${encodeURIComponent(datasetId)}/items?clean=true&format=json`;
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+    signal: AbortSignal.timeout(DATASET_FETCH_TIMEOUT_MS),
+  });
   if (!res.ok) throw new Error(`apify_dataset_fetch_failed_${res.status}`);
   // Safe: dataset items endpoint trả mảng JSON theo shape ApifyVideoItem
   return (await res.json()) as ApifyVideoItem[];
