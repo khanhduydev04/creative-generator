@@ -98,3 +98,60 @@ export interface PatchScriptResponse {
 export interface CreateScriptResponse {
   script: BrandScript;
 }
+
+export interface VoicePreset {
+  id: string;
+  brand_id: string;
+  display_name: string;
+  voice_code: string;
+  speed: number;
+  pitch: number;
+  pause_config: Record<string, unknown> | null;
+  is_default: boolean;
+  created_at: string;
+}
+
+export interface VoiceRating {
+  id: string;
+  brand_id: string;
+  vbee_voice_code: string;
+  score: number;
+  note: string | null;
+  rated_at: string;
+}
+
+export interface GeneratedAudio {
+  id: string;
+  script_id: string;
+  brand_id: string;
+  voice_preset_id: string | null;
+  storage_path: string | null;
+  vbee_audio_url: string | null;
+  duration_secs: number | null;
+  created_at: string;
+  voice_preset?: Pick<VoicePreset, "display_name" | "voice_code" | "speed"> | null;
+  brand_script?: Pick<BrandScript, "final_text" | "raw_text"> | null;
+}
+
+export interface VbeeVoice {
+  voice_code: string;
+  name: string;
+  gender: "male" | "female";
+  region: "north" | "central" | "south";
+  sample_url?: string;
+}
+
+export interface VoiceAvgRating {
+  vbee_voice_code: string;
+  avg_score: number;
+  count: number;
+}
+
+export interface GenerateAudioRequest {
+  scriptId: string;
+  voicePresetId: string;
+}
+
+export interface GenerateAudioResponse {
+  audio: GeneratedAudio;
+}

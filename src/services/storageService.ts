@@ -1,7 +1,7 @@
 import { SupabaseClient } from '@supabase/supabase-js'
 import { Database } from '../types/database.types'
 
-export type StorageBucket = 'brand-assets' | 'campaign-inputs' | 'generated-ads'
+export type StorageBucket = 'brand-assets' | 'campaign-inputs' | 'generated-ads' | 'generated-audio'
 
 export class StorageService {
   constructor(private supabase: SupabaseClient<Database>) {}

@@ -9,7 +9,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { decryptKey } from "@/lib/crypto";
 import { MissingApiKeyError } from "@/lib/user-context";
 
-export type ApiKeyProvider = "anthropic" | "google" | "kie" | "openai";
+export type ApiKeyProvider = "anthropic" | "google" | "kie" | "openai" | "vbee";
 
 interface CachedKey {
   value: string;

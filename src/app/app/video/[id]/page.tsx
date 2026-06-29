@@ -8,6 +8,7 @@ import { useApp } from "@/features/app/context";
 import { VideoPlayer } from "@/features/video/components/VideoPlayer";
 import { TranscriptEditor } from "@/features/video/components/TranscriptEditor";
 import { ScriptEditor } from "@/features/video/components/ScriptEditor";
+import { VoiceGenerationPanel } from "@/features/video/components/VoiceGenerationPanel";
 import {
   useCreateTranscript,
   useTranscriptStatus,
@@ -143,13 +144,15 @@ export default function VideoDetailPage({ params }: VideoDetailPageProps) {
           />
         </section>
 
-        <section className="rounded-2xl border border-border-strong/20 bg-background-subtle p-6 opacity-50">
-          <h2 className="mb-2 text-base font-semibold text-foreground">
+        {/* Stage 5: Voice Generation */}
+        <section className="rounded-2xl border border-border-strong/20 bg-background-subtle p-6">
+          <h2 className="mb-4 text-base font-semibold text-foreground">
             {t.video.stage5Title}
           </h2>
-          <p className="text-sm text-foreground-muted">
-            {savedScriptId ? "" : t.video.stage5Placeholder}
-          </p>
+          <VoiceGenerationPanel
+            scriptId={savedScriptId}
+            brandId={selectedBrandId ?? ""}
+          />
         </section>
       </div>
     </DashboardLayout>

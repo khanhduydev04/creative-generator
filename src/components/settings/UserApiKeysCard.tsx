@@ -13,6 +13,7 @@ const PROVIDERS: { id: ApiKeyProvider; label: string; helpUrl: string }[] = [
   { id: "google", label: "Google AI Studio", helpUrl: "https://aistudio.google.com/apikey" },
   { id: "kie", label: "KIE", helpUrl: "https://kie.ai/api-keys" },
   { id: "openai", label: "OpenAI", helpUrl: "https://platform.openai.com/api-keys" },
+  { id: "vbee", label: "Vbee TTS", helpUrl: "https://vbee.vn" },
 ];
 
 export function UserApiKeysCard() {
@@ -20,7 +21,7 @@ export function UserApiKeysCard() {
   const { data: keys = [], isLoading } = useApiKeys();
   const saveApiKey = useSaveApiKey();
   const deleteApiKey = useDeleteApiKey();
-  const [drafts, setDrafts] = useState<Record<ApiKeyProvider, string>>({ anthropic: "", google: "", kie: "", openai: "" });
+  const [drafts, setDrafts] = useState<Record<ApiKeyProvider, string>>({ anthropic: "", google: "", kie: "", openai: "", vbee: "" });
   const [savingProvider, setSavingProvider] = useState<ApiKeyProvider | null>(null);
   const [errorByProvider, setErrorByProvider] = useState<Partial<Record<ApiKeyProvider, string>>>({});
 

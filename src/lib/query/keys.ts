@@ -42,4 +42,17 @@ export const queryKeys = {
   scripts: {
     list: (transcriptId: string) => ["scripts", transcriptId] as const,
   },
+  voicePresets: {
+    list: (brandId: string) => ["voice-presets", brandId] as const,
+  },
+  voiceRatings: {
+    avg: (brandId: string) => ["voice-ratings", brandId] as const,
+  },
+  generatedAudios: {
+    list: (brandId: string) => ["generated-audios", brandId] as const,
+    byScript: (scriptId: string) => ["generated-audios", "script", scriptId] as const,
+  },
+  vbeeVoices: {
+    all: ["vbee-voices"] as const,
+  },
 } as const;

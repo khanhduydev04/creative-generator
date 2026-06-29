@@ -5,6 +5,7 @@ const PROVIDER_PREFIXES: Record<ApiKeyProvider, RegExp> = {
   google: /^AIza[A-Za-z0-9_-]{8,}$/,
   kie: /^[A-Za-z0-9_-]{8,}$/,
   openai: /^sk-[A-Za-z0-9_-]{8,}$/,
+  vbee: /^[A-Za-z0-9_-]{8,}$/,
 };
 
 export function isValidProvider(provider: string): provider is ApiKeyProvider {
