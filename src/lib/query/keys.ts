@@ -55,4 +55,7 @@ export const queryKeys = {
   vbeeVoices: {
     all: ["vbee-voices"] as const,
   },
+  apifyConfig: {
+    detail: (brandId: string) => ["apify-config", brandId] as const,
+  },
 } as const;

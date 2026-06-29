@@ -155,3 +155,16 @@ export interface GenerateAudioRequest {
 export interface GenerateAudioResponse {
   audio: GeneratedAudio;
 }
+
+export interface BrandApifyConfig {
+  id: string;
+  brand_id: string;
+  apify_task_id: string;
+  is_enabled: boolean;
+  last_run_id: string | null;
+  last_dataset_id: string | null;
+  last_synced_at: string | null;
+  last_error: string | null;
+  created_at: string;
+  updated_at: string;
+}

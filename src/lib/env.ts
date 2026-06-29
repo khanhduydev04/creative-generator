@@ -1,7 +1,6 @@
 /**
  * Runtime environment variable validation.
  * Call validateEnv() at app startup to fail fast on missing required vars.
- * No external dependencies — uses plain TypeScript.
  */
 
 interface EnvVar {
@@ -25,6 +24,12 @@ const ENV_SCHEMA: EnvVar[] = [
     description: "Supabase anonymous key",
   },
   {
+    name: "ANTHROPIC_API_KEY",
+    required: true,
+    isPublic: false,
+    description: "Anthropic API key (Claude)",
+  },
+  {
     name: "GOOGLE_API_KEY",
     required: true,
     isPublic: false,
@@ -37,10 +42,22 @@ const ENV_SCHEMA: EnvVar[] = [
     description: "KIE AI image generation API key",
   },
   {
-    name: "ADLANCE_ENCRYPTION_KEY",
-    required: true,
+    name: "VBEE_API_KEY",
+    required: false,
     isPublic: false,
-    description: "Master key (64-char hex / 32 bytes) for AES-256-GCM encryption of per-user API keys",
+    description: "Vbee TTS API key (video voice generation)",
+  },
+  {
+    name: "APIFY_TOKEN",
+    required: false,
+    isPublic: false,
+    description: "Apify API token (pull-sync competitor videos via cron)",
+  },
+  {
+    name: "CRON_SECRET",
+    required: false,
+    isPublic: false,
+    description: "Shared secret Vercel Cron gửi qua Authorization header để bảo vệ /api/cron/*",
   },
   {
     name: "GOOGLE_CONSOLE_API_KEY",
@@ -56,11 +73,6 @@ const ENV_SCHEMA: EnvVar[] = [
   },
 ];
 
-/**
- * Validate that all required environment variables are set.
- * Logs warnings for missing optional vars.
- * Throws if any required var is missing.
- */
 export function validateEnv(): void {
   const missing: string[] = [];
   const warnings: string[] = [];
