@@ -8,8 +8,10 @@ export interface ApifyVideoItem {
   diggCount?: number;
   shareCount?: number;
   commentCount?: number;
-  authorMeta?: { name?: string };
-  covers?: string[];
+  // authorMeta.name = TikTok handle (username), nickName = display name
+  authorMeta?: { name?: string; nickName?: string };
+  // clockworks actors return covers as object {default, origin}, some older formats as string[]
+  covers?: { default?: string; origin?: string } | string[];
   createTime?: number;
   searchKey?: string;
 }
@@ -87,7 +89,10 @@ export class CompetitorVideoService {
         shares: item.shareCount ?? null,
         comments: item.commentCount ?? null,
         author_handle: item.authorMeta?.name ?? null,
-        cover_url: item.covers?.[0] ?? null,
+        // Safe: handles both object {default} format (clockworks) and legacy string[] format
+        cover_url: Array.isArray(item.covers)
+          ? (item.covers[0] ?? null)
+          : (item.covers?.default ?? null),
         scraped_at: item.createTime
           ? new Date(item.createTime * 1000).toISOString()
           : new Date().toISOString(),

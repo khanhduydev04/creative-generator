@@ -166,6 +166,50 @@ export default function CompetitorVideosPage() {
           onAdd={handleAddVideo}
         />
       )}
+
+      {showSyncModal && selectedBrandId && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          onClick={() => setShowSyncModal(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-2xl border border-border-strong/30 bg-background-elevated p-6 shadow-2xl"
+          >
+            <h3 className="mb-4 text-lg font-semibold text-foreground">{t.video.syncApify}</h3>
+            <label className="mb-1 block text-sm font-medium text-foreground-muted">
+              {t.video.apifyDatasetId}
+            </label>
+            <input
+              type="text"
+              value={datasetId}
+              onChange={(e) => setDatasetId(e.target.value)}
+              placeholder={t.video.apifyDatasetIdPlaceholder}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-foreground-subtle focus:border-primary focus:outline-none"
+            />
+            {syncMessage && (
+              <p className="mt-2 text-sm text-foreground-muted">{syncMessage}</p>
+            )}
+            <div className="mt-5 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowSyncModal(false)}
+                className="rounded-lg px-4 py-2 text-sm text-foreground-muted hover:text-foreground"
+              >
+                {t.video.cancel}
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleSync()}
+                disabled={!datasetId.trim() || syncing}
+                className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-violet-500 disabled:opacity-50"
+              >
+                {syncing ? t.video.syncing : t.video.syncApify}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
