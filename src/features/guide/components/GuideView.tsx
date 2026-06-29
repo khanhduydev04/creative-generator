@@ -208,7 +208,7 @@ export function GuideView() {
             </span>
           </div>
           <p className="text-foreground-muted text-sm mt-1">
-            Everything you need to know about using Adlance.
+            Everything you need to know about using Ladospice.
           </p>
         </div>
         <div className="w-72 shrink-0 hidden sm:block">

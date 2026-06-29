@@ -23,7 +23,7 @@ export function LocaleProvider({ children }: LocaleProviderProps) {
   const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
 
   useEffect(() => {
-    const saved = localStorage.getItem("adlance-locale");
+    const saved = localStorage.getItem("ladospice-locale");
     if (saved === "vi" || saved === "en") {
       setLocaleState(saved);
     }
@@ -31,8 +31,8 @@ export function LocaleProvider({ children }: LocaleProviderProps) {
 
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l);
-    localStorage.setItem("adlance-locale", l);
-    document.cookie = `adlance-locale=${l};path=/;max-age=31536000;SameSite=Lax`;
+    localStorage.setItem("ladospice-locale", l);
+    document.cookie = `ladospice-locale=${l};path=/;max-age=31536000;SameSite=Lax`;
   }, []);
 
   return (
@@ -40,7 +40,7 @@ export function LocaleProvider({ children }: LocaleProviderProps) {
       {/* Sync localStorage → cookie before React hydrates to prevent locale flicker */}
       <script
         dangerouslySetInnerHTML={{
-          __html: `try{var l=localStorage.getItem('adlance-locale');if(l)document.cookie='adlance-locale='+l+';path=/;max-age=31536000;SameSite=Lax';}catch(e){}`,
+          __html: `try{var l=localStorage.getItem('ladospice-locale');if(l)document.cookie='ladospice-locale='+l+';path=/;max-age=31536000;SameSite=Lax';}catch(e){}`,
         }}
       />
       {children}

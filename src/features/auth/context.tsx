@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = (await res.json()) as UserMe;
       // Map UserMe to the legacy Profile shape so existing consumers keep working.
       // PATI-specific fields (role, department, is_active, etc.) are not returned by
-      // the new Adlance endpoint — they default to safe values until those consumers
+      // the new endpoint — they default to safe values until those consumers
       // are migrated in a later phase.
       const mapped: Profile = {
         id: data.id,

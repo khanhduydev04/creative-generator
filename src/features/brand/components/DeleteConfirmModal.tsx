@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 // Client Component: confirmation dialog before deleting a brand profile
 
 import { useT } from "@/lib/i18n/useTranslation";
@@ -53,7 +53,7 @@ export function DeleteConfirmModal({
           <button
             type="button"
             onClick={onClose}
-            className="-mr-2 -mt-1 shrink-0 cursor-pointer rounded-full p-2 transition-colors hover:bg-white/[0.05]"
+            className="-mr-2 -mt-1 shrink-0 cursor-pointer rounded-full p-2 transition-colors hover:bg-black/[0.05]"
             aria-label={t.brandSetup.closeLabel}
           >
             <X className="h-4 w-4 text-foreground-subtle" />
@@ -74,7 +74,7 @@ export function DeleteConfirmModal({
           <button
             type="button"
             onClick={onClose}
-            className="cursor-pointer rounded-lg border border-border px-4 py-2 text-sm font-bold text-foreground-muted transition-colors hover:bg-white/[0.05]"
+            className="cursor-pointer rounded-lg border border-border px-4 py-2 text-sm font-bold text-foreground-muted transition-colors hover:bg-black/[0.05]"
           >
             {t.brandSetup.cancelBtn}
           </button>

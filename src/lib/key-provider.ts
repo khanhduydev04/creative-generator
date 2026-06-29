@@ -1,58 +1,35 @@
 import 'server-only';
 
-/**
- * Server-only — per-user API key provider.
- * Fetches from user_api_keys, decrypts via crypto.ts, caches 60s.
- */
-
-import { createAdminClient } from "@/lib/supabase/admin";
-import { decryptKey } from "@/lib/crypto";
-import { MissingApiKeyError } from "@/lib/user-context";
-
 export type ApiKeyProvider = "anthropic" | "google" | "kie" | "openai" | "vbee";
 
-interface CachedKey {
-  value: string;
-  cachedAt: number;
-}
+const PROVIDER_ENV_MAP: Record<ApiKeyProvider, string> = {
+  anthropic: "ANTHROPIC_API_KEY",
+  google: "GOOGLE_API_KEY",
+  kie: "KIE_API_KEY",
+  openai: "OPENAI_API_KEY",
+  vbee: "VBEE_API_KEY",
+};
 
-const CACHE_TTL_MS = 60_000;
-const cache = new Map<string, CachedKey>();
-
+// userId param kept for call-site compatibility — not used (shared env keys)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function getUserApiKey(
-  userId: string,
+  _userId: string,
   provider: ApiKeyProvider,
 ): Promise<string> {
-  const cacheKey = `${userId}:${provider}`;
-  const cached = cache.get(cacheKey);
-  if (cached && Date.now() - cached.cachedAt < CACHE_TTL_MS) return cached.value;
-
-  const supabase = createAdminClient();
-  const { data, error } = await supabase
-    .from("user_api_keys")
-    .select("encrypted_key")
-    .eq("user_id", userId)
-    .eq("provider", provider)
-    .single();
-
-  // PostgREST returns "PGRST116" specifically when no rows match .single().
-  // Anything else (network failure, RLS denial, transient outage) is a real
-  // error — surfacing it as MissingApiKeyError would tell the user "add your
-  // key" when in fact the DB is down. Re-throw so handleApiError maps it to 500.
-  if (error && error.code !== "PGRST116") throw error;
-  if (!data) throw new MissingApiKeyError(provider);
-
-  const value = decryptKey(data.encrypted_key);
-  cache.set(cacheKey, { value, cachedAt: Date.now() });
+  const envVar = PROVIDER_ENV_MAP[provider];
+  const value = process.env[envVar];
+  if (!value) {
+    throw new Error(
+      `Missing required environment variable ${envVar} for provider "${provider}". Add it to .env.local.`,
+    );
+  }
   return value;
 }
 
-export function clearUserKeyCache(userId: string): void {
-  for (const cacheKey of [...cache.keys()]) {
-    if (cacheKey.startsWith(`${userId}:`)) cache.delete(cacheKey);
-  }
+export function clearUserKeyCache(_userId: string): void {
+  // No-op: keys are read directly from env, no cache needed.
 }
 
 export function clearAllKeyCache(): void {
-  cache.clear();
+  // No-op: keys are read directly from env, no cache needed.
 }

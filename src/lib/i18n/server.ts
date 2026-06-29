@@ -6,7 +6,7 @@ import type { Dictionary, Locale } from "./types";
 
 export const getServerTranslations = cache(async (): Promise<Dictionary> => {
   const store = await cookies();
-  const raw = store.get("adlance-locale")?.value;
+  const raw = store.get("ladospice-locale")?.value;
   const locale: Locale = raw === "en" || raw === "vi" ? raw : "vi";
   return locale === "en" ? en : vi;
 });

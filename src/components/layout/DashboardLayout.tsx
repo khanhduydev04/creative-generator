@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 // Client Component: main dashboard layout with collapsible sidebar navigation + i18n
 
 import { useApp } from "@/features/app/context";
@@ -28,7 +28,6 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { MissingKeyBanner } from "@/components/settings/MissingKeyBanner";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useBrands, useCreateBrand, useRenameBrand, useDeleteBrand } from "@/hooks/api/useBrands";
@@ -82,7 +81,7 @@ function SidebarNavLink({
       className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 ${
         isActive
           ? "bg-primary/10 font-semibold text-primary"
-          : "text-foreground-muted hover:bg-white/[0.04] hover:text-foreground"
+          : "text-foreground-muted hover:bg-black/[0.04] hover:text-foreground"
       }`}
     >
       <div
@@ -443,13 +442,13 @@ export function DashboardLayout({ children, activePath }: DashboardLayoutProps) 
       <div className="relative flex h-16 items-center gap-3 border-b border-border/40 px-5">
         <Link href="/app" className="flex items-center gap-2.5 transition-opacity hover:opacity-80">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/logo-dark.svg" alt="Adlance" className="h-7 w-7" />
-          <span className="text-lg font-bold tracking-tight text-foreground">Adlance</span>
+          <img src="/brand/logo-dark.svg" alt="Ladospice" className="h-7 w-7" />
+          <span className="text-lg font-bold tracking-tight text-foreground">Ladospice</span>
         </Link>
         <button
           type="button"
           onClick={() => setSidebarOpen(false)}
-          className="ml-auto cursor-pointer rounded-lg p-1.5 text-foreground-muted transition-colors hover:bg-white/[0.05] hover:text-foreground lg:hidden"
+          className="ml-auto cursor-pointer rounded-lg p-1.5 text-foreground-muted transition-colors hover:bg-black/[0.05] hover:text-foreground lg:hidden"
         >
           <X className="h-5 w-5" />
         </button>
@@ -506,7 +505,7 @@ export function DashboardLayout({ children, activePath }: DashboardLayoutProps) 
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setDropdownOpen((o) => !o); }}
-                className="flex h-9 flex-1 cursor-pointer items-center gap-2 rounded-lg border border-border/40 bg-background-elevated/30 px-3 text-sm font-medium text-foreground-muted transition-colors duration-200 hover:bg-white/[0.04] hover:text-foreground"
+                className="flex h-9 flex-1 cursor-pointer items-center gap-2 rounded-lg border border-border/40 bg-background-elevated/30 px-3 text-sm font-medium text-foreground-muted transition-colors duration-200 hover:bg-black/[0.04] hover:text-foreground"
               >
                 {loading ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin text-foreground-subtle" />
@@ -521,7 +520,7 @@ export function DashboardLayout({ children, activePath }: DashboardLayoutProps) 
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setBrandActionsOpen((o) => !o); }}
                 disabled={!selectedBrandId}
-                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-border/40 bg-background-elevated/30 transition-colors duration-200 hover:bg-white/[0.04] disabled:opacity-30"
+                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-border/40 bg-background-elevated/30 transition-colors duration-200 hover:bg-black/[0.04] disabled:opacity-30"
                 title={t.nav.brandActions}
               >
                 <MoreHorizontal className="h-3.5 w-3.5 text-foreground-subtle" />
@@ -538,7 +537,7 @@ export function DashboardLayout({ children, activePath }: DashboardLayoutProps) 
                     className={`w-full cursor-pointer px-4 py-2.5 text-left text-sm transition-colors duration-200 ${
                       brand.id === selectedBrandId
                         ? "bg-primary/10 font-semibold text-primary"
-                        : "text-foreground-muted hover:bg-white/[0.05] hover:text-foreground"
+                        : "text-foreground-muted hover:bg-black/[0.05] hover:text-foreground"
                     }`}
                   >
                     {brand.name}
@@ -562,7 +561,7 @@ export function DashboardLayout({ children, activePath }: DashboardLayoutProps) 
                 <button
                   type="button"
                   onClick={() => { setBrandActionsOpen(false); setModal({ type: "rename", brandId: selectedBrand.id, currentName: selectedBrand.name }); }}
-                  className="flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-sm text-foreground-muted hover:bg-white/[0.05] hover:text-foreground"
+                  className="flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-sm text-foreground-muted hover:bg-black/[0.05] hover:text-foreground"
                 >
                   <Pencil className="h-3.5 w-3.5 text-foreground-subtle" />
                   {t.nav.rename}
@@ -598,7 +597,7 @@ export function DashboardLayout({ children, activePath }: DashboardLayoutProps) 
           <button
             type="button"
             onClick={() => void signOut()}
-            className="cursor-pointer rounded-lg p-1.5 text-foreground-subtle transition-colors hover:bg-white/[0.05] hover:text-danger"
+            className="cursor-pointer rounded-lg p-1.5 text-foreground-subtle transition-colors hover:bg-black/[0.05] hover:text-danger"
             title={t.nav.signOut}
           >
             <LogOut className="h-4 w-4" />
@@ -634,7 +633,7 @@ export function DashboardLayout({ children, activePath }: DashboardLayoutProps) 
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
-            className="cursor-pointer rounded-lg p-2 text-foreground-muted transition-colors hover:bg-white/[0.05] hover:text-foreground lg:hidden"
+            className="cursor-pointer rounded-lg p-2 text-foreground-muted transition-colors hover:bg-black/[0.05] hover:text-foreground lg:hidden"
           >
             <Menu className="h-5 w-5" />
           </button>
@@ -663,11 +662,11 @@ export function DashboardLayout({ children, activePath }: DashboardLayoutProps) 
                       <p className="truncate text-xs text-foreground-subtle">{profile.email}</p>
                     </div>
                   )}
-                  <Link href="/app/guide" onClick={() => setUserMenuOpen(false)} className="flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-sm text-foreground-muted transition-colors hover:bg-white/[0.05] hover:text-foreground">
+                  <Link href="/app/guide" onClick={() => setUserMenuOpen(false)} className="flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-sm text-foreground-muted transition-colors hover:bg-black/[0.05] hover:text-foreground">
                     <BookOpen className="h-4 w-4 text-foreground-subtle" />
                     {t.nav.guide}
                   </Link>
-                  <Link href="/app/settings" onClick={() => setUserMenuOpen(false)} className="flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-sm text-foreground-muted transition-colors hover:bg-white/[0.05] hover:text-foreground">
+                  <Link href="/app/settings" onClick={() => setUserMenuOpen(false)} className="flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-sm text-foreground-muted transition-colors hover:bg-black/[0.05] hover:text-foreground">
                     <Settings className="h-4 w-4 text-foreground-subtle" />
                     {t.nav.settings}
                   </Link>
@@ -683,7 +682,6 @@ export function DashboardLayout({ children, activePath }: DashboardLayoutProps) 
           </div>
         </header>
 
-        <MissingKeyBanner />
         <main className="flex-1 overflow-auto">{children}</main>
       </div>
 

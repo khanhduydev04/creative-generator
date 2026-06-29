@@ -1,4 +1,4 @@
-// Client Component: editable transcript with status badge, save, and re-transcribe actions
+﻿// Client Component: editable transcript with status badge, save, and re-transcribe actions
 "use client";
 
 import { useState, useEffect } from "react";
@@ -83,7 +83,7 @@ export function TranscriptEditor({
               type="button"
               onClick={() => void handleRun()}
               disabled={isRunning}
-              className="flex items-center gap-1.5 rounded-lg border border-border/40 px-3 py-1.5 text-xs text-foreground-muted hover:bg-white/[0.04] disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-lg border border-border/40 px-3 py-1.5 text-xs text-foreground-muted hover:bg-black/[0.04] disabled:opacity-50"
             >
               <RefreshCw className="h-3.5 w-3.5" />
               {t.video.retranscribe}

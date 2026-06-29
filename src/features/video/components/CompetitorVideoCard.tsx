@@ -1,4 +1,4 @@
-// Client Component: video card with preview, winner, reject actions
+﻿// Client Component: video card with preview, winner, reject actions
 "use client";
 
 import { useState } from "react";
@@ -94,7 +94,7 @@ export function CompetitorVideoCard({ video, onStatusChange }: CompetitorVideoCa
             <button
               type="button"
               onClick={() => setShowPreview((p) => !p)}
-              className="flex items-center gap-1.5 rounded-lg border border-border/40 px-3 py-1.5 text-xs font-medium text-foreground-muted transition-colors hover:bg-white/[0.04] hover:text-foreground"
+              className="flex items-center gap-1.5 rounded-lg border border-border/40 px-3 py-1.5 text-xs font-medium text-foreground-muted transition-colors hover:bg-black/[0.04] hover:text-foreground"
             >
               <Eye className="h-3.5 w-3.5" />
               {t.video.preview}

@@ -1,7 +1,6 @@
 "use client";
 // Client Component: displays generation pipeline progress with large step UI, streaming results, and bulk actions
 
-import { MissingKeyEmptyState } from "@/components/empty-states/MissingKeyEmptyState";
 import { ContentAdaptPanel } from "@/features/content-adapt/components/ContentAdaptPanel";
 import { downloadAsZip } from "@/lib/download-zip";
 import { useT } from "@/lib/i18n/useTranslation";
@@ -24,19 +23,6 @@ import { useCallback, useEffect, useState } from "react";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-// Matches "Missing kie API key" (SSE message) or "missing_api_key" (HTTP 400 JSON)
-// Returns the provider slug if the error is a missing-key error, otherwise null.
-const MISSING_KEY_MESSAGE_PATTERN = /^Missing (anthropic|google|kie) API key$/;
-type Provider = "anthropic" | "google" | "kie";
-
-function extractMissingKeyProvider(error: string): Provider | null {
-  if (error === "missing_api_key") {
-    // HTTP 400 path: provider unknown — default to "kie" (most common generation key)
-    return "kie";
-  }
-  const match = MISSING_KEY_MESSAGE_PATTERN.exec(error);
-  return match ? (match[1] as Provider) : null;
-}
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -416,14 +402,7 @@ export function GenerateProgress({
         </div>
       )}
 
-      {/* Error — missing key shows a dedicated empty state; other errors show the generic panel */}
       {error && (() => {
-        const missingProvider = extractMissingKeyProvider(error);
-        if (missingProvider) {
-          return (
-            <MissingKeyEmptyState provider={missingProvider} feature="Image generation" />
-          );
-        }
         return (
           <div className="bg-rose-500/10 rounded-xl border border-rose-500/20 p-5">
             <div className="flex items-start gap-3">

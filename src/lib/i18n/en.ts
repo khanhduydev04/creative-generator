@@ -41,7 +41,7 @@ export const en: Dictionary = {
   },
   showcase: {
     label: "Real results",
-    title: "See what Adlance creates",
+    title: "See what Ladospice creates",
     subtitle:
       "From idea to finished ad, everything is handled automatically by AI. Below are examples of ad types you can create.",
     tab1: "Concept Ads",

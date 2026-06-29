@@ -5,10 +5,8 @@ import type { NextRequest } from 'next/server'
 const PUBLIC_PATHS = new Set([
   '/',
   '/login',
-  '/signup',
   '/forgot-password',
   '/reset-password',
-  '/verify-pending',
 ])
 
 function isPublicPath(pathname: string): boolean {
@@ -56,8 +54,8 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Auth-only login/signup pages: bounce signed-in users to /app
-  if (pathname === '/login' || pathname === '/signup') {
+  // Login page: bounce signed-in users to /app
+  if (pathname === '/login') {
     if (user) return redirectTo('/app', request, supabaseResponse)
     return supabaseResponse
   }
@@ -67,10 +65,9 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse
   }
 
-  // /app/* requires an authenticated, email-verified user
+  // /app/* requires an authenticated user
   if (pathname.startsWith('/app')) {
     if (!user) return redirectTo('/login', request, supabaseResponse)
-    if (!user.email_confirmed_at) return redirectTo('/verify-pending', request, supabaseResponse)
     return supabaseResponse
   }
 

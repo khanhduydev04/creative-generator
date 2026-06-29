@@ -50,7 +50,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html
       lang="vi"
-      className={`dark ${inter.variable}`}
+      className={inter.variable}
       suppressHydrationWarning
     >
       <body className="min-h-screen bg-background font-sans antialiased">

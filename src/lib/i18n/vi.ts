@@ -39,7 +39,7 @@ export const vi = {
   },
   showcase: {
     label: "Kết quả thực tế",
-    title: "Xem Adlance tạo ra điều gì",
+    title: "Xem Ladospice tạo ra điều gì",
     subtitle:
       "Từ ý tưởng đến quảng cáo hoàn chỉnh, mọi thứ được AI xử lý tự động. Dưới đây là ví dụ về các loại quảng cáo bạn có thể tạo.",
     tab1: "Concept Ads",

@@ -22,23 +22,6 @@
     --radius: 8px;
   }
 
-  .dark {
-    --background: 228 25% 6%;
-    --background-subtle: 225 20% 9%;
-    --background-elevated: 224 15% 14%;
-    --foreground: 210 40% 98%;
-    --foreground-muted: 215 20% 65%;
-    --foreground-subtle: 215 16% 47%;
-    --border: 224 15% 15%;
-    --border-subtle: 224 15% 11%;
-    --border-strong: 224 12% 25%;
-    --primary: 262 83% 65%;
-    --primary-foreground: 0 0% 100%;
-    --accent-subtle: 262 40% 15%;
-    --success: 142 70% 50%;
-    --warning: 38 92% 60%;
-    --danger: 0 72% 56%;
-  }
 
   * {
     @apply border-border;
@@ -133,7 +116,7 @@
   .text-gradient-primary {
     background: linear-gradient(
       135deg,
-      hsl(0 0% 100%) 0%,
+      hsl(var(--foreground)) 0%,
       hsl(var(--primary)) 100%
     );
     -webkit-background-clip: text;
@@ -144,7 +127,7 @@
   .text-gradient-hero {
     background: linear-gradient(
       180deg,
-      hsl(0 0% 100%) 30%,
+      hsl(var(--foreground)) 30%,
       hsl(var(--foreground-muted)) 100%
     );
     -webkit-background-clip: text;

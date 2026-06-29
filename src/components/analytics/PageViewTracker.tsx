@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 function getSessionId(): string {
-  const KEY = "adlance_sid";
+  const KEY = "ladospice_sid";
   let sid = sessionStorage.getItem(KEY);
   if (!sid) {
     sid = crypto.randomUUID();

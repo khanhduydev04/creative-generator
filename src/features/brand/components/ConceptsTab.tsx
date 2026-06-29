@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 // Client Component: manages concept CRUD with interactive form state
 
 import {
@@ -151,7 +151,7 @@ export function ConceptsTab() {
                     <button
                       type="button"
                       onClick={() => setExpandedId(isExpanded ? null : concept.concept_id)}
-                      className="cursor-pointer rounded-lg border border-border p-1.5 transition-colors duration-200 hover:bg-white/[0.05]"
+                      className="cursor-pointer rounded-lg border border-border p-1.5 transition-colors duration-200 hover:bg-black/[0.05]"
                       aria-label={isExpanded ? t.brand.collapse : t.brand.expand}
                     >
                       {isExpanded ? (
@@ -165,7 +165,7 @@ export function ConceptsTab() {
                         <button
                           type="button"
                           onClick={() => { setShowForm(false); setEditingConcept(concept); }}
-                          className="cursor-pointer rounded-lg border border-border p-1.5 transition-colors duration-200 hover:bg-white/[0.05]"
+                          className="cursor-pointer rounded-lg border border-border p-1.5 transition-colors duration-200 hover:bg-black/[0.05]"
                           aria-label={t.brand.edit}
                         >
                           <Pencil className="h-3.5 w-3.5 text-foreground-muted" />
@@ -476,7 +476,7 @@ function ConceptForm({ concept, onSaved, onCancel }: ConceptFormProps) {
         <button
           type="button"
           onClick={onCancel}
-          className="cursor-pointer rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground-muted transition-colors duration-200 hover:bg-white/[0.05]"
+          className="cursor-pointer rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground-muted transition-colors duration-200 hover:bg-black/[0.05]"
         >
           {t.brand.cancel}
         </button>

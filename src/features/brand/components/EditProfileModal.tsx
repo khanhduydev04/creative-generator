@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 // Client Component: edit form state for a brand profile
 
 import { useT } from "@/lib/i18n/useTranslation";
@@ -110,7 +110,7 @@ export function EditProfileModal({
           <button
             type="button"
             onClick={onClose}
-            className="cursor-pointer rounded-full p-2 transition-colors hover:bg-white/[0.05]"
+            className="cursor-pointer rounded-full p-2 transition-colors hover:bg-black/[0.05]"
             aria-label={t.brandSetup.closeLabel}
           >
             <X className="h-5 w-5 text-foreground-muted" />
@@ -148,7 +148,7 @@ export function EditProfileModal({
           <button
             type="button"
             onClick={onClose}
-            className="cursor-pointer rounded-lg border border-border px-4 py-2 text-sm font-bold text-foreground-muted transition-colors hover:bg-white/[0.05]"
+            className="cursor-pointer rounded-lg border border-border px-4 py-2 text-sm font-bold text-foreground-muted transition-colors hover:bg-black/[0.05]"
           >
             {t.brandSetup.cancelBtn}
           </button>

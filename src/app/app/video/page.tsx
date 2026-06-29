@@ -1,4 +1,4 @@
-// Client Component: uses state for filter, search, and modal
+﻿// Client Component: uses state for filter, search, and modal
 "use client";
 
 import { useState } from "react";
@@ -97,7 +97,7 @@ export default function CompetitorVideosPage() {
               <button
                 type="button"
                 onClick={() => setShowSyncModal(true)}
-                className="flex items-center gap-2 rounded-xl border border-border/40 px-4 py-2.5 text-sm font-medium text-foreground-muted hover:bg-white/[0.04]"
+                className="flex items-center gap-2 rounded-xl border border-border/40 px-4 py-2.5 text-sm font-medium text-foreground-muted hover:bg-black/[0.04]"
               >
                 {t.video.syncApify}
               </button>

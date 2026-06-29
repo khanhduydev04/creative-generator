@@ -1,7 +1,7 @@
 const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email'
 
-const SENDER_NAME = process.env.EMAIL_SENDER_NAME || 'Adlance'
-const SENDER_EMAIL = process.env.EMAIL_SENDER_ADDRESS || 'noreply@adlance.com'
+const SENDER_NAME = process.env.EMAIL_SENDER_NAME || 'Ladospice'
+const SENDER_EMAIL = process.env.EMAIL_SENDER_ADDRESS || 'noreply@ladospice.com'
 
 interface BrevoPayload {
   sender: { name: string; email: string }
@@ -46,10 +46,10 @@ export async function sendWelcomeEmail(params: WelcomeEmailParams): Promise<void
   await sendEmail({
     sender: { name: SENDER_NAME, email: SENDER_EMAIL },
     to: [{ email: params.to, name: params.fullName }],
-    subject: 'Your Adlance Account',
+    subject: 'Your Ladospice Account',
     htmlContent: `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-        <h2 style="color: #0f172a;">Welcome to Adlance</h2>
+        <h2 style="color: #0f172a;">Welcome to Ladospice</h2>
         <p>Hi ${params.fullName},</p>
         <p>Your account has been created.</p>
         <table style="margin: 16px 0; border-collapse: collapse;">
@@ -59,7 +59,7 @@ export async function sendWelcomeEmail(params: WelcomeEmailParams): Promise<void
         </table>
         <p style="color: #b45309;">⚠️ Please change your password after your first login.</p>
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
-        <p style="color: #6b7280; font-size: 14px;">Adlance System</p>
+        <p style="color: #6b7280; font-size: 14px;">Ladospice System</p>
       </div>
     `,
   })
@@ -75,17 +75,17 @@ export async function sendPasswordResetEmail(params: PasswordResetEmailParams): 
   await sendEmail({
     sender: { name: SENDER_NAME, email: SENDER_EMAIL },
     to: [{ email: params.to, name: params.fullName }],
-    subject: 'Password Reset | Adlance',
+    subject: 'Password Reset | Ladospice',
     htmlContent: `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-        <h2 style="color: #0f172a;">Password Reset | Adlance</h2>
+        <h2 style="color: #0f172a;">Password Reset | Ladospice</h2>
         <p>Hi ${params.fullName},</p>
         <p>Your password has been reset. Here is your new temporary password:</p>
         <p style="font-family: monospace; background: #f3f4f6; padding: 8px 16px; border-radius: 6px; font-size: 16px; display: inline-block;">${params.password}</p>
         <p style="color: #b45309;">⚠️ Please change your password after logging in.</p>
         <p style="color: #6b7280; font-size: 14px;">If you did not request this, contact your admin immediately.</p>
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
-        <p style="color: #6b7280; font-size: 14px;">Adlance System</p>
+        <p style="color: #6b7280; font-size: 14px;">Ladospice System</p>
       </div>
     `,
   })

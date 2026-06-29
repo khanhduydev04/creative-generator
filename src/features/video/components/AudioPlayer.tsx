@@ -1,4 +1,4 @@
-// Client Component: HTML5 audio player with play/pause, download, delete controls
+﻿// Client Component: HTML5 audio player with play/pause, download, delete controls
 "use client";
 
 import { useRef, useState } from "react";
@@ -61,7 +61,7 @@ export function AudioPlayer({ audio, publicUrl, onDelete, isDeleting }: AudioPla
       <a
         href={publicUrl}
         download
-        className="rounded-lg p-1.5 text-foreground-muted hover:bg-white/[0.04] hover:text-foreground"
+        className="rounded-lg p-1.5 text-foreground-muted hover:bg-black/[0.04] hover:text-foreground"
         aria-label={t.video.downloadAudio}
       >
         <Download className="h-4 w-4" />

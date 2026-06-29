@@ -1,4 +1,4 @@
-// Client Component: Voice Lab uses state for filters, test params, and preview audio
+﻿// Client Component: Voice Lab uses state for filters, test params, and preview audio
 "use client";
 
 import { useState } from "react";
@@ -150,7 +150,7 @@ export default function VoiceConfigPage() {
                   type="button"
                   onClick={() => setGender(g)}
                   className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                    gender === g ? "bg-primary/10 text-primary" : "text-foreground-muted hover:bg-white/[0.04]"
+                    gender === g ? "bg-primary/10 text-primary" : "text-foreground-muted hover:bg-black/[0.04]"
                   }`}
                 >
                   {getGenderLabel(g)}
@@ -163,7 +163,7 @@ export default function VoiceConfigPage() {
                   type="button"
                   onClick={() => setRegion(r)}
                   className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                    region === r ? "bg-primary/10 text-primary" : "text-foreground-muted hover:bg-white/[0.04]"
+                    region === r ? "bg-primary/10 text-primary" : "text-foreground-muted hover:bg-black/[0.04]"
                   }`}
                 >
                   {getRegionLabel(r)}
@@ -193,7 +193,7 @@ export default function VoiceConfigPage() {
                     <div
                       key={voice.voice_code}
                       className={`flex items-center gap-3 rounded-xl p-3 transition-colors ${
-                        isSelected ? "bg-primary/10" : "hover:bg-white/[0.04]"
+                        isSelected ? "bg-primary/10" : "hover:bg-black/[0.04]"
                       }`}
                     >
                       <div className="min-w-0 flex-1">
@@ -208,7 +208,7 @@ export default function VoiceConfigPage() {
                           setSelectedVoice(voice);
                           setPreviewUrl(null);
                         }}
-                        className="shrink-0 rounded-lg border border-border/40 px-2.5 py-1 text-xs text-foreground-muted hover:bg-white/[0.04]"
+                        className="shrink-0 rounded-lg border border-border/40 px-2.5 py-1 text-xs text-foreground-muted hover:bg-black/[0.04]"
                       >
                         {t.video.quickTest}
                       </button>
@@ -303,7 +303,7 @@ export default function VoiceConfigPage() {
                     type="button"
                     onClick={() => void handleSaveRating()}
                     disabled={rating === 0 || submitRating.isPending || !selectedBrandId}
-                    className="mt-2 rounded-lg bg-background-elevated px-3 py-1.5 text-sm text-foreground-muted hover:bg-white/[0.06] disabled:opacity-50"
+                    className="mt-2 rounded-lg bg-background-elevated px-3 py-1.5 text-sm text-foreground-muted hover:bg-black/[0.06] disabled:opacity-50"
                   >
                     Lưu đánh giá
                   </button>

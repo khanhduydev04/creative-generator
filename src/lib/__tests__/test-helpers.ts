@@ -4,7 +4,7 @@ export async function setupTestUser(opts: { email?: string } = {}): Promise<{ us
   const admin = createAdminClient();
   const email =
     opts.email ??
-    `test-${Date.now()}-${Math.random().toString(36).slice(2)}@adlance-test.com`;
+    `test-${Date.now()}-${Math.random().toString(36).slice(2)}@ladospice-test.com`;
   const { data, error } = await admin.auth.admin.createUser({
     email,
     password: "Test1234!",

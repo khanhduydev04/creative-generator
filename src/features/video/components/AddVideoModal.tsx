@@ -1,4 +1,4 @@
-// Client Component: modal to add TikTok URL manually
+﻿// Client Component: modal to add TikTok URL manually
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -65,7 +65,7 @@ export function AddVideoModal({ onClose, onAdd }: AddVideoModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-foreground-muted hover:bg-white/[0.05] hover:text-foreground"
+            className="rounded-lg p-1.5 text-foreground-muted hover:bg-black/[0.05] hover:text-foreground"
           >
             <X className="h-4 w-4" />
           </button>

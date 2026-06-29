@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Sign In",
-  description: "Sign in to your Adlance account to create AI-powered ads.",
+  description: "Sign in to Ladospice to create AI-powered creative assets.",
 };
 
 export default async function LoginPage() {
@@ -27,7 +27,7 @@ export default async function LoginPage() {
         {/* Brand mark above card */}
         <div className="mb-8 flex flex-col items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground text-xl font-bold shadow-lg shadow-primary/20">
-            A
+            L
           </div>
           <p className="text-sm text-foreground-muted">{BRANDING.appTagline}</p>
         </div>

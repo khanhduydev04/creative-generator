@@ -5,7 +5,6 @@ import { useAuth } from "@/features/auth/context";
 import { useT } from "@/lib/i18n/useTranslation";
 import { RoleBadge } from "@/components/shared/RoleBadge";
 import { ChangePasswordForm } from "@/components/auth/ChangePasswordForm";
-import { UserApiKeysCard } from "@/components/settings/UserApiKeysCard";
 import {
   Building2,
   Calendar,
@@ -118,8 +117,6 @@ export function SettingsClient() {
       {/* Change Password */}
       <ChangePasswordForm />
 
-      {/* BYOK API Keys */}
-      <UserApiKeysCard />
     </div>
   );
 }

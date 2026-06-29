@@ -1,4 +1,4 @@
-// Client Component: status tab filter + search input
+﻿// Client Component: status tab filter + search input
 "use client";
 
 import { useT } from "@/lib/i18n/useTranslation";
@@ -42,7 +42,7 @@ export function VideoStatusFilter({
             className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
               activeStatus === tab.key
                 ? "bg-primary/10 text-primary"
-                : "text-foreground-muted hover:bg-white/[0.04] hover:text-foreground"
+                : "text-foreground-muted hover:bg-black/[0.04] hover:text-foreground"
             }`}
           >
             {tab.label}
