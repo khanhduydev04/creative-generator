@@ -4,17 +4,8 @@ import { requireUser, handleApiError } from "@/lib/user-context";
 import { ScriptService } from "@/services/scriptService";
 import { TranscriptService } from "@/services/transcriptService";
 import { claudeStreamGenerate, CLAUDE_SONNET_MODEL } from "@/services/claudeClient";
+import { buildScriptSystemPrompt } from "@/services/scriptPrompt";
 import type { CreateScriptRequest } from "@/features/video/types";
-
-// ─── Constants ───────────────────────────────────────────────────────────────
-
-const MAX_SCRIPT_WORDS = 300;
-
-const TONE_MAP: Record<string, string> = {
-  humor: "Hài hước, gần gũi, vui vẻ",
-  authentic: "Chân thực, tự nhiên, tin cậy",
-  dramatic: "Kịch tính, mạnh mẽ, ấn tượng",
-};
 
 // ─── SSE Helper ──────────────────────────────────────────────────────────────
 
@@ -113,36 +104,40 @@ export async function POST(request: NextRequest): Promise<Response> {
         }
 
         // Fetch optional product context
-        let productLine = "";
+        let productName: string | null = null;
+        let productDescription: string | null = null;
+        let productAttributes: string | null = null;
+        let productTargetAudience: string | null = null;
+        let productSellingPoints: string | null = null;
         if (body.productId) {
           const { data: product } = await supabase
             .from("brand_products")
-            .select("name, description")
+            .select("name, description, attributes, target_audience, selling_points")
             .eq("id", body.productId)
             .single();
 
           if (product) {
-            productLine = `\nProduct: ${product.name} — ${product.description}`;
+            productName = product.name;
+            productDescription = product.description;
+            productAttributes = product.attributes;
+            productTargetAudience = product.target_audience;
+            productSellingPoints = product.selling_points;
           }
         }
 
         // Build system prompt
-        const { tone, notes } = body.promptConfig;
-        const toneLabel = TONE_MAP[tone] ?? tone;
-        const notesLine = notes ? `\nNotes: ${notes}` : "";
-
-        const systemPrompt =
-          `You are a TikTok copywriter for brand ${brand.name}.\n` +
-          `Brand description: ${brand.description}` +
-          productLine +
-          `\nTone: ${toneLabel}` +
-          notesLine +
-          `\n\nTask: Convert the following TikTok transcript into a brand-adapted script.\n` +
-          `- Keep the energy and structure of the original\n` +
-          `- Replace with brand messaging for ${brand.name}\n` +
-          `- Natural Vietnamese language, appropriate for TikTok\n` +
-          `- Max ${MAX_SCRIPT_WORDS} words\n` +
-          `- Return only the script, no explanation`;
+        const { tone, notes, attributes, targetAudience, sellingPoints } = body.promptConfig;
+        const systemPrompt = buildScriptSystemPrompt({
+          brandName: brand.name,
+          brandDescription: brand.description,
+          productName,
+          productDescription,
+          attributes: attributes ?? productAttributes ?? null,
+          targetAudience: targetAudience ?? productTargetAudience ?? null,
+          sellingPoints: sellingPoints ?? productSellingPoints ?? null,
+          tone,
+          notes,
+        });
 
         // Stream generation
         const rawText = await claudeStreamGenerate(
@@ -158,6 +153,9 @@ export async function POST(request: NextRequest): Promise<Response> {
           tone,
           notes,
           productId: body.productId,
+          attributes: attributes ?? null,
+          targetAudience: targetAudience ?? null,
+          sellingPoints: sellingPoints ?? null,
         };
         const script = await scriptService.create(
           body.transcriptId,

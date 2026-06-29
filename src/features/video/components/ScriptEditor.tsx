@@ -10,6 +10,9 @@ import type { BrandScript, CreateScriptRequest } from "@/features/video/types";
 interface ProductOption {
   id: string;
   name: string;
+  attributes: string | null;
+  target_audience: string | null;
+  selling_points: string | null;
 }
 
 interface ScriptEditorProps {
@@ -42,6 +45,9 @@ export function ScriptEditor({
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [tone, setTone] = useState<Tone>("authentic");
   const [notes, setNotes] = useState("");
+  const [attributes, setAttributes] = useState("");
+  const [targetAudience, setTargetAudience] = useState("");
+  const [sellingPoints, setSellingPoints] = useState("");
   const [streamedText, setStreamedText] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [streamError, setStreamError] = useState<string | null>(null);
@@ -54,6 +60,15 @@ export function ScriptEditor({
     authentic: t.video.toneAuthentic,
     dramatic: t.video.toneDramatic,
   };
+
+  function handleSelectProduct(productId: string) {
+    const id = productId || null;
+    setSelectedProductId(id);
+    const product = products.find((p) => p.id === id);
+    setAttributes(product?.attributes ?? "");
+    setTargetAudience(product?.target_audience ?? "");
+    setSellingPoints(product?.selling_points ?? "");
+  }
 
   async function handleGenerate() {
     if (!transcriptId) return;
@@ -68,7 +83,13 @@ export function ScriptEditor({
       transcriptId,
       brandId,
       productId: selectedProductId,
-      promptConfig: { tone, notes },
+      promptConfig: {
+        tone,
+        notes,
+        attributes: attributes.trim() || null,
+        targetAudience: targetAudience.trim() || null,
+        sellingPoints: sellingPoints.trim() || null,
+      },
     };
 
     try {
@@ -150,7 +171,7 @@ export function ScriptEditor({
           </label>
           <select
             value={selectedProductId ?? ""}
-            onChange={(e) => setSelectedProductId(e.target.value || null)}
+            onChange={(e) => handleSelectProduct(e.target.value)}
             className="w-full rounded-lg border border-border/40 bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
           >
             <option value="">{t.video.noProduct}</option>
@@ -188,6 +209,32 @@ export function ScriptEditor({
           />
         </div>
       </div>
+
+      {selectedProductId && (
+        <details key={selectedProductId ?? ""} className="rounded-xl border border-border/40 bg-background-subtle p-3" open>
+          <summary className="cursor-pointer text-sm font-medium text-foreground-muted">
+            {t.video.productConfigTitle}
+          </summary>
+          <p className="mt-1 mb-3 text-xs text-foreground-subtle">{t.video.productConfigHint}</p>
+          <div className="space-y-3">
+            <div>
+              <label className="mb-1 block text-xs font-medium text-foreground-muted">{t.video.attributesLabel}</label>
+              <textarea value={attributes} onChange={(e) => setAttributes(e.target.value)} rows={2}
+                className="w-full resize-none rounded-lg border border-border/40 bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-foreground-muted">{t.video.targetAudienceLabel}</label>
+              <textarea value={targetAudience} onChange={(e) => setTargetAudience(e.target.value)} rows={2}
+                className="w-full resize-none rounded-lg border border-border/40 bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-foreground-muted">{t.video.sellingPointsLabel}</label>
+              <textarea value={sellingPoints} onChange={(e) => setSellingPoints(e.target.value)} rows={2}
+                className="w-full resize-none rounded-lg border border-border/40 bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
+            </div>
+          </div>
+        </details>
+      )}
 
       <button
         type="button"

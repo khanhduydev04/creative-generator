@@ -60,6 +60,9 @@ export interface PromptConfig {
   tone?: string;
   notes?: string;
   productId?: string | null;
+  attributes?: string | null;
+  targetAudience?: string | null;
+  sellingPoints?: string | null;
 }
 
 export interface BrandScript {
@@ -84,7 +87,13 @@ export interface CreateScriptRequest {
   transcriptId: string;
   brandId: string;
   productId: string | null;
-  promptConfig: { tone: string; notes: string };
+  promptConfig: {
+    tone: string;
+    notes: string;
+    attributes?: string | null;
+    targetAudience?: string | null;
+    sellingPoints?: string | null;
+  };
 }
 
 export interface PatchScriptRequest {
