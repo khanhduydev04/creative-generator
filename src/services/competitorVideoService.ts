@@ -81,7 +81,6 @@ export class CompetitorVideoService {
     const rows = items
       .filter((item) => item.webVideoUrl?.includes("tiktok.com"))
       .map((item) => ({
-        brand_id: brandId,
         tiktok_url: item.webVideoUrl!,
         video_id: item.id ?? extractTikTokVideoId(item.webVideoUrl!),
         views: item.playCount ?? null,
@@ -96,19 +95,21 @@ export class CompetitorVideoService {
         scraped_at: item.createTime
           ? new Date(item.createTime * 1000).toISOString()
           : new Date().toISOString(),
-        apify_run_id: apifyRunId ?? null,
-        status: "pending" as const,
-        scrape_status: "success" as const,
       }));
 
     if (rows.length === 0) return 0;
 
-    const { error } = await this.supabase
-      .from("competitor_videos")
-      .upsert(rows, { onConflict: "brand_id,tiktok_url", ignoreDuplicates: false });
+    // RPC preserves human-set status on conflict — only metrics are updated.
+    // brand_id, status='pending', scrape_status='success' are set by the function.
+    const { data, error } = await this.supabase.rpc("upsert_competitor_videos", {
+      p_brand_id: brandId,
+      p_videos: rows,
+      p_apify_run_id: apifyRunId ?? null,
+    });
 
     if (error) throw new Error(error.message);
-    return rows.length;
+    // Safe: RPC returns integer row count
+    return typeof data === "number" ? data : rows.length;
   }
 }
 
