@@ -36,6 +36,7 @@ export interface FetchCdnResponse {
 
 export interface CompetitorVideosResponse {
   videos: CompetitorVideo[];
+  total: number;
 }
 
 export interface AddVideoResponse {

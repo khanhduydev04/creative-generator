@@ -21,20 +21,36 @@ export class CompetitorVideoService {
     private readonly userId: string,
   ) {}
 
-  async listVideos(brandId: string, status?: VideoStatus): Promise<CompetitorVideo[]> {
+  async listVideos(
+    brandId: string,
+    status?: VideoStatus,
+    page = 1,
+    limit = 20,
+    q?: string,
+  ): Promise<{ videos: CompetitorVideo[]; total: number }> {
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
     let query = this.supabase
       .from("competitor_videos")
-      .select("*")
+      .select("*", { count: "exact" })
       .eq("brand_id", brandId)
-      .order("views", { ascending: false, nullsFirst: false });
+      // Newest-first within null-views group so manually-added videos surface at top
+      .order("views", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false })
+      .range(from, to);
 
     if (status) {
       query = query.eq("status", status);
     }
+    if (q && q.trim()) {
+      const like = `%${q.trim()}%`;
+      query = query.or(`tiktok_url.ilike.${like},author_handle.ilike.${like}`);
+    }
 
-    const { data, error } = await query;
+    const { data, error, count } = await query;
     if (error) throw new Error(error.message);
-    return (data ?? []) as CompetitorVideo[];
+    return { videos: (data ?? []) as CompetitorVideo[], total: count ?? 0 };
   }
 
   async addVideo(brandId: string, tiktokUrl: string): Promise<CompetitorVideo> {

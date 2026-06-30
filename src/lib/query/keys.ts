@@ -31,10 +31,9 @@ export const queryKeys = {
     stats: (days: number) => ["admin", "stats", days] as const,
   },
   competitorVideos: {
-    list: (brandId: string, status?: string) =>
-      status
-        ? (["competitor-videos", brandId, status] as const)
-        : (["competitor-videos", brandId] as const),
+    all: (brandId: string) => ["competitor-videos", brandId] as const,
+    list: (brandId: string, status: string, page: number, q?: string) =>
+      ["competitor-videos", brandId, status, page, q ?? ""] as const,
   },
   transcripts: {
     detail: (videoId: string) => ["transcripts", videoId] as const,

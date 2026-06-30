@@ -1,18 +1,16 @@
-﻿// Client Component: status tab filter + search input
+// Client Component: status tab filter + search input
 "use client";
 
 import { useT } from "@/lib/i18n/useTranslation";
 import { Search } from "lucide-react";
 import type { VideoStatus } from "@/features/video/types";
 
-type FilterStatus = VideoStatus | "all";
-
 interface VideoStatusFilterProps {
-  activeStatus: FilterStatus;
-  onStatusChange: (status: FilterStatus) => void;
+  activeStatus: VideoStatus;
+  onStatusChange: (status: VideoStatus) => void;
   search: string;
   onSearchChange: (value: string) => void;
-  counts: Record<FilterStatus, number>;
+  activeTotal: number;
 }
 
 export function VideoStatusFilter({
@@ -20,12 +18,11 @@ export function VideoStatusFilter({
   onStatusChange,
   search,
   onSearchChange,
-  counts,
+  activeTotal,
 }: VideoStatusFilterProps) {
   const { t } = useT();
 
-  const tabs: { key: FilterStatus; label: string }[] = [
-    { key: "all", label: t.video.filterAll },
+  const tabs: { key: VideoStatus; label: string }[] = [
     { key: "pending", label: t.video.filterPending },
     { key: "winner", label: t.video.filterWinner },
     { key: "rejected", label: t.video.filterRejected },
@@ -46,15 +43,9 @@ export function VideoStatusFilter({
             }`}
           >
             {tab.label}
-            {counts[tab.key] > 0 && (
-              <span
-                className={`rounded-full px-1.5 py-0.5 text-xs ${
-                  activeStatus === tab.key
-                    ? "bg-primary/20 text-primary"
-                    : "bg-background-elevated text-foreground-subtle"
-                }`}
-              >
-                {counts[tab.key]}
+            {activeStatus === tab.key && activeTotal > 0 && (
+              <span className="rounded-full bg-primary/20 px-1.5 py-0.5 text-xs text-primary">
+                {activeTotal}
               </span>
             )}
           </button>

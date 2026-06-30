@@ -24,6 +24,8 @@ export function CompetitorVideoCard({ video, onStatusChange }: CompetitorVideoCa
   const { t } = useT();
   const [showPreview, setShowPreview] = useState(false);
   const [updating, setUpdating] = useState(false);
+  // Cache CDN URL after first fetch so "xem lại" reuses it without an extra API call
+  const [cachedCdnUrl, setCachedCdnUrl] = useState<string | null>(null);
 
   const statusLabel: Record<VideoStatus, string> = {
     pending: t.video.statusPending,
@@ -179,6 +181,8 @@ export function CompetitorVideoCard({ video, onStatusChange }: CompetitorVideoCa
               <VideoPlayer
                 tiktokUrl={video.tiktok_url}
                 fetchCdnPath={`/api/video/competitors/${video.id}/fetch-cdn`}
+                initialCdnUrl={cachedCdnUrl}
+                onCdnResolved={setCachedCdnUrl}
               />
             </div>
           </div>,

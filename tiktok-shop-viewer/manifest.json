@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "TikTok Shop Viewer",
+  "version": "1.0.0",
+  "description": "Xem video TikTok Shop bị chặn trên web bằng cách lấy link CDN trực tiếp qua tikwm.com API.",
+  "permissions": [],
+  "host_permissions": [
+    "https://www.tiktok.com/*",
+    "https://tikwm.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://www.tiktok.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "TikTok Shop Viewer"
+  },
+  "icons": {
+    "128": "icon128.png"
+  }
+}

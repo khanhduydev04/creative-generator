@@ -1,8 +1,8 @@
-﻿// Client Component: uses state for filter, search, and modal
+// Client Component: uses state for filter, search, pagination, and modal
 "use client";
 
-import { useState } from "react";
-import { Plus } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight, Plus, RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useApp } from "@/features/app/context";
@@ -19,23 +19,51 @@ import type { CompetitorVideo, VideoStatus } from "@/features/video/types";
 import { apiFetch } from "@/lib/api";
 import { queryKeys } from "@/lib/query/keys";
 
-type FilterStatus = VideoStatus | "all";
+const PAGE_SIZE = 20;
 
 export default function CompetitorVideosPage() {
   const { t } = useT();
   const { selectedBrandId } = useApp();
-  const [activeStatus, setActiveStatus] = useState<FilterStatus>("all");
+  const [activeStatus, setActiveStatus] = useState<VideoStatus>("pending");
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [showSyncModal, setShowSyncModal] = useState(false);
-  const [datasetId, setDatasetId] = useState("");
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
 
+  // Debounce search to avoid a request per keystroke
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(id);
+  }, [search]);
+
   const queryClient = useQueryClient();
-  const { data: videos = [], isLoading } = useCompetitorVideos(selectedBrandId);
+  const { data, isLoading } = useCompetitorVideos(
+    selectedBrandId,
+    activeStatus,
+    page,
+    debouncedSearch || undefined,
+  );
+  const videos: CompetitorVideo[] = data?.videos ?? [];
+  const total: number = data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
   const addVideo = useAddCompetitorVideo();
   const updateStatus = useUpdateVideoStatus();
+
+  function handleStatusChange(status: VideoStatus) {
+    setActiveStatus(status);
+    setPage(1);
+    setSearch("");
+    setDebouncedSearch("");
+  }
+
+  function handleSearchChange(value: string) {
+    setSearch(value);
+    setPage(1);
+  }
 
   async function handleAddVideo(tiktokUrl: string) {
     if (!selectedBrandId) return;
@@ -43,18 +71,18 @@ export default function CompetitorVideosPage() {
   }
 
   async function handleSync() {
-    if (!selectedBrandId || !datasetId.trim()) return;
+    if (!selectedBrandId) return;
     setSyncing(true);
     setSyncMessage(null);
     try {
-      const result = await apiFetch<{ upserted: number }>("/api/video/sync-apify", {
+      const result = await apiFetch<{ upserted: number }>("/api/video/apify-config/sync", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ brandId: selectedBrandId, apifyDatasetId: datasetId.trim() }),
+        body: JSON.stringify({ brandId: selectedBrandId }),
       });
       setSyncMessage(t.video.syncSuccess.replace("{0}", String(result.upserted)));
-      await queryClient.invalidateQueries({ queryKey: queryKeys.competitorVideos.list(selectedBrandId) });
-      setTimeout(() => { setShowSyncModal(false); setSyncMessage(null); setDatasetId(""); }, 1500);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.competitorVideos.all(selectedBrandId) });
+      setTimeout(() => { setShowSyncModal(false); setSyncMessage(null); }, 1500);
     } catch {
       setSyncMessage(t.video.syncFailed);
     } finally {
@@ -62,29 +90,12 @@ export default function CompetitorVideosPage() {
     }
   }
 
-  async function handleStatusChange(videoId: string, status: VideoStatus) {
+  async function handleStatusChange2(videoId: string, status: VideoStatus) {
     if (!selectedBrandId) return;
     await updateStatus.mutateAsync({ videoId, status, brandId: selectedBrandId });
   }
 
-  const filteredVideos = videos.filter((v: CompetitorVideo) => {
-    if (activeStatus !== "all" && v.status !== activeStatus) return false;
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      return (
-        v.tiktok_url.toLowerCase().includes(q) ||
-        (v.author_handle?.toLowerCase().includes(q) ?? false)
-      );
-    }
-    return true;
-  });
-
-  const counts: Record<FilterStatus, number> = {
-    all: videos.length,
-    pending: videos.filter((v: CompetitorVideo) => v.status === "pending").length,
-    winner: videos.filter((v: CompetitorVideo) => v.status === "winner").length,
-    rejected: videos.filter((v: CompetitorVideo) => v.status === "rejected").length,
-  };
+  const filteredVideos = videos;
 
   return (
     <DashboardLayout activePath="/app/video">
@@ -99,6 +110,7 @@ export default function CompetitorVideosPage() {
                 onClick={() => setShowSyncModal(true)}
                 className="flex items-center gap-2 rounded-xl border border-border/40 px-4 py-2.5 text-sm font-medium text-foreground-muted hover:bg-black/[0.04]"
               >
+                <RefreshCw className="h-4 w-4" />
                 {t.video.syncApify}
               </button>
               <button
@@ -123,10 +135,10 @@ export default function CompetitorVideosPage() {
             <div className="mb-6">
               <VideoStatusFilter
                 activeStatus={activeStatus}
-                onStatusChange={setActiveStatus}
+                onStatusChange={handleStatusChange}
                 search={search}
-                onSearchChange={setSearch}
-                counts={counts}
+                onSearchChange={handleSearchChange}
+                activeTotal={total}
               />
             </div>
 
@@ -162,11 +174,41 @@ export default function CompetitorVideosPage() {
                       <CompetitorVideoCard
                         key={video.id}
                         video={video}
-                        onStatusChange={handleStatusChange}
+                        onStatusChange={handleStatusChange2}
                       />
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-4 flex items-center justify-between">
+                <p className="text-sm text-foreground-subtle">
+                  {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} / {total}
+                </p>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/40 text-foreground-muted transition-colors hover:bg-black/[0.04] disabled:opacity-40"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <span className="px-3 text-sm text-foreground-muted">
+                    {page} / {totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/40 text-foreground-muted transition-colors hover:bg-black/[0.04] disabled:opacity-40"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             )}
           </>
@@ -183,38 +225,30 @@ export default function CompetitorVideosPage() {
       {showSyncModal && selectedBrandId && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm"
-          onClick={() => setShowSyncModal(false)}
+          onClick={() => !syncing && setShowSyncModal(false)}
         >
           <div
             onClick={(e) => e.stopPropagation()}
             className="w-full max-w-md rounded-2xl border border-border-strong/30 bg-background-elevated p-6 shadow-2xl"
           >
-            <h3 className="mb-4 text-lg font-semibold text-foreground">{t.video.syncApify}</h3>
-            <label className="mb-1 block text-sm font-medium text-foreground-muted">
-              {t.video.apifyDatasetId}
-            </label>
-            <input
-              type="text"
-              value={datasetId}
-              onChange={(e) => setDatasetId(e.target.value)}
-              placeholder={t.video.apifyDatasetIdPlaceholder}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-foreground-subtle focus:border-primary focus:outline-none"
-            />
+            <h3 className="mb-2 text-lg font-semibold text-foreground">{t.video.syncApify}</h3>
+            <p className="mb-5 text-sm text-foreground-muted">{t.video.syncApifyDesc}</p>
             {syncMessage && (
-              <p className="mt-2 text-sm text-foreground-muted">{syncMessage}</p>
+              <p className="mb-4 text-sm text-foreground-muted">{syncMessage}</p>
             )}
-            <div className="mt-5 flex justify-end gap-3">
+            <div className="flex justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setShowSyncModal(false)}
-                className="rounded-lg px-4 py-2 text-sm text-foreground-muted hover:text-foreground"
+                disabled={syncing}
+                className="rounded-lg px-4 py-2 text-sm text-foreground-muted hover:text-foreground disabled:opacity-50"
               >
-                {t.video.cancel}
+                {t.workspace.cancel}
               </button>
               <button
                 type="button"
                 onClick={() => void handleSync()}
-                disabled={!datasetId.trim() || syncing}
+                disabled={syncing}
                 className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-violet-500 disabled:opacity-50"
               >
                 {syncing ? t.video.syncing : t.video.syncApify}

@@ -6,12 +6,16 @@ import type { VideoStatus } from "@/features/video/types";
 
 const VALID_STATUSES: VideoStatus[] = ["pending", "winner", "rejected"];
 
+const PAGE_LIMIT = 20;
+
 export async function GET(request: NextRequest) {
   try {
     const { userId } = await requireUser(request);
     const { searchParams } = new URL(request.url);
     const brandId = searchParams.get("brandId");
     const status = searchParams.get("status") as VideoStatus | null;
+    const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
+    const q = searchParams.get("q") ?? undefined;
 
     if (!brandId) {
       return NextResponse.json({ error: "brandId is required" }, { status: 400 });
@@ -22,8 +26,8 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createClient();
     const service = new CompetitorVideoService(supabase, userId);
-    const videos = await service.listVideos(brandId, status ?? undefined);
-    return NextResponse.json({ videos });
+    const { videos, total } = await service.listVideos(brandId, status ?? undefined, page, PAGE_LIMIT, q);
+    return NextResponse.json({ videos, total, page, limit: PAGE_LIMIT });
   } catch (e) {
     return handleApiError(e);
   }

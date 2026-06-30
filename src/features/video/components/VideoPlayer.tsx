@@ -11,14 +11,18 @@ type PlayerState = "loading" | "loaded" | "failed";
 interface VideoPlayerProps {
   tiktokUrl: string;
   fetchCdnPath: string;
+  /** Pre-resolved CDN URL — if provided, skips the fetch-cdn API call. */
+  initialCdnUrl?: string | null;
+  onCdnResolved?: (url: string) => void;
 }
 
-export function VideoPlayer({ tiktokUrl, fetchCdnPath }: VideoPlayerProps) {
+export function VideoPlayer({ tiktokUrl, fetchCdnPath, initialCdnUrl, onCdnResolved }: VideoPlayerProps) {
   const { t } = useT();
-  const [state, setState] = useState<PlayerState>("loading");
-  const [cdnUrl, setCdnUrl] = useState<string | null>(null);
+  const [state, setState] = useState<PlayerState>(initialCdnUrl ? "loaded" : "loading");
+  const [cdnUrl, setCdnUrl] = useState<string | null>(initialCdnUrl ?? null);
 
   useEffect(() => {
+    if (initialCdnUrl) return;
     let cancelled = false;
     async function fetchCdn() {
       try {
@@ -27,6 +31,7 @@ export function VideoPlayer({ tiktokUrl, fetchCdnPath }: VideoPlayerProps) {
         if (res.cdnUrl) {
           setCdnUrl(res.cdnUrl);
           setState("loaded");
+          onCdnResolved?.(res.cdnUrl);
         } else {
           setState("failed");
         }
@@ -38,7 +43,7 @@ export function VideoPlayer({ tiktokUrl, fetchCdnPath }: VideoPlayerProps) {
     return () => {
       cancelled = true;
     };
-  }, [fetchCdnPath]);
+  }, [fetchCdnPath, initialCdnUrl, onCdnResolved]);
 
   if (state === "loading") {
     return (
@@ -60,6 +65,7 @@ export function VideoPlayer({ tiktokUrl, fetchCdnPath }: VideoPlayerProps) {
           src={cdnUrl}
           controls
           autoPlay
+          preload="metadata"
           className="absolute inset-0 h-full w-full object-contain"
         />
         <a

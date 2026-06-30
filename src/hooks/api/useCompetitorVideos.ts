@@ -9,18 +9,22 @@ import type {
   VideoStatus,
 } from "@/features/video/types";
 
-export function useCompetitorVideos(brandId: string | null, status?: VideoStatus) {
+export function useCompetitorVideos(
+  brandId: string | null,
+  status: VideoStatus = "pending",
+  page = 1,
+  q?: string,
+) {
   return useQuery({
-    queryKey: queryKeys.competitorVideos.list(brandId!, status),
+    queryKey: queryKeys.competitorVideos.list(brandId!, status, page, q),
     queryFn: () => {
-      const params = new URLSearchParams({ brandId: brandId! });
-      if (status) params.set("status", status);
+      const params = new URLSearchParams({ brandId: brandId!, status, page: String(page) });
+      if (q && q.trim()) params.set("q", q.trim());
       return apiFetch<CompetitorVideosResponse>(
         `/api/video/competitors?${params.toString()}`,
       );
     },
     enabled: !!brandId,
-    select: (data) => data.videos,
   });
 }
 
@@ -34,9 +38,7 @@ export function useAddCompetitorVideo() {
         body: JSON.stringify({ brandId, tiktokUrl }),
       }),
     onSuccess: (_data, { brandId }) => {
-      void qc.invalidateQueries({
-        queryKey: queryKeys.competitorVideos.list(brandId),
-      });
+      void qc.invalidateQueries({ queryKey: queryKeys.competitorVideos.all(brandId) });
     },
   });
 }
@@ -58,9 +60,7 @@ export function useUpdateVideoStatus() {
         body: JSON.stringify({ status }),
       }),
     onSuccess: (_data, { brandId }) => {
-      void qc.invalidateQueries({
-        queryKey: queryKeys.competitorVideos.list(brandId),
-      });
+      void qc.invalidateQueries({ queryKey: queryKeys.competitorVideos.all(brandId) });
     },
   });
 }
