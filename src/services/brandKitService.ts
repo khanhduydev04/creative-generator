@@ -22,48 +22,42 @@ export class BrandKitService {
     this.storage = new StorageService(supabase)
   }
 
-  /**
-   * Verify the current user owns the parent brand. Throws if not found.
-   */
-  private async verifyBrandOwnership(brandId: string): Promise<void> {
+  /** Verify the parent brand exists (not soft-deleted). RLS handles authz. */
+  private async verifyBrandExists(brandId: string): Promise<void> {
     const { data } = await this.supabase
       .from('brands')
       .select('id')
       .eq('id', brandId)
-      .eq('owner_user_id', this.userId)
+      .is('deleted_at', null)
       .single()
     if (!data) throw new ApiError(404, 'brand_not_found')
   }
 
   /**
    * Fetch the brand kit for a brand. Returns null if not yet created.
-   * Scoped via JOIN to brands.owner_user_id.
    */
   async getBrandKit(brandId: string): Promise<BrandKitRow | null> {
     const { data, error } = await this.supabase
       .from('brand_kits')
-      .select('*, brands!inner(owner_user_id)')
+      .select('*')
       .eq('brand_id', brandId)
-      .eq('brands.owner_user_id', this.userId)
       .maybeSingle()
 
     if (error) throw new ApiError(500, 'db_error', error.message)
     if (!data) return null
 
-    // Strip the joined brands column before returning the typed row
-    const { brands: _brands, ...kitRow } = data as BrandKitRow & { brands: unknown }
-    return kitRow as BrandKitRow
+    return data
   }
 
   /**
    * Upsert brand kit fields (create or update).
-   * Pre-flight verifies current user owns the parent brand.
+   * Pre-flight verifies the parent brand exists.
    */
   async saveBrandKit(
     brandId: string,
     fields: Omit<BrandKitUpdate, 'id' | 'brand_id' | 'updated_at'>,
   ): Promise<BrandKitRow> {
-    await this.verifyBrandOwnership(brandId)
+    await this.verifyBrandExists(brandId)
 
     const existing = await this.getBrandKit(brandId)
 

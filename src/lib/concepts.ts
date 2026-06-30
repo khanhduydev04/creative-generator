@@ -26,9 +26,9 @@ export function toConceptFromRow(row: ConceptPromptRow): Concept {
   return {
     id: row.concept_id,
     label: row.label,
-    description: row.description,
-    requiresCompetitor: row.requires_competitor,
-    referenceImages: row.reference_images,
+    description: row.description ?? "",
+    requiresCompetitor: row.requires_competitor ?? false,
+    referenceImages: row.reference_images ?? [],
   };
 }
 
@@ -37,9 +37,9 @@ export function toConceptWithPromptFromRow(row: ConceptPromptRow): ConceptWithPr
   return {
     id: row.concept_id,
     label: row.label,
-    description: row.description,
-    requiresCompetitor: row.requires_competitor,
-    referenceImages: row.reference_images,
+    description: row.description ?? "",
+    requiresCompetitor: row.requires_competitor ?? false,
+    referenceImages: row.reference_images ?? [],
     prompt: row.prompt,
   };
 }

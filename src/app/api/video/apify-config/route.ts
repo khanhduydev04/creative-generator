@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { requireUser, handleApiError } from "@/lib/user-context";
+import { verifyAdmin, isVerifyError } from "@/lib/auth/verify-admin";
 import { BrandApifyConfigService } from "@/services/brandApifyConfigService";
 
 interface PutApifyConfigBody {
@@ -27,7 +28,8 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    await requireUser(request);
+    const guard = await verifyAdmin();
+    if (isVerifyError(guard)) return guard;
     const body = (await request.json()) as PutApifyConfigBody;
 
     if (!body.brandId || !body.apifyTaskId) {

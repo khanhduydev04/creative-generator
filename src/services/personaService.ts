@@ -10,58 +10,50 @@ export class PersonaService {
     private userId: string,
   ) {}
 
-  /**
-   * Verify the current user owns the parent brand. Throws if not found.
-   */
-  private async verifyBrandOwnership(brandId: string): Promise<void> {
+  /** Verify the parent brand exists (not soft-deleted). RLS handles authz. */
+  private async verifyBrandExists(brandId: string): Promise<void> {
     const { data } = await this.supabase
       .from('brands')
       .select('id')
       .eq('id', brandId)
-      .eq('owner_user_id', this.userId)
+      .is('deleted_at', null)
       .single()
     if (!data) throw new ApiError(404, 'brand_not_found')
   }
 
   /**
-   * Fetch all active personas for a brand, scoped via JOIN to brands.owner_user_id.
+   * Fetch all active personas for a brand.
    */
   async getPersonasByBrand(brandId: string): Promise<PersonaRow[]> {
     const { data, error } = await this.supabase
       .from('persona_profiles')
-      .select('*, brands!inner(owner_user_id)')
+      .select('*')
       .eq('brand_id', brandId)
-      .eq('brands.owner_user_id', this.userId)
       .is('deleted_at', null)
       .order('created_at', { ascending: false })
 
     if (error) throw new ApiError(500, 'db_error', error.message)
-    if (!data) return []
-
-    // Strip the joined brands column before returning typed rows
-    return data.map(({ brands: _brands, ...row }) => row as PersonaRow)
+    return data ?? []
   }
 
   /**
-   * Fetch a single persona by id, scoped via JOIN to brands.owner_user_id.
+   * Fetch a single persona by id.
    */
   async getPersonaById(id: string): Promise<PersonaRow> {
     const { data, error } = await this.supabase
       .from('persona_profiles')
-      .select('*, brands!inner(owner_user_id)')
+      .select('*')
       .eq('id', id)
-      .eq('brands.owner_user_id', this.userId)
       .is('deleted_at', null)
       .single()
 
     if (error) throw new ApiError(404, 'persona_not_found')
 
-    const { brands: _brands, ...row } = data as PersonaRow & { brands: unknown }
-    return row as PersonaRow
+    return data as PersonaRow
   }
 
   /**
-   * Create a manual persona. Pre-flight verifies current user owns the parent brand.
+   * Create a manual persona. Pre-flight verifies the parent brand exists.
    */
   async createPersona(
     brandId: string,
@@ -73,7 +65,7 @@ export class PersonaService {
       researchSummaryId?: string
     },
   ): Promise<PersonaRow> {
-    await this.verifyBrandOwnership(brandId)
+    await this.verifyBrandExists(brandId)
 
     const { data, error } = await this.supabase
       .from('persona_profiles')

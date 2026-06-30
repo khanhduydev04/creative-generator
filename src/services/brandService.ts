@@ -11,13 +11,12 @@ export class BrandService {
   ) {}
 
   /**
-   * Fetch all active brands owned by the current user.
+   * Fetch all active brands accessible to any authenticated user (RLS enforces access).
    */
   async listBrands(): Promise<BrandRow[]> {
     const { data, error } = await this.supabase
       .from('brands')
       .select('*')
-      .eq('owner_user_id', this.userId)
       .is('deleted_at', null)
       .order('created_at', { ascending: false })
 
@@ -26,14 +25,13 @@ export class BrandService {
   }
 
   /**
-   * Fetch a single brand by id, scoped to the current user.
+   * Fetch a single brand by id (RLS enforces access control).
    */
   async getBrandById(id: string): Promise<BrandRow> {
     const { data, error } = await this.supabase
       .from('brands')
       .select('*')
       .eq('id', id)
-      .eq('owner_user_id', this.userId)
       .is('deleted_at', null)
       .single()
 
@@ -56,7 +54,7 @@ export class BrandService {
   }
 
   /**
-   * Update brand name and/or description, scoped to the current user.
+   * Update brand name and/or description (RLS enforces access control).
    */
   async updateBrand(
     id: string,
@@ -66,7 +64,6 @@ export class BrandService {
       .from('brands')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', id)
-      .eq('owner_user_id', this.userId)
       .select()
       .single()
 

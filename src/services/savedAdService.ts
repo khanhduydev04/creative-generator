@@ -11,22 +11,20 @@ export class SavedAdService {
     private userId: string,
   ) {}
 
-  /**
-   * Verify the current user owns the parent brand. Throws if not found.
-   */
-  private async verifyBrandOwnership(brandId: string): Promise<void> {
+  /** Verify the parent brand exists (not soft-deleted). RLS handles authz. */
+  private async verifyBrandExists(brandId: string): Promise<void> {
     const { data } = await this.supabase
       .from("brands")
       .select("id")
       .eq("id", brandId)
-      .eq("owner_user_id", this.userId)
+      .is("deleted_at", null)
       .single();
     if (!data) throw new ApiError(404, "brand_not_found");
   }
 
   /**
    * List saved ads for a brand, optionally filtered by product.
-   * Scoped via JOIN to brands.owner_user_id. Returns newest first.
+   * Returns newest first.
    */
   async getByBrandId(
     brandId: string,
@@ -34,9 +32,8 @@ export class SavedAdService {
   ): Promise<SavedAdRow[]> {
     let query = this.supabase
       .from("saved_ads")
-      .select("*, brands!inner(owner_user_id)")
+      .select("*")
       .eq("brand_id", brandId)
-      .eq("brands.owner_user_id", this.userId)
       .order("created_at", { ascending: false });
 
     if (productId) {
@@ -45,17 +42,14 @@ export class SavedAdService {
 
     const { data, error } = await query;
     if (error) throw new ApiError(500, "db_error", error.message);
-    if (!data) return [];
-
-    // Strip the joined brands column before returning typed rows
-    return data.map(({ brands: _brands, ...row }) => row as SavedAdRow);
+    return data ?? [];
   }
 
   /**
-   * Create a saved ad. Pre-flight verifies current user owns the parent brand.
+   * Create a saved ad. Pre-flight verifies the parent brand exists.
    */
   async create(ad: SavedAdInsert): Promise<SavedAdRow> {
-    await this.verifyBrandOwnership(ad.brand_id);
+    await this.verifyBrandExists(ad.brand_id);
 
     const { data, error } = await this.supabase
       .from("saved_ads")
@@ -68,13 +62,13 @@ export class SavedAdService {
   }
 
   /**
-   * Resolve brand IDs owned by the current user (used for scoping deletes).
+   * Resolve brand IDs visible to the current user (used for scoping deletes).
+   * RLS on brands restricts results to the current user's accessible brands.
    */
   private async getOwnedBrandIds(): Promise<string[]> {
     const { data, error } = await this.supabase
       .from("brands")
-      .select("id")
-      .eq("owner_user_id", this.userId);
+      .select("id");
     if (error) throw new ApiError(500, "db_error", error.message);
     return (data ?? []).map((b) => b.id);
   }

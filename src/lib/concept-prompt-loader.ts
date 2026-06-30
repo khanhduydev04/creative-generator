@@ -36,7 +36,7 @@ export async function loadConceptPrompt(
       conceptId: row.concept_id,
       label: row.label,
       prompt: row.prompt,
-      referenceImages: row.reference_images,
+      referenceImages: row.reference_images ?? [],
     };
   } catch (err) {
     console.warn(

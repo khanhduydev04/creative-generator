@@ -12,63 +12,53 @@ export class BrandProductService {
     private userId: string,
   ) {}
 
-  /**
-   * Verify the current user owns the parent brand. Throws if not found.
-   */
-  private async verifyBrandOwnership(brandId: string): Promise<void> {
+  /** Verify the parent brand exists (not soft-deleted). RLS handles authz. */
+  private async verifyBrandExists(brandId: string): Promise<void> {
     const { data } = await this.supabase
       .from('brands')
       .select('id')
       .eq('id', brandId)
-      .eq('owner_user_id', this.userId)
+      .is('deleted_at', null)
       .single()
     if (!data) throw new ApiError(404, 'brand_not_found')
   }
 
   /**
-   * List products for a brand, scoped via JOIN to brands.owner_user_id.
+   * List products for a brand.
    */
   async getByBrandId(brandId: string): Promise<BrandProductRow[]> {
     const { data, error } = await this.supabase
       .from('brand_products')
-      .select('*, brands!inner(owner_user_id)')
+      .select('*')
       .eq('brand_id', brandId)
-      .eq('brands.owner_user_id', this.userId)
       .order('created_at', { ascending: false })
 
     if (error) throw new ApiError(500, 'db_error', error.message)
-    if (!data) return []
-
-    // Strip the joined brands column before returning typed rows
-    return data.map(({ brands: _brands, ...row }) => row as BrandProductRow)
+    return data ?? []
   }
 
   /**
-   * Fetch a single product by id, scoped via JOIN to brands.owner_user_id.
+   * Fetch a single product by id.
    */
   async getById(id: string): Promise<BrandProductRow | null> {
     const { data, error } = await this.supabase
       .from('brand_products')
-      .select('*, brands!inner(owner_user_id)')
+      .select('*')
       .eq('id', id)
-      .eq('brands.owner_user_id', this.userId)
       .single()
 
     if (error) {
       if (error.code === 'PGRST116') return null
       throw new ApiError(500, 'db_error', error.message)
     }
-    if (!data) return null
-
-    const { brands: _brands, ...row } = data as BrandProductRow & { brands: unknown }
-    return row as BrandProductRow
+    return data ?? null
   }
 
   /**
-   * Create a product. Pre-flight verifies current user owns the parent brand.
+   * Create a product. Pre-flight verifies the parent brand exists.
    */
   async create(product: BrandProductInsert): Promise<BrandProductRow> {
-    await this.verifyBrandOwnership(product.brand_id)
+    await this.verifyBrandExists(product.brand_id)
 
     const { data, error } = await this.supabase
       .from('brand_products')
@@ -81,7 +71,7 @@ export class BrandProductService {
   }
 
   /**
-   * Update a product, scoped via JOIN to brands.owner_user_id.
+   * Update a product. Pre-flight verifies the product exists via RLS-scoped getById.
    */
   async update(id: string, updates: BrandProductUpdate): Promise<BrandProductRow> {
     // Verify ownership via the existing getById check

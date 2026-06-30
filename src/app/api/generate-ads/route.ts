@@ -315,7 +315,7 @@ export async function POST(request: NextRequest): Promise<Response> {
                   const supabaseCache = await createClient();
                   const svc = new BrandProductService(supabaseCache, userId);
                   await svc.update(body.productId, {
-                    cached_product_context: productContext as unknown as Record<string, unknown>,
+                    cached_product_context: productContext as unknown as import("@/types/database.types").Json,
                     context_cached_at: new Date().toISOString(),
                   });
                   console.log("[generate-ads] Auto-cached product context for", body.productId);

@@ -295,6 +295,7 @@ function DeleteConfirm({
 export function DashboardLayout({ children, activePath }: DashboardLayoutProps) {
   const { selectedBrandId, setSelectedBrandId } = useApp();
   const { profile, loading: authLoading, signOut } = useAuth();
+  const canManageBrands = Boolean(profile && isAdmin(profile.role));
   const { t } = useT();
   const { data: brands = [], isLoading: loading } = useBrands();
   const createBrand = useCreateBrand();
@@ -545,16 +546,18 @@ export function DashboardLayout({ children, activePath }: DashboardLayoutProps) 
                     {brand.name}
                   </button>
                 ))}
-                <div className={brands.length > 0 ? "mt-1 border-t border-border pt-1" : ""}>
-                  <button
-                    type="button"
-                    onClick={() => { setDropdownOpen(false); setModal({ type: "new" }); }}
-                    className="flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-primary hover:bg-primary/5"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    {t.nav.newBrand}
-                  </button>
-                </div>
+                {canManageBrands && (
+                  <div className={brands.length > 0 ? "mt-1 border-t border-border pt-1" : ""}>
+                    <button
+                      type="button"
+                      onClick={() => { setDropdownOpen(false); setModal({ type: "new" }); }}
+                      className="flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-primary hover:bg-primary/5"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      {t.nav.newBrand}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -568,14 +571,16 @@ export function DashboardLayout({ children, activePath }: DashboardLayoutProps) 
                   <Pencil className="h-3.5 w-3.5 text-foreground-subtle" />
                   {t.nav.rename}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => { setBrandActionsOpen(false); setModal({ type: "delete", brandId: selectedBrand.id, brandName: selectedBrand.name }); }}
-                  className="flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-sm text-danger hover:bg-danger/5"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  {t.nav.delete}
-                </button>
+                {canManageBrands && (
+                  <button
+                    type="button"
+                    onClick={() => { setBrandActionsOpen(false); setModal({ type: "delete", brandId: selectedBrand.id, brandName: selectedBrand.name }); }}
+                    className="flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-sm text-danger hover:bg-danger/5"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    {t.nav.delete}
+                  </button>
+                )}
               </div>
             )}
           </div>

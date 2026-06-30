@@ -14,63 +14,53 @@ export class StealthSceneService {
     private userId: string,
   ) {}
 
-  /**
-   * Verify the current user owns the parent brand. Throws if not found.
-   */
-  private async verifyBrandOwnership(brandId: string): Promise<void> {
+  /** Verify the parent brand exists (not soft-deleted). RLS handles authz. */
+  private async verifyBrandExists(brandId: string): Promise<void> {
     const { data } = await this.supabase
       .from("brands")
       .select("id")
       .eq("id", brandId)
-      .eq("owner_user_id", this.userId)
+      .is("deleted_at", null)
       .single();
     if (!data) throw new ApiError(404, "brand_not_found");
   }
 
   /**
-   * List stealth scenes for a brand, scoped via JOIN to brands.owner_user_id.
+   * List stealth scenes for a brand.
    */
   async getByBrandId(brandId: string): Promise<StealthSceneRow[]> {
     const { data, error } = await this.supabase
       .from("stealth_scenes")
-      .select("*, brands!inner(owner_user_id)")
+      .select("*")
       .eq("brand_id", brandId)
-      .eq("brands.owner_user_id", this.userId)
       .order("created_at", { ascending: true });
 
     if (error) throw new ApiError(500, "db_error", error.message);
-    if (!data) return [];
-
-    // Strip the joined brands column before returning typed rows
-    return data.map(({ brands: _brands, ...row }) => row as StealthSceneRow);
+    return data ?? [];
   }
 
   /**
-   * Fetch a single stealth scene by id, scoped via JOIN to brands.owner_user_id.
+   * Fetch a single stealth scene by id.
    */
   async getById(id: string): Promise<StealthSceneRow | null> {
     const { data, error } = await this.supabase
       .from("stealth_scenes")
-      .select("*, brands!inner(owner_user_id)")
+      .select("*")
       .eq("id", id)
-      .eq("brands.owner_user_id", this.userId)
       .single();
 
     if (error) {
       if (error.code === "PGRST116") return null;
       throw new ApiError(500, "db_error", error.message);
     }
-    if (!data) return null;
-
-    const { brands: _brands, ...row } = data as StealthSceneRow & { brands: unknown };
-    return row as StealthSceneRow;
+    return data ?? null;
   }
 
   /**
-   * Create a stealth scene. Pre-flight verifies current user owns the parent brand.
+   * Create a stealth scene. Pre-flight verifies the parent brand exists.
    */
   async create(input: StealthSceneInsert): Promise<StealthSceneRow> {
-    await this.verifyBrandOwnership(input.brand_id);
+    await this.verifyBrandExists(input.brand_id);
 
     const { data, error } = await this.supabase
       .from("stealth_scenes")

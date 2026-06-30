@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { requireUser, handleApiError } from '@/lib/user-context'
+import { verifyAdmin, isVerifyError } from '@/lib/auth/verify-admin'
 import { BrandService } from '@/services/brandService'
 
 export async function GET(request: NextRequest) {
@@ -17,7 +18,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await requireUser(request)
+    const guard = await verifyAdmin()
+    if (isVerifyError(guard)) return guard
+    const { userId } = guard
     const body: unknown = await request.json()
     if (typeof body !== 'object' || body === null) {
       return NextResponse.json({ error: 'Invalid body' }, { status: 400 })
