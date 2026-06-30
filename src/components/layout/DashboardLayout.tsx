@@ -293,7 +293,7 @@ function DeleteConfirm({
 
 /* ── Main layout ── */
 export function DashboardLayout({ children, activePath }: DashboardLayoutProps) {
-  const { selectedBrandId, setSelectedBrandId } = useApp();
+  const { selectedBrandId, setSelectedBrandId, brandHydrated } = useApp();
   const { profile, loading: authLoading, signOut } = useAuth();
   const canManageBrands = Boolean(profile && isAdmin(profile.role));
   const { t } = useT();
@@ -308,10 +308,14 @@ export function DashboardLayout({ children, activePath }: DashboardLayoutProps) 
   const [modal, setModal] = useState<ModalState>(null);
 
   useEffect(() => {
-    if (brands.length > 0 && !selectedBrandId) {
+    // Wait for the persisted brand to load before auto-selecting, otherwise we'd
+    // briefly overwrite the saved choice with the first brand on every reload.
+    if (!brandHydrated || brands.length === 0) return;
+    const savedStillExists = brands.some((b) => b.id === selectedBrandId);
+    if (!savedStillExists) {
       setSelectedBrandId(brands[0].id);
     }
-  }, [brands, selectedBrandId, setSelectedBrandId]);
+  }, [brandHydrated, brands, selectedBrandId, setSelectedBrandId]);
 
   useEffect(() => {
     if (!dropdownOpen && !userMenuOpen && !brandActionsOpen) return;

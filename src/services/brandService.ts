@@ -72,16 +72,21 @@ export class BrandService {
   }
 
   /**
-   * Soft delete a brand, scoped to the current user.
+   * Soft delete a brand. Admin-only: the DELETE route gates on verifyAdmin(),
+   * and DB RLS (brands_delete_admin) + the guard_brand_admin_columns trigger
+   * enforce that only admins may set deleted_at. We intentionally do NOT scope
+   * by owner_user_id — an admin may delete any brand, not just their own.
    */
   async deleteBrand(id: string): Promise<boolean> {
-    const { error } = await this.supabase
+    const { data, error } = await this.supabase
       .from('brands')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', id)
-      .eq('owner_user_id', this.userId)
+      .is('deleted_at', null)
+      .select('id')
 
     if (error) throw new ApiError(500, 'db_error', error.message)
+    if (!data || data.length === 0) throw new ApiError(404, 'brand_not_found')
     return true
   }
 }
