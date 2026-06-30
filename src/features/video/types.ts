@@ -1,3 +1,5 @@
+import type { TtsProvider, ElevenLabsModel } from "@/services/scriptPrompt";
+
 export type VideoStatus = "pending" | "winner" | "rejected";
 export type ScrapeStatus = "success" | "failed";
 
@@ -63,6 +65,8 @@ export interface PromptConfig {
   attributes?: string | null;
   targetAudience?: string | null;
   sellingPoints?: string | null;
+  ttsProvider?: TtsProvider;
+  elevenLabsModel?: ElevenLabsModel | null;
 }
 
 export interface BrandScript {
@@ -73,6 +77,8 @@ export interface BrandScript {
   raw_text: string | null;
   final_text: string | null;
   llm_model: string | null;
+  tts_provider: TtsProvider | null;
+  elevenlabs_model: ElevenLabsModel | null;
   created_at: string;
   updated_at: string;
 }
@@ -93,6 +99,8 @@ export interface CreateScriptRequest {
     attributes?: string | null;
     targetAudience?: string | null;
     sellingPoints?: string | null;
+    ttsProvider?: TtsProvider;
+    elevenLabsModel?: ElevenLabsModel | null;
   };
 }
 

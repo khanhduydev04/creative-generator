@@ -136,6 +136,7 @@ export type Database = {
           id: string
           images: string[]
           name: string
+          price: string | null
           primary_color_1: string | null
           primary_color_2: string | null
           product_url: string | null
@@ -156,6 +157,7 @@ export type Database = {
           id?: string
           images?: string[]
           name: string
+          price?: string | null
           primary_color_1?: string | null
           primary_color_2?: string | null
           product_url?: string | null
@@ -176,6 +178,7 @@ export type Database = {
           id?: string
           images?: string[]
           name?: string
+          price?: string | null
           primary_color_1?: string | null
           primary_color_2?: string | null
           product_url?: string | null
@@ -230,34 +233,40 @@ export type Database = {
         Row: {
           brand_id: string
           created_at: string
+          elevenlabs_model: string | null
           final_text: string | null
           id: string
           llm_model: string | null
           prompt_config: Json
           raw_text: string | null
           transcript_id: string
+          tts_provider: string
           updated_at: string
         }
         Insert: {
           brand_id: string
           created_at?: string
+          elevenlabs_model?: string | null
           final_text?: string | null
           id?: string
           llm_model?: string | null
           prompt_config?: Json
           raw_text?: string | null
           transcript_id: string
+          tts_provider?: string
           updated_at?: string
         }
         Update: {
           brand_id?: string
           created_at?: string
+          elevenlabs_model?: string | null
           final_text?: string | null
           id?: string
           llm_model?: string | null
           prompt_config?: Json
           raw_text?: string | null
           transcript_id?: string
+          tts_provider?: string
           updated_at?: string
         }
         Relationships: [

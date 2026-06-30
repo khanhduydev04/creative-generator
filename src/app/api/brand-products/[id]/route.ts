@@ -39,6 +39,7 @@ export async function PUT(
       attributes?: string | null
       target_audience?: string | null
       selling_points?: string | null
+      price?: string | null
     }
 
     if (body.images && body.images.length > 5) {

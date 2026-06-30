@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
       attributes?: string | null
       target_audience?: string | null
       selling_points?: string | null
+      price?: string | null
     }
 
     if (!body.brand_id || !body.name || !body.images?.length) {
@@ -59,6 +60,7 @@ export async function POST(request: NextRequest) {
       attributes: body.attributes ?? null,
       target_audience: body.target_audience ?? null,
       selling_points: body.selling_points ?? null,
+      price: body.price ?? null,
     })
 
     return NextResponse.json({ product }, { status: 201 })

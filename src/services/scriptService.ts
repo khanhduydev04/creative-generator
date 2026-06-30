@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { BrandScript, PromptConfig } from "@/features/video/types";
+import type { TtsProvider, ElevenLabsModel } from "@/services/scriptPrompt";
 
 export class ScriptService {
   constructor(private readonly supabase: SupabaseClient) {}
@@ -22,6 +23,8 @@ export class ScriptService {
     rawText: string,
     promptConfig: PromptConfig,
     llmModel: string,
+    ttsProvider: TtsProvider = "vbee",
+    elevenLabsModel: ElevenLabsModel | null = null,
   ): Promise<BrandScript> {
     const { data, error } = await this.supabase
       .from("brand_scripts")
@@ -31,6 +34,8 @@ export class ScriptService {
         raw_text: rawText,
         prompt_config: promptConfig,
         llm_model: llmModel,
+        tts_provider: ttsProvider,
+        elevenlabs_model: elevenLabsModel,
       })
       .select()
       .single();

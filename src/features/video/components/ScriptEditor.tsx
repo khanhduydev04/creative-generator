@@ -6,6 +6,7 @@ import { Loader2, Sparkles } from "lucide-react";
 import { useT } from "@/lib/i18n/useTranslation";
 import { usePatchScript } from "@/hooks/api/useScripts";
 import type { BrandScript, CreateScriptRequest } from "@/features/video/types";
+import type { TtsProvider, ElevenLabsModel } from "@/services/scriptPrompt";
 
 interface ProductOption {
   id: string;
@@ -54,6 +55,8 @@ export function ScriptEditor({
   const [savedScriptId, setSavedScriptId] = useState<string | null>(latestScript?.id ?? null);
   const [editedFinalText, setEditedFinalText] = useState(latestScript?.final_text ?? "");
   const [saved, setSaved] = useState(false);
+  const [ttsProvider, setTtsProvider] = useState<TtsProvider>("vbee");
+  const [elevenLabsModel, setElevenLabsModel] = useState<ElevenLabsModel>("eleven_flash_v2_5");
 
   const toneLabels: Record<Tone, string> = {
     humor: t.video.toneHumor,
@@ -89,6 +92,8 @@ export function ScriptEditor({
         attributes: attributes.trim() || null,
         targetAudience: targetAudience.trim() || null,
         sellingPoints: sellingPoints.trim() || null,
+        ttsProvider,
+        elevenLabsModel: ttsProvider === "elevenlabs" ? elevenLabsModel : null,
       },
     };
 
@@ -209,6 +214,57 @@ export function ScriptEditor({
           />
         </div>
       </div>
+
+      {/* TTS Provider */}
+      <div className="mb-3">
+        <label className="block text-xs font-semibold text-foreground-muted mb-1.5">
+          Định dạng giọng đọc
+        </label>
+        <div className="flex rounded-lg border border-border overflow-hidden text-sm">
+          {(["vbee", "elevenlabs"] as TtsProvider[]).map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => setTtsProvider(p)}
+              className={`flex-1 py-1.5 font-medium transition-colors ${
+                ttsProvider === p
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-background text-foreground-muted hover:bg-background-elevated"
+              }`}
+            >
+              {p === "vbee" ? "Vbee" : "ElevenLabs"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ElevenLabs model — only shown when elevenlabs is selected */}
+      {ttsProvider === "elevenlabs" && (
+        <div className="mb-3">
+          <label className="block text-xs font-semibold text-foreground-muted mb-1.5">
+            Model ElevenLabs
+          </label>
+          <div className="flex rounded-lg border border-border overflow-hidden text-sm">
+            {(["eleven_v3", "eleven_flash_v2_5"] as ElevenLabsModel[]).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setElevenLabsModel(m)}
+                className={`flex-1 py-1.5 font-medium transition-colors ${
+                  elevenLabsModel === m
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-background text-foreground-muted hover:bg-background-elevated"
+                }`}
+              >
+                {m === "eleven_v3" ? "v3 (Expression tags)" : "v2.5 (Flash)"}
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] text-foreground-subtle mt-1">
+            v3 hỗ trợ [chuckles], [amused]… — v2.5 dùng CAPS và dấu câu
+          </p>
+        </div>
+      )}
 
       {selectedProductId && (
         <details key={selectedProductId ?? ""} className="rounded-xl border border-border/40 bg-background-subtle p-3" open>

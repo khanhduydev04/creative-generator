@@ -271,6 +271,7 @@ function ProductForm({ brandId, product, onSaved, onCancel }: ProductFormProps) 
   const [attributes, setAttributes] = useState(product?.attributes ?? "");
   const [targetAudience, setTargetAudience] = useState(product?.target_audience ?? "");
   const [sellingPoints, setSellingPoints] = useState(product?.selling_points ?? "");
+  const [price, setPrice] = useState(product?.price ?? "");
   const [images, setImages] = useState<string[]>(product?.images ?? []);
   const [colors, setColors] = useState({
     primary1: product?.primary_color_1 ?? "",
@@ -365,6 +366,7 @@ function ProductForm({ brandId, product, onSaved, onCancel }: ProductFormProps) 
           attributes: attributes.trim() || null,
           target_audience: targetAudience.trim() || null,
           selling_points: sellingPoints.trim() || null,
+          price: price.trim() || null,
           ...colorFields,
         });
       } else {
@@ -377,6 +379,7 @@ function ProductForm({ brandId, product, onSaved, onCancel }: ProductFormProps) 
           attributes: attributes.trim() || null,
           target_audience: targetAudience.trim() || null,
           selling_points: sellingPoints.trim() || null,
+          price: price.trim() || null,
           ...colorFields,
         });
       }
@@ -467,6 +470,18 @@ function ProductForm({ brandId, product, onSaved, onCancel }: ProductFormProps) 
             placeholder={t.brand.sellingPointsPlaceholder}
             rows={2}
             className="w-full rounded-lg border border-border bg-background text-foreground px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-foreground-muted mb-1.5">
+            Giá / Sale
+          </label>
+          <input
+            type="text"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            placeholder="Ví dụ: 49k, 27 cành, mua 2 tặng 1..."
+            className="w-full rounded-lg border border-border bg-background text-foreground px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
           />
         </div>
       </div>

@@ -35,6 +35,7 @@ export function useCreateProduct() {
       attributes?: string | null;
       target_audience?: string | null;
       selling_points?: string | null;
+      price?: string | null;
     }) =>
       apiFetch<{ product: BrandProduct }>("/api/brand-products", {
         method: "POST",
@@ -70,6 +71,7 @@ export function useUpdateProduct(brandId: string) {
       attributes?: string | null;
       target_audience?: string | null;
       selling_points?: string | null;
+      price?: string | null;
     }) =>
       apiFetch<{ product: BrandProduct }>(`/api/brand-products/${productId}`, {
         method: "PUT",

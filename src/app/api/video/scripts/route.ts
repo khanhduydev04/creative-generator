@@ -126,7 +126,7 @@ export async function POST(request: NextRequest): Promise<Response> {
         }
 
         // Build system prompt
-        const { tone, notes, attributes, targetAudience, sellingPoints } = body.promptConfig;
+        const { tone, notes, attributes, targetAudience, sellingPoints, ttsProvider, elevenLabsModel } = body.promptConfig;
         const systemPrompt = buildScriptSystemPrompt({
           brandName: brand.name,
           brandDescription: brand.description,
@@ -137,6 +137,8 @@ export async function POST(request: NextRequest): Promise<Response> {
           sellingPoints: sellingPoints ?? productSellingPoints ?? null,
           tone,
           notes,
+          ttsProvider: ttsProvider ?? "vbee",
+          elevenLabsModel: elevenLabsModel ?? null,
         });
 
         // Stream generation
@@ -163,6 +165,8 @@ export async function POST(request: NextRequest): Promise<Response> {
           rawText,
           promptConfig,
           CLAUDE_SONNET_MODEL,
+          ttsProvider ?? "vbee",
+          elevenLabsModel ?? null,
         );
 
         send("done", { scriptId: script.id, rawText });

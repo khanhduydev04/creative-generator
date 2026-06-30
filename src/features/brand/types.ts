@@ -39,6 +39,7 @@ export interface BrandProduct {
   attributes: string | null;
   target_audience: string | null;
   selling_points: string | null;
+  price: string | null;
   created_at: string;
 }
 
