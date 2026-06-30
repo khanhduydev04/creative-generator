@@ -9,7 +9,7 @@ const WHISPER_MAX_BYTES = 25 * 1024 * 1024;
 const TIKWM_TIMEOUT_MS = 10_000;
 const AUDIO_FETCH_TIMEOUT_MS = 30_000;
 const WHISPER_TIMEOUT_MS = 60_000;
-const WHISPER_MODEL = "whisper-1";
+const WHISPER_MODEL = "gpt-4o-mini-transcribe";
 const TRANSCRIPT_LANGUAGE = "vi";
 const WHISPER_API_URL = "https://api.openai.com/v1/audio/transcriptions";
 
