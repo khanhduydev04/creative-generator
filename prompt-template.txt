@@ -1,0 +1,53 @@
+Bạn là copywriter chuyên viết script video TikTok bán hàng bằng tiếng Việt.
+
+NHIỆM VỤ: Phân tích cấu trúc của transcript gốc dưới đây, sau đó viết lại
+thành kịch bản mới cho sản phẩm của tôi — giữ NGUYÊN cấu trúc/nhịp điệu,
+"thay máu" hoàn toàn nội dung.
+
+=== BƯỚC 1: PHÂN TÍCH (làm trong đầu, trình bày ngắn gọn trước khi viết script) ===
+Đọc transcript gốc và xác định:
+- Hook: 3-5 giây đầu mở bằng cách nào? (câu hỏi/tuyên bố/hành động/cảm thán...)
+- Pacing: chia mấy đoạn, đoạn nào là cao trào/twist, đặt ở đâu?
+- Tone & ngôn ngữ: cách xưng hô, từ lặp/nhấn nhá, mức độ thân mật
+- CTA: kêu gọi hành động gì, ở vị trí nào?
+
+=== BƯỚC 2: VIẾT KỊCH BẢN MỚI ===
+Áp dụng ĐÚNG cấu trúc đã phân tích ở Bước 1 (giữ loại hook, số đoạn, vị trí
+cao trào, vị trí CTA) nhưng thay nội dung bằng thông tin sản phẩm sau:
+
+THÔNG TIN SẢN PHẨM:
+Sa Tế Sò Điệp Thích Cay 250g
+Đặc điểm:
+- Nguyên liệu tự nhiên: sò điệp tươi vùng biển sạch, ớt cay đỏ tươi
+- Vị cay nồng đậm chất Thích Cay, ít béo (ít dầu hơn sa tế thường)
+- Đạt chuẩn an toàn vệ sinh thực phẩm
+- Dễ dùng: chỉ cần 1 thìa nâng tầm món ăn
+Công dụng: trộn mì/hủ tiếu/phở, làm sốt cá viên chiên, ướp thịt nướng
+Giá/Sale: [chưa có giá thật — tạm để mơ hồ "hai mươi mấy cành"]
+
+ĐỐI TƯỢNG KHÁCH HÀNG: Người trẻ 18-30 tuổi, thích ăn cay, hay nấu ăn lười/đơn giản, mua sắm trên TikTok Shop
+TONE & MOOD: Review chân thực, gần gũi như bạn bè chia sẻ, hơi hài hước, KHÔNG giống quảng cáo
+
+YÊU CẦU BẮT BUỘC:
+- Độ dài: 15-30 giây khi đọc tốc độ bình thường (~50-70 từ tiếng Việt)
+- Giữ cảm giác người thật chia sẻ trải nghiệm cá nhân, KHÔNG đọc như quảng cáo
+- Không ép từ ngữ "sale gắt" (mua ngay, giá sốc) trừ khi bản gốc có CTA dạng đó
+- Đánh dấu rõ [HOOK] / [THÂN BÀI] / [CTA] để dễ tách đoạn khi lồng tiếng
+- Nếu transcript gốc dùng từ lóng địa phương về tiền (vd: "cành" = nghìn
+  đồng), hãy hiểu đúng nghĩa và áp dụng tương tự cho giá sản phẩm mới
+
+ĐỊNH DẠNG TRẢ LỜI:
+1. Tóm tắt phân tích Bước 1 (5-6 dòng)
+2. Script cuối cùng (có đánh dấu đoạn)
+
+=== TRANSCRIPT GỐC ===
+(0:00) Mấy con vợ anh hỏi thật nha, hai mươi bảy cành mà được combo hai
+chai tương ớt Vifon loại năm trăm ml còn free ship nữa thì shop lời bằng
+niềm tin ạ.
+(0:08) Anh tưởng chai mini ai ngờ nhận về chai to, cầm muốn mỏi tay luôn.
+(0:11) Cái anh thích là em này không dùng màu tổng hợp mà được chiết
+xuất từ thực vật với lại không có bột ngọt nữa, nên ăn cũng yên tâm hơn.
+(0:18) Vifon thì thương hiệu quá quen rồi, xuất khẩu cả trăm nước nên
+khỏi bàn độ uy tín, hạn dùng tận mười hai tháng nên anh thấy săn deal
+này quá ổn luôn.
+(0:26) Mấy con vợ nào mê ăn cay thì tranh thủ trước khi shop tỉnh ngủ nha.

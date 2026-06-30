@@ -5,6 +5,7 @@ import { useApp } from "@/features/app/context";
 import { useAuth } from "@/features/auth/context";
 import { useT } from "@/lib/i18n/useTranslation";
 import { AddProfileModal } from "@/features/brand/components/AddProfileModal";
+import { ApifySyncSection } from "@/features/brand/components/ApifySyncSection";
 import { DeleteConfirmModal } from "@/features/brand/components/DeleteConfirmModal";
 import { EditProfileModal } from "@/features/brand/components/EditProfileModal";
 import { GoogleFontPicker } from "@/features/brand/components/GoogleFontPicker";
@@ -728,6 +729,9 @@ export function BrandSetupForm() {
           </div>
         </section>
       </div>
+
+      {/* Apify Sync */}
+      <ApifySyncSection brandId={selectedBrandId} />
 
       {showAddProfile && selectedBrandId && (
         <AddProfileModal
