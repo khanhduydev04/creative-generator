@@ -1,9 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import { queryKeys } from "@/lib/query/keys";
-import type { VoicePreset, VbeeVoice, VoiceAvgRating } from "@/features/video/types";
+import type { VoicePreset, VbeeVoice, VoiceAvgRating, ElevenLabsVoice } from "@/features/video/types";
+import type { TtsProvider, ElevenLabsModel } from "@/services/scriptPrompt";
 
 const VBEE_VOICES_STALE_MS = 5 * 60 * 1000;
+const ELEVENLABS_VOICES_STALE_MS = 10 * 60 * 1000;
 
 export function useVoicePresets(brandId: string | null) {
   return useQuery({
@@ -25,6 +27,10 @@ export function useCreateVoicePreset() {
       speed: number;
       pitch: number;
       pauseConfig?: Record<string, unknown> | null;
+      provider?: TtsProvider;
+      providerVoiceId?: string | null;
+      elevenLabsModel?: ElevenLabsModel | null;
+      isDefault?: boolean;
     }) =>
       apiFetch<{ preset: VoicePreset }>("/api/video/voice-presets", {
         method: "POST",
@@ -34,6 +40,16 @@ export function useCreateVoicePreset() {
     onSuccess: (_data, { brandId }) => {
       void qc.invalidateQueries({ queryKey: queryKeys.voicePresets.list(brandId) });
     },
+  });
+}
+
+export function useElevenLabsVoices(enabled: boolean) {
+  return useQuery({
+    queryKey: ["elevenlabs-voices"],
+    queryFn: () => apiFetch<{ voices: ElevenLabsVoice[] }>("/api/video/elevenlabs/voices"),
+    select: (d) => d.voices,
+    staleTime: ELEVENLABS_VOICES_STALE_MS,
+    enabled,
   });
 }
 

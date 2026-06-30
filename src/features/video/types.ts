@@ -125,6 +125,9 @@ export interface VoicePreset {
   pitch: number;
   pause_config: Record<string, unknown> | null;
   is_default: boolean;
+  provider: TtsProvider;
+  provider_voice_id: string | null;
+  elevenlabs_model: ElevenLabsModel | null;
   created_at: string;
 }
 
@@ -144,10 +147,19 @@ export interface GeneratedAudio {
   voice_preset_id: string | null;
   storage_path: string | null;
   vbee_audio_url: string | null;
+  provider: TtsProvider;
   duration_secs: number | null;
   created_at: string;
   voice_preset?: Pick<VoicePreset, "display_name" | "voice_code" | "speed"> | null;
   brand_script?: Pick<BrandScript, "final_text" | "raw_text"> | null;
+}
+
+export interface ElevenLabsVoice {
+  voice_id: string;
+  name: string;
+  category: string;
+  preview_url: string | null;
+  labels: Record<string, string>;
 }
 
 export interface VbeeVoice {

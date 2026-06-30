@@ -109,10 +109,11 @@ export async function POST(request: NextRequest): Promise<Response> {
         let productAttributes: string | null = null;
         let productTargetAudience: string | null = null;
         let productSellingPoints: string | null = null;
+        let productPrice: string | null = null;
         if (body.productId) {
           const { data: product } = await supabase
             .from("brand_products")
-            .select("name, description, attributes, target_audience, selling_points")
+            .select("name, description, attributes, target_audience, selling_points, price")
             .eq("id", body.productId)
             .single();
 
@@ -122,6 +123,7 @@ export async function POST(request: NextRequest): Promise<Response> {
             productAttributes = product.attributes;
             productTargetAudience = product.target_audience;
             productSellingPoints = product.selling_points;
+            productPrice = (product.price as string | null) ?? null;
           }
         }
 
@@ -135,6 +137,7 @@ export async function POST(request: NextRequest): Promise<Response> {
           attributes: attributes ?? productAttributes ?? null,
           targetAudience: targetAudience ?? productTargetAudience ?? null,
           sellingPoints: sellingPoints ?? productSellingPoints ?? null,
+          price: productPrice,
           tone,
           notes,
           ttsProvider: ttsProvider ?? "vbee",

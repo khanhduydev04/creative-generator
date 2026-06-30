@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { GeneratedAudio } from "@/features/video/types";
+import type { TtsProvider } from "@/services/scriptPrompt";
 
 export class GeneratedAudioService {
   constructor(private readonly supabase: SupabaseClient) {}
@@ -33,8 +34,9 @@ export class GeneratedAudioService {
     brandId: string;
     voicePresetId: string;
     storagePath: string;
-    vbeeAudioUrl: string;
+    vbeeAudioUrl: string | null;
     durationSecs: number | null;
+    provider: TtsProvider;
   }): Promise<GeneratedAudio> {
     const { data, error } = await this.supabase
       .from("generated_audios")
@@ -45,6 +47,7 @@ export class GeneratedAudioService {
         storage_path: input.storagePath,
         vbee_audio_url: input.vbeeAudioUrl,
         duration_secs: input.durationSecs,
+        provider: input.provider,
       })
       .select()
       .single();

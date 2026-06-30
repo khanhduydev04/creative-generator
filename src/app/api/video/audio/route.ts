@@ -69,26 +69,54 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "voice_preset_not_found" }, { status: 404 });
     }
 
-    const vbeeKey = await getUserApiKey(userId, "vbee");
-    const vbeeService = new VbeeService(vbeeKey);
     // Safe: Supabase returns voice_preset row matching VoicePreset shape
     const typedPreset = preset as VoicePreset;
-    const ttsResult = await vbeeService.synthesize({
-      text: textToSpeak,
-      voice_code: typedPreset.voice_code,
-      speed: typedPreset.speed,
-      pitch: typedPreset.pitch,
-    });
 
-    const audioRes = await fetch(ttsResult.audio_url, { signal: AbortSignal.timeout(AUDIO_DOWNLOAD_TIMEOUT_MS) });
-    if (!audioRes.ok) {
-      return NextResponse.json({ error: "audio_download_failed" }, { status: 502 });
-    }
-
-    const audioBuffer = await audioRes.arrayBuffer();
     // Safe: script.brand_id is a string UUID from Supabase
     const brandId = script.brand_id as string;
     const storagePath = `audio/${brandId}/${body.scriptId}/${Date.now()}.mp3`;
+
+    let audioBuffer: ArrayBuffer;
+    let vbeeAudioUrl: string | null = null;
+    let durationSecs: number | null = null;
+
+    if (typedPreset.provider === "elevenlabs") {
+      const elKey = process.env.ELEVENLABS_API_KEY;
+      if (!elKey) {
+        return NextResponse.json({ error: "elevenlabs_key_missing" }, { status: 500 });
+      }
+      if (!typedPreset.provider_voice_id) {
+        return NextResponse.json({ error: "elevenlabs_voice_id_missing" }, { status: 400 });
+      }
+      // Dynamic import avoids loading the ElevenLabs module for Vbee requests
+      const { ElevenLabsService } = await import("@/services/elevenlabsService");
+      const elService = new ElevenLabsService(elKey);
+      audioBuffer = await elService.synthesize({
+        text: textToSpeak,
+        voice_id: typedPreset.provider_voice_id,
+        model_id: typedPreset.elevenlabs_model ?? undefined,
+        speed: typedPreset.speed,
+      });
+    } else {
+      // Vbee flow: synthesize returns an audio_url which must be downloaded to get binary
+      const vbeeKey = await getUserApiKey(userId, "vbee");
+      const vbeeService = new VbeeService(vbeeKey);
+      const ttsResult = await vbeeService.synthesize({
+        text: textToSpeak,
+        voice_code: typedPreset.voice_code,
+        speed: typedPreset.speed,
+        pitch: typedPreset.pitch,
+      });
+
+      vbeeAudioUrl = ttsResult.audio_url;
+      durationSecs = ttsResult.duration ?? null;
+
+      const audioRes = await fetch(ttsResult.audio_url, { signal: AbortSignal.timeout(AUDIO_DOWNLOAD_TIMEOUT_MS) });
+      if (!audioRes.ok) {
+        return NextResponse.json({ error: "audio_download_failed" }, { status: 502 });
+      }
+      audioBuffer = await audioRes.arrayBuffer();
+    }
 
     const storage = new StorageService(supabase);
     await storage.upload("generated-audio", storagePath, audioBuffer, "audio/mpeg");
@@ -99,8 +127,9 @@ export async function POST(request: NextRequest) {
       brandId,
       voicePresetId: body.voicePresetId,
       storagePath,
-      vbeeAudioUrl: ttsResult.audio_url,
-      durationSecs: ttsResult.duration ?? null,
+      vbeeAudioUrl,
+      durationSecs,
+      provider: typedPreset.provider,
     });
 
     return NextResponse.json({ audio }, { status: 201 });

@@ -428,6 +428,7 @@ export type Database = {
           created_at: string
           duration_secs: number | null
           id: string
+          provider: string
           script_id: string
           storage_path: string | null
           vbee_audio_url: string | null
@@ -438,6 +439,7 @@ export type Database = {
           created_at?: string
           duration_secs?: number | null
           id?: string
+          provider?: string
           script_id: string
           storage_path?: string | null
           vbee_audio_url?: string | null
@@ -448,6 +450,7 @@ export type Database = {
           created_at?: string
           duration_secs?: number | null
           id?: string
+          provider?: string
           script_id?: string
           storage_path?: string | null
           vbee_audio_url?: string | null
@@ -847,10 +850,13 @@ export type Database = {
           brand_id: string
           created_at: string
           display_name: string
+          elevenlabs_model: string | null
           id: string
           is_default: boolean
           pause_config: Json | null
           pitch: number
+          provider: string
+          provider_voice_id: string | null
           speed: number
           voice_code: string
         }
@@ -858,10 +864,13 @@ export type Database = {
           brand_id: string
           created_at?: string
           display_name: string
+          elevenlabs_model?: string | null
           id?: string
           is_default?: boolean
           pause_config?: Json | null
           pitch?: number
+          provider?: string
+          provider_voice_id?: string | null
           speed?: number
           voice_code: string
         }
@@ -869,10 +878,13 @@ export type Database = {
           brand_id?: string
           created_at?: string
           display_name?: string
+          elevenlabs_model?: string | null
           id?: string
           is_default?: boolean
           pause_config?: Json | null
           pitch?: number
+          provider?: string
+          provider_voice_id?: string | null
           speed?: number
           voice_code?: string
         }

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { TtsProvider, ElevenLabsModel } from "@/services/scriptPrompt";
 import type { VoicePreset } from "@/features/video/types";
 
 export interface CreateVoicePresetInput {
@@ -9,6 +10,9 @@ export interface CreateVoicePresetInput {
   pitch: number;
   pauseConfig?: Record<string, unknown> | null;
   isDefault?: boolean;
+  provider: TtsProvider;
+  providerVoiceId: string | null;
+  elevenLabsModel: ElevenLabsModel | null;
 }
 
 export class VoicePresetService {
@@ -37,6 +41,9 @@ export class VoicePresetService {
         pitch: input.pitch,
         pause_config: input.pauseConfig ?? null,
         is_default: input.isDefault ?? false,
+        provider: input.provider,
+        provider_voice_id: input.providerVoiceId,
+        elevenlabs_model: input.elevenLabsModel,
       })
       .select()
       .single();
