@@ -6,7 +6,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useApp } from "@/features/app/context";
 import { useT } from "@/lib/i18n/useTranslation";
 import { useGeneratedAudiosByBrand, useDeleteAudio } from "@/hooks/api/useGeneratedAudios";
-import { AudioPlayer } from "@/features/video/components/AudioPlayer";
+import { AudioDetailModal } from "@/features/video/components/AudioDetailModal";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import type { GeneratedAudio } from "@/features/video/types";
 
@@ -18,6 +18,7 @@ export default function AudioLibraryPage() {
   const { data: audios = [], isLoading } = useGeneratedAudiosByBrand(selectedBrandId);
   const deleteAudio = useDeleteAudio();
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [detailAudio, setDetailAudio] = useState<GeneratedAudio | null>(null);
 
   const supabase = createBrowserSupabaseClient();
 
@@ -81,7 +82,11 @@ export default function AudioLibraryPage() {
                     : "—";
 
                   return (
-                    <tr key={audio.id} className="hover:bg-background-elevated/20">
+                    <tr
+                      key={audio.id}
+                      onClick={() => setDetailAudio(audio)}
+                      className="cursor-pointer hover:bg-background-elevated/20"
+                    >
                       <td className="max-w-xs px-4 py-3">
                         <p className="line-clamp-1 text-sm text-foreground">{scriptText}</p>
                       </td>
@@ -97,13 +102,17 @@ export default function AudioLibraryPage() {
                           <a
                             href={publicUrl}
                             download
+                            onClick={(e) => e.stopPropagation()}
                             className="rounded px-2 py-1 text-xs text-primary hover:underline"
                           >
                             {t.video.downloadAudio}
                           </a>
                           <button
                             type="button"
-                            onClick={() => void handleDelete(audio)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              void handleDelete(audio);
+                            }}
                             disabled={deletingId === audio.id}
                             className="rounded px-2 py-1 text-xs text-red-400 hover:underline disabled:opacity-50"
                           >
@@ -119,6 +128,18 @@ export default function AudioLibraryPage() {
           </div>
         )}
       </div>
+
+      {detailAudio && (
+        <AudioDetailModal
+          audio={detailAudio}
+          publicUrl={
+            detailAudio.storage_path
+              ? getPublicUrl(detailAudio.storage_path)
+              : (detailAudio.vbee_audio_url ?? "")
+          }
+          onClose={() => setDetailAudio(null)}
+        />
+      )}
     </DashboardLayout>
   );
 }

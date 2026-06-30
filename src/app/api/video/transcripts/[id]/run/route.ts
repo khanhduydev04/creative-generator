@@ -3,15 +3,23 @@ import { createClient } from "@/lib/supabase/server";
 import { requireUser, handleApiError } from "@/lib/user-context";
 import { getUserApiKey } from "@/lib/key-provider";
 import { TranscriptService } from "@/services/transcriptService";
+import { GoogleGenAI } from "@google/genai";
 
 const TIKWM_API = "https://www.tikwm.com/api/";
-const WHISPER_MAX_BYTES = 25 * 1024 * 1024;
 const TIKWM_TIMEOUT_MS = 10_000;
 const AUDIO_FETCH_TIMEOUT_MS = 30_000;
-const WHISPER_TIMEOUT_MS = 60_000;
-const WHISPER_MODEL = "gpt-4o-mini-transcribe";
+
+// ── [ACTIVE] Gemini transcription ────────────────────────────────────────────
+const GEMINI_MODEL = "gemini-2.5-flash";
 const TRANSCRIPT_LANGUAGE = "vi";
-const WHISPER_API_URL = "https://api.openai.com/v1/audio/transcriptions";
+
+// ── [DISABLED] OpenAI Whisper — re-enable when quota is restored:
+//    1. Swap the transcription block below back to the OpenAI section
+//    2. Remove the Gemini block
+// const WHISPER_MAX_BYTES = 25 * 1024 * 1024;
+// const WHISPER_TIMEOUT_MS = 60_000;
+// const WHISPER_MODEL = "gpt-4o-mini-transcribe";
+// const WHISPER_API_URL = "https://api.openai.com/v1/audio/transcriptions";
 
 export async function POST(
   request: NextRequest,
@@ -75,37 +83,58 @@ export async function POST(
     }
 
     const audioBuffer = await audioRes.arrayBuffer();
+    const audioBase64 = Buffer.from(audioBuffer).toString("base64");
 
-    if (audioBuffer.byteLength > WHISPER_MAX_BYTES) {
-      await service.updateStatus(id, "failed");
-      return NextResponse.json({ error: "audio_too_large" }, { status: 413 });
-    }
+    // ── [ACTIVE] Gemini transcription ────────────────────────────────────────
+    const googleKey = await getUserApiKey(userId, "google");
+    const genai = new GoogleGenAI({ apiKey: googleKey });
 
-    const openaiKey = await getUserApiKey(userId, "openai");
-
-    const formData = new FormData();
-    formData.append("file", new Blob([audioBuffer], { type: "audio/mpeg" }), "audio.mp3");
-    formData.append("model", WHISPER_MODEL);
-    formData.append("language", TRANSCRIPT_LANGUAGE);
-
-    const whisperRes = await fetch(WHISPER_API_URL, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${openaiKey}` },
-      body: formData,
-      signal: AbortSignal.timeout(WHISPER_TIMEOUT_MS),
+    const geminiRes = await genai.models.generateContent({
+      model: GEMINI_MODEL,
+      contents: {
+        parts: [
+          { inlineData: { mimeType: "audio/mpeg", data: audioBase64 } },
+          {
+            text: `Transcribe the spoken content of this audio in ${TRANSCRIPT_LANGUAGE} language. Return only the transcribed text, no explanations or timestamps.`,
+          },
+        ],
+      },
     });
 
-    if (!whisperRes.ok) {
-      await service.updateStatus(id, "failed");
-      // Safe: OpenAI error responses follow this shape
-      const errBody = await whisperRes.json().catch(() => ({})) as { error?: { message?: string } };
-      console.error("[transcripts/run] Whisper error:", errBody);
-      return NextResponse.json({ error: "whisper_failed" }, { status: 502 });
-    }
+    const rawText = geminiRes.text ?? "";
 
-    // Safe: OpenAI Whisper transcription responses always include a text field
-    const whisperData = await whisperRes.json() as { text?: string };
-    const rawText = whisperData.text ?? "";
+    if (!rawText.trim()) {
+      await service.updateStatus(id, "failed");
+      console.error("[transcripts/run] Gemini returned empty transcription");
+      return NextResponse.json({ error: "transcription_empty" }, { status: 502 });
+    }
+    // ── end Gemini block ──────────────────────────────────────────────────────
+
+    // ── [DISABLED] OpenAI Whisper block — swap back when quota restored ───────
+    // if (audioBuffer.byteLength > WHISPER_MAX_BYTES) {
+    //   await service.updateStatus(id, "failed");
+    //   return NextResponse.json({ error: "audio_too_large" }, { status: 413 });
+    // }
+    // const openaiKey = await getUserApiKey(userId, "openai");
+    // const formData = new FormData();
+    // formData.append("file", new Blob([audioBuffer], { type: "audio/mpeg" }), "audio.mp3");
+    // formData.append("model", WHISPER_MODEL);
+    // formData.append("language", TRANSCRIPT_LANGUAGE);
+    // const whisperRes = await fetch(WHISPER_API_URL, {
+    //   method: "POST",
+    //   headers: { Authorization: `Bearer ${openaiKey}` },
+    //   body: formData,
+    //   signal: AbortSignal.timeout(WHISPER_TIMEOUT_MS),
+    // });
+    // if (!whisperRes.ok) {
+    //   await service.updateStatus(id, "failed");
+    //   const errBody = await whisperRes.json().catch(() => ({})) as { error?: { message?: string } };
+    //   console.error("[transcripts/run] Whisper error:", errBody);
+    //   return NextResponse.json({ error: "whisper_failed" }, { status: 502 });
+    // }
+    // const whisperData = await whisperRes.json() as { text?: string };
+    // const rawText = whisperData.text ?? "";
+    // ── end OpenAI block ──────────────────────────────────────────────────────
 
     const updated = await service.saveRawText(id, rawText);
     return NextResponse.json({ transcript: updated });

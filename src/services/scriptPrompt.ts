@@ -91,13 +91,18 @@ export function buildScriptSystemPrompt(input: ScriptPromptInput): string {
       "- Cảm giác người thật chia sẻ trải nghiệm, KHÔNG đọc như quảng cáo",
       '- Không ép từ ngữ "sale gắt" (mua ngay, giá sốc) trừ khi transcript gốc có CTA dạng đó',
       '- Nếu transcript dùng từ lóng tiền ("cành" = nghìn đồng), áp dụng tương tự cho giá sản phẩm',
-      "- Đánh dấu [HOOK] / [THÂN BÀI] / [CTA] trên dòng riêng để phân đoạn",
-      "- KHÔNG xuống dòng trắng giữa các câu trong cùng đoạn — viết liên tục",
+      `- BẮT BUỘC lồng tên thương hiệu "${input.brandName}" vào script tự nhiên ÍT NHẤT 1 lần — kể cả khi transcript gốc và thông tin sản phẩm KHÔNG nhắc tên. Ghép mượt vào ngay sau tên sản phẩm, ví dụ: "...muối ớt xanh thủ công này của nhà ${input.brandName}, ta nói ngon thì thôi luôn á". Lồng tự nhiên như người bán quen miệng, KHÔNG gượng ép, KHÔNG lặp tên nhiều lần.`,
+    ].join("\n"),
+
+    [
+      "ĐỊNH DẠNG OUTPUT (TUYỆT ĐỐI tuân thủ):",
+      "- KHÔNG ghi nhãn phân đoạn [HOOK] / [THÂN BÀI] / [CTA] hay bất kỳ tiêu đề nào — chỉ viết lời thoại",
+      "- KHÔNG để dòng trắng ở BẤT KỲ đâu. Các câu viết liền mạch, có thể xuống dòng (\\n) nhưng TUYỆT ĐỐI không cách dòng (không có dòng trống)",
     ].join("\n"),
 
     providerFormattingInstructions(input.ttsProvider, input.elevenLabsModel),
 
-    "OUTPUT: Chỉ trả về script cuối cùng với markers. Không giải thích, không phân tích.",
+    "OUTPUT: Chỉ trả về lời thoại script cuối cùng. Không nhãn phân đoạn, không giải thích, không phân tích, không dòng trắng.",
   ];
 
   return sections.join("\n\n");

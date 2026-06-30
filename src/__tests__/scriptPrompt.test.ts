@@ -23,11 +23,15 @@ it("includes product name and price in the prompt", () => {
   expect(prompt).toContain("Giá/Sale: 49k");
 });
 
-it("includes [HOOK] [THÂN BÀI] [CTA] instruction", () => {
+it("instructs NOT to write section labels in the output", () => {
   const prompt = buildScriptSystemPrompt(base);
-  expect(prompt).toContain("[HOOK]");
-  expect(prompt).toContain("[THÂN BÀI]");
-  expect(prompt).toContain("[CTA]");
+  expect(prompt).toContain("KHÔNG ghi nhãn phân đoạn");
+});
+
+it("requires weaving the brand name into the script at least once", () => {
+  const prompt = buildScriptSystemPrompt(base);
+  expect(prompt).toContain("BẮT BUỘC lồng tên thương hiệu");
+  expect(prompt).toContain("Thích Cay");
 });
 
 it("instructs to mirror transcript length (no word cap)", () => {
@@ -80,7 +84,7 @@ it("analysis step is silent (KHÔNG viết ra)", () => {
   expect(prompt).toContain("KHÔNG viết ra");
 });
 
-it("output contains no blank line between sentences instruction", () => {
+it("output forbids blank lines entirely", () => {
   const prompt = buildScriptSystemPrompt(base);
-  expect(prompt).toContain("KHÔNG xuống dòng trắng");
+  expect(prompt).toContain("KHÔNG để dòng trắng");
 });

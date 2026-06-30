@@ -5,7 +5,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { getUserApiKey } from "@/lib/key-provider";
 
 export const CLAUDE_HAIKU_MODEL = "claude-haiku-4-5-20251001";
-export const CLAUDE_SONNET_MODEL = "claude-sonnet-4-6-20250514";
+export const CLAUDE_SONNET_MODEL = "claude-sonnet-4-6";
 
 const MAX_RETRIES = 2;
 const RETRY_BASE_DELAY_MS = 3000;
