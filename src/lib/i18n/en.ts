@@ -883,5 +883,10 @@ export const en: Dictionary = {
     attributesLabel: "Attributes",
     targetAudienceLabel: "Audience",
     sellingPointsLabel: "Selling points / USP",
+    hasAudioBadge: "Generated",
+    transcriptFailedBadge: "Transcription failed",
+    scriptVersionLabel: "Version",
+    scriptVersionsCount: "{0} versions",
+    pipelineColumnHeader: "Pipeline",
   },
 } as const;

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { CompetitorVideo, VideoStatus } from "@/features/video/types";
+import { deriveVideoFlags, type TranscriptJoinRow } from "@/features/video/utils/deriveVideoFlags";
 
 export interface ApifyVideoItem {
   webVideoUrl?: string;
@@ -13,6 +14,10 @@ export interface ApifyVideoItem {
   createTimeISO?: string;
   isAd?: boolean;
   searchKey?: string;
+}
+
+interface CompetitorVideoRow extends Omit<CompetitorVideo, "hasGeneratedAudio" | "transcriptionFailed"> {
+  transcripts: TranscriptJoinRow[] | TranscriptJoinRow | null;
 }
 
 export class CompetitorVideoService {
@@ -33,7 +38,10 @@ export class CompetitorVideoService {
 
     let query = this.supabase
       .from("competitor_videos")
-      .select("*", { count: "exact" })
+      .select(
+        `*, transcripts:transcripts!video_id(whisper_status, brand_scripts(generated_audios(id)))`,
+        { count: "exact" },
+      )
       .eq("brand_id", brandId)
       // Newest-first within null-views group so manually-added videos surface at top
       .order("views", { ascending: false, nullsFirst: false })
@@ -50,7 +58,16 @@ export class CompetitorVideoService {
 
     const { data, error, count } = await query;
     if (error) throw new Error(error.message);
-    return { videos: (data ?? []) as CompetitorVideo[], total: count ?? 0 };
+
+    // Safe: the select() above requests exactly the columns + embedded
+    // transcripts/brand_scripts/generated_audios join shaped as CompetitorVideoRow.
+    const rows = (data ?? []) as CompetitorVideoRow[];
+    const videos: CompetitorVideo[] = rows.map(({ transcripts, ...video }) => ({
+      ...video,
+      ...deriveVideoFlags(transcripts),
+    }));
+
+    return { videos, total: count ?? 0 };
   }
 
   async addVideo(brandId: string, tiktokUrl: string): Promise<CompetitorVideo> {
@@ -71,7 +88,8 @@ export class CompetitorVideoService {
       if (error.code === "23505") throw new Error("URL_EXISTS");
       throw new Error(error.message);
     }
-    return data as CompetitorVideo;
+    // Safe: a freshly-inserted video has no transcript/script/audio yet.
+    return { ...data, hasGeneratedAudio: false, transcriptionFailed: false } as CompetitorVideo;
   }
 
   async updateStatus(videoId: string, status: VideoStatus): Promise<CompetitorVideo> {
@@ -83,7 +101,10 @@ export class CompetitorVideoService {
       .single();
 
     if (error) throw new Error(error.message);
-    return data as CompetitorVideo;
+    // Safe: this endpoint only flips status; it doesn't reflect pipeline
+    // progress, so the caller's cached list (which does) is the source of
+    // truth for these two flags until the next full list refetch.
+    return { ...data, hasGeneratedAudio: false, transcriptionFailed: false } as CompetitorVideo;
   }
 
   async upsertVideos(

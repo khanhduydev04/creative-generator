@@ -20,7 +20,7 @@ interface ScriptEditorProps {
   transcriptId: string | null;
   brandId: string;
   products: ProductOption[];
-  latestScript: BrandScript | null;
+  scripts: BrandScript[];
   onScriptCreated: (scriptId: string) => void;
 }
 
@@ -32,11 +32,18 @@ const SSE_SPLIT_SEPARATOR = "\n\n";
 const SSE_EVENT_PREFIX = "event:";
 const SSE_DATA_PREFIX = "data:";
 
+function formatScriptVersionLabel(createdAt: string): string {
+  const date = new Date(createdAt);
+  const time = date.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+  const day = date.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" });
+  return `${time} ${day}`;
+}
+
 export function ScriptEditor({
   transcriptId,
   brandId,
   products,
-  latestScript,
+  scripts,
   onScriptCreated,
 }: ScriptEditorProps) {
   const { t } = useT();
@@ -52,8 +59,8 @@ export function ScriptEditor({
   const [streamedText, setStreamedText] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [streamError, setStreamError] = useState<string | null>(null);
-  const [savedScriptId, setSavedScriptId] = useState<string | null>(latestScript?.id ?? null);
-  const [editedFinalText, setEditedFinalText] = useState(latestScript?.final_text ?? "");
+  const [savedScriptId, setSavedScriptId] = useState<string | null>(scripts[0]?.id ?? null);
+  const [editedFinalText, setEditedFinalText] = useState(scripts[0]?.final_text ?? "");
   const [saved, setSaved] = useState(false);
   const [ttsProvider, setTtsProvider] = useState<TtsProvider>("vbee");
   const [elevenLabsModel, setElevenLabsModel] = useState<ElevenLabsModel>("eleven_flash_v2_5");
@@ -162,6 +169,15 @@ export function ScriptEditor({
     });
     setSaved(true);
     setTimeout(() => setSaved(false), SAVE_FEEDBACK_DURATION_MS);
+  }
+
+  function handleSelectVersion(scriptId: string) {
+    const script = scripts.find((s) => s.id === scriptId);
+    if (!script) return;
+    setSavedScriptId(script.id);
+    setEditedFinalText(script.final_text ?? script.raw_text ?? "");
+    setSaved(false);
+    onScriptCreated(script.id);
   }
 
   const displayText = isGenerating ? streamedText : editedFinalText;
@@ -307,6 +323,28 @@ export function ScriptEditor({
       )}
 
       {streamError && <p className="text-xs text-red-400">{streamError}</p>}
+
+      {scripts.length > 1 && (
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-medium text-foreground-muted">
+            {t.video.scriptVersionLabel}
+          </label>
+          <select
+            value={savedScriptId ?? ""}
+            onChange={(e) => handleSelectVersion(e.target.value)}
+            className="rounded-lg border border-border/40 bg-background px-2 py-1 text-xs text-foreground focus:border-primary focus:outline-none"
+          >
+            {scripts.map((script) => (
+              <option key={script.id} value={script.id}>
+                {formatScriptVersionLabel(script.created_at)}
+              </option>
+            ))}
+          </select>
+          <span className="text-[10px] text-foreground-subtle">
+            {t.video.scriptVersionsCount.replace("{0}", String(scripts.length))}
+          </span>
+        </div>
+      )}
 
       <textarea
         value={displayText}

@@ -166,6 +166,9 @@ export default function CompetitorVideosPage() {
                       <th className="py-2.5 pr-4 text-right text-xs font-medium text-foreground-subtle">{t.video.shares}</th>
                       <th className="py-2.5 pr-4 text-right text-xs font-medium text-foreground-subtle">{t.video.comments}</th>
                       <th className="py-2.5 pr-4 text-xs font-medium text-foreground-subtle">Status</th>
+                      {activeStatus === "winner" && (
+                        <th className="py-2.5 pr-4 text-xs font-medium text-foreground-subtle">{t.video.pipelineColumnHeader}</th>
+                      )}
                       <th className="py-2.5 pr-4 text-xs font-medium text-foreground-subtle" />
                     </tr>
                   </thead>

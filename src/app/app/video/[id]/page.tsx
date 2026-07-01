@@ -19,7 +19,7 @@ import { useGeneratedAudiosByScript } from "@/hooks/api/useGeneratedAudios";
 import { apiFetch } from "@/lib/api";
 import type { CompetitorVideo } from "@/features/video/types";
 import { PipelineStageBar } from "@/features/video/components/PipelineStageBar";
-import type { StageKey } from "@/features/video/utils/pipelineStages";
+import { derivePipelineStages, type StageKey } from "@/features/video/utils/pipelineStages";
 
 const DEFAULT_LOCALE = "vi-VN";
 
@@ -54,7 +54,6 @@ export default function VideoDetailPage({ params }: VideoDetailPageProps) {
   const runTranscription = useRunTranscription();
   const { data: transcript } = useTranscriptStatus(transcriptId);
   const { data: scripts = [] } = useScripts(transcriptId);
-  const latestScript = scripts[0] ?? null;
   const { data: audios = [] } = useGeneratedAudiosByScript(savedScriptId);
 
   useEffect(() => {
@@ -90,6 +89,12 @@ export default function VideoDetailPage({ params }: VideoDetailPageProps) {
       .catch(() => null);
   }, [id]);
 
+  useEffect(() => {
+    if (savedScriptId === null && scripts.length > 0) {
+      setSavedScriptId(scripts[0].id);
+    }
+  }, [scripts, savedScriptId]);
+
   async function handleCreateTranscript() {
     try {
       const data = await createTranscript.mutateAsync(id);
@@ -107,6 +112,29 @@ export default function VideoDetailPage({ params }: VideoDetailPageProps) {
       : voiceRef.current;
     target?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
+
+  const hasAutoScrolledRef = useRef(false);
+
+  useEffect(() => {
+    if (hasAutoScrolledRef.current) return;
+    if (loadingVideo || !video) return;
+    // Wait for the transcript query to settle at least once so `transcript`
+    // isn't mistaken for "not started" while it's still loading.
+    if (transcriptId && transcript === undefined) return;
+
+    const stages = derivePipelineStages({
+      whisperStatus: transcript?.whisper_status ?? null,
+      hasSavedScript: Boolean(savedScriptId ?? scripts[0]),
+      hasAudio: audios.length > 0,
+    });
+    const firstUnfinished = stages.find(
+      (stage) => stage.key !== "done" && stage.state !== "done",
+    );
+    if (!firstUnfinished) return;
+
+    hasAutoScrolledRef.current = true;
+    handleStageClick(firstUnfinished.key);
+  }, [loadingVideo, video, transcriptId, transcript, savedScriptId, scripts, audios]);
 
   if (loadingVideo) {
     return (
@@ -145,7 +173,7 @@ export default function VideoDetailPage({ params }: VideoDetailPageProps) {
 
         <PipelineStageBar
           whisperStatus={transcript?.whisper_status ?? null}
-          hasSavedScript={Boolean(savedScriptId ?? latestScript)}
+          hasSavedScript={Boolean(savedScriptId ?? scripts[0])}
           hasAudio={audios.length > 0}
           onStageClick={handleStageClick}
         />
@@ -176,7 +204,7 @@ export default function VideoDetailPage({ params }: VideoDetailPageProps) {
             }
             brandId={selectedBrandId ?? ""}
             products={products}
-            latestScript={latestScript}
+            scripts={scripts}
             onScriptCreated={setSavedScriptId}
           />
         </section>

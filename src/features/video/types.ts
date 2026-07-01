@@ -19,6 +19,8 @@ export interface CompetitorVideo {
   status: VideoStatus;
   scrape_status: ScrapeStatus;
   created_at: string;
+  hasGeneratedAudio: boolean;
+  transcriptionFailed: boolean;
 }
 
 export interface AddVideoPayload {

@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { Trophy, XCircle, Loader2, X, Play, ArrowRight } from "lucide-react";
+import { Trophy, XCircle, Loader2, X, Play, ArrowRight, Check, AlertTriangle } from "lucide-react";
 import { useT } from "@/lib/i18n/useTranslation";
 import { VideoPlayer } from "@/features/video/components/VideoPlayer";
 import type { CompetitorVideo, VideoStatus } from "@/features/video/types";
@@ -112,20 +112,37 @@ export function CompetitorVideoCard({ video, onStatusChange }: CompetitorVideoCa
           </span>
         </td>
 
+        {/* Pipeline — only meaningful once a video is a Winner */}
+        {video.status === "winner" && (
+          <td className="py-2 pr-4">
+            {video.hasGeneratedAudio ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-green-600 px-2.5 py-1 text-xs font-medium text-white">
+                <Check className="h-3 w-3" />
+                {t.video.hasAudioBadge}
+              </span>
+            ) : video.transcriptionFailed ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-red-600 px-2.5 py-1 text-xs font-medium text-white">
+                <AlertTriangle className="h-3 w-3" />
+                {t.video.transcriptFailedBadge}
+              </span>
+            ) : (
+              <span className="text-sm text-foreground-subtle">—</span>
+            )}
+          </td>
+        )}
+
         {/* Actions */}
         <td className="py-2 pr-4">
           <div className="flex items-center gap-1.5">
-            <Link
-              href={`/app/video/${video.id}`}
-              className={`flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium ${
-                video.status === "winner"
-                  ? "bg-primary/10 text-primary hover:bg-primary/20"
-                  : "text-foreground-subtle hover:bg-black/[0.04]"
-              }`}
-            >
-              {t.video.openPipeline}
-              <ArrowRight className="h-3 w-3" />
-            </Link>
+            {video.status === "winner" && (
+              <Link
+                href={`/app/video/${video.id}`}
+                className="flex items-center gap-1 rounded-lg bg-primary/10 px-2.5 py-1.5 text-xs font-medium text-primary hover:bg-primary/20"
+              >
+                {t.video.openPipeline}
+                <ArrowRight className="h-3 w-3" />
+              </Link>
+            )}
             {video.status !== "winner" && (
               <button
                 type="button"

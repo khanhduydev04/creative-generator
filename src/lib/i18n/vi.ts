@@ -880,5 +880,10 @@ export const vi = {
     attributesLabel: "Đặc tính",
     targetAudienceLabel: "Đối tượng KH",
     sellingPointsLabel: "Điểm bán / USP",
+    hasAudioBadge: "Đã tạo",
+    transcriptFailedBadge: "Lỗi bóc băng",
+    scriptVersionLabel: "Phiên bản",
+    scriptVersionsCount: "{0} phiên bản đã tạo",
+    pipelineColumnHeader: "Pipeline",
   },
 } as const;
