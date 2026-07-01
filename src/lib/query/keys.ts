@@ -29,6 +29,7 @@ export const queryKeys = {
   },
   admin: {
     stats: (days: number) => ["admin", "stats", days] as const,
+    users: ["admin", "users"] as const,
   },
   competitorVideos: {
     all: (brandId: string) => ["competitor-videos", brandId] as const,

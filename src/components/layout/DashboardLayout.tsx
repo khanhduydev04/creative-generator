@@ -1,11 +1,12 @@
 ﻿"use client";
 // Client Component: main dashboard layout with collapsible sidebar navigation + i18n
 
+import Image from "next/image";
 import { useApp } from "@/features/app/context";
 import { useAuth } from "@/features/auth/context";
 import { isAdmin } from "@/features/auth/types";
 import { useT } from "@/lib/i18n/useTranslation";
-import { LanguageToggle } from "@/components/ui/LanguageToggle";
+import { BRANDING } from "@/lib/branding";
 import {
   BookOpen,
   ChevronDown,
@@ -26,6 +27,7 @@ import {
   ShieldAlert,
   Sparkles,
   Trash2,
+  UserPlus,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -448,8 +450,7 @@ export function DashboardLayout({ children, activePath }: DashboardLayoutProps) 
       {/* Logo */}
       <div className="relative flex h-16 items-center gap-3 border-b border-border/40 px-5">
         <Link href="/app" className="flex items-center gap-2.5 transition-opacity hover:opacity-80">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/logo-dark.svg" alt="Ladospice" className="h-7 w-7" />
+          <Image src={BRANDING.logoDark} alt={BRANDING.appName} width={36} height={36} className="h-9 w-9 object-contain" />
           <span className="text-lg font-bold tracking-tight text-foreground">Ladospice</span>
         </Link>
         <button
@@ -496,6 +497,15 @@ export function DashboardLayout({ children, activePath }: DashboardLayoutProps) 
                 icon={ShieldAlert}
                 label={t.nav.admin}
                 isActive={activePath === "/app/admin"}
+                onClick={() => setSidebarOpen(false)}
+              />
+            )}
+            {profile && isAdmin(profile.role) && (
+              <SidebarNavLink
+                href="/app/admin/users"
+                icon={UserPlus}
+                label={t.adminUsers.navLabel}
+                isActive={activePath === "/app/admin/users"}
                 onClick={() => setSidebarOpen(false)}
               />
             )}
@@ -639,24 +649,21 @@ export function DashboardLayout({ children, activePath }: DashboardLayoutProps) 
 
       {/* Main content area */}
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        {/* Top bar */}
-        <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between border-b border-border/30 bg-background/80 px-4 backdrop-blur-xl sm:px-6">
+        {/* Top bar — mobile-only nav trigger + account menu, no desktop header */}
+        <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between border-b border-border/30 bg-background/80 px-4 backdrop-blur-xl sm:px-6 lg:hidden">
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
-            className="cursor-pointer rounded-lg p-2 text-foreground-muted transition-colors hover:bg-black/[0.05] hover:text-foreground lg:hidden"
+            className="cursor-pointer rounded-lg p-2 text-foreground-muted transition-colors hover:bg-black/[0.05] hover:text-foreground"
           >
             <Menu className="h-5 w-5" />
           </button>
 
-          <div className="hidden lg:block" />
-          <div className="flex-1 lg:hidden" />
+          <div className="flex-1" />
 
           <div className="flex items-center gap-2">
-            <LanguageToggle />
-
             {/* Mobile user menu */}
-            <div className="relative lg:hidden">
+            <div className="relative">
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setUserMenuOpen((o) => !o); }}

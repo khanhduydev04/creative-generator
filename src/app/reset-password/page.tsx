@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { BRANDING } from "@/lib/branding";
 import { ResetPasswordForm } from "@/components/auth/ResetPasswordForm";
 
@@ -12,9 +13,7 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-md">
         {/* Brand mark above card */}
         <div className="mb-8 flex flex-col items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground text-xl font-bold shadow-lg shadow-primary/20">
-            A
-          </div>
+          <Image src={BRANDING.logoLight} alt={BRANDING.appName} width={56} height={56} className="h-14 w-14 object-contain drop-shadow-lg" />
           <p className="text-sm text-foreground-muted">{BRANDING.appTagline}</p>
         </div>
 
