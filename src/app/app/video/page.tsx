@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Plus, RefreshCw } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, RefreshCw, X } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useApp } from "@/features/app/context";
@@ -11,6 +11,8 @@ import {
   useCompetitorVideos,
   useAddCompetitorVideo,
   useUpdateVideoStatus,
+  useBulkUpdateVideoStatus,
+  useBulkDeleteVideos,
 } from "@/hooks/api/useCompetitorVideos";
 import { VideoStatusFilter } from "@/features/video/components/VideoStatusFilter";
 import { CompetitorVideoCard } from "@/features/video/components/CompetitorVideoCard";
@@ -49,9 +51,18 @@ export default function CompetitorVideosPage() {
   const videos: CompetitorVideo[] = data?.videos ?? [];
   const total: number = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const filteredVideos = videos;
 
   const addVideo = useAddCompetitorVideo();
   const updateStatus = useUpdateVideoStatus();
+  const bulkUpdateStatus = useBulkUpdateVideoStatus();
+  const bulkDeleteVideos = useBulkDeleteVideos();
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const selectable = activeStatus !== "winner";
+
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [activeStatus, page, debouncedSearch]);
 
   function handleStatusChange(status: VideoStatus) {
     setActiveStatus(status);
@@ -63,6 +74,43 @@ export default function CompetitorVideosPage() {
   function handleSearchChange(value: string) {
     setSearch(value);
     setPage(1);
+  }
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAllOnPage() {
+    setSelectedIds((prev) =>
+      prev.size === filteredVideos.length ? new Set() : new Set(filteredVideos.map((v) => v.id)),
+    );
+  }
+
+  async function handleBulkStatusChange(status: "winner" | "rejected") {
+    if (!selectedBrandId || selectedIds.size === 0) return;
+    try {
+      await bulkUpdateStatus.mutateAsync({ ids: Array.from(selectedIds), status, brandId: selectedBrandId });
+      setSelectedIds(new Set());
+    } catch (err) {
+      window.alert(t.video.bulkActionFailed + " " + String(err instanceof Error ? err.message : err));
+    }
+  }
+
+  async function handleBulkDelete() {
+    if (!selectedBrandId || selectedIds.size === 0) return;
+    const count = selectedIds.size;
+    if (!window.confirm(t.video.bulkDeleteConfirm.replace("{0}", String(count)))) return;
+    try {
+      await bulkDeleteVideos.mutateAsync({ ids: Array.from(selectedIds), brandId: selectedBrandId });
+      setSelectedIds(new Set());
+    } catch (err) {
+      window.alert(t.video.bulkActionFailed + " " + String(err instanceof Error ? err.message : err));
+    }
   }
 
   async function handleAddVideo(tiktokUrl: string) {
@@ -94,8 +142,6 @@ export default function CompetitorVideosPage() {
     if (!selectedBrandId) return;
     await updateStatus.mutateAsync({ videoId, status, brandId: selectedBrandId });
   }
-
-  const filteredVideos = videos;
 
   return (
     <DashboardLayout activePath="/app/video">
@@ -142,6 +188,60 @@ export default function CompetitorVideosPage() {
               />
             </div>
 
+            {selectable && selectedIds.size > 0 && (
+              <div className="mb-4 flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
+                <button
+                  type="button"
+                  onClick={toggleSelectAllOnPage}
+                  className="text-xs font-semibold text-primary hover:underline"
+                >
+                  {t.video.selectAllOnPage}
+                </button>
+                <span className="text-xs text-foreground-muted">
+                  {selectedIds.size} {t.library.selectedCount}
+                </span>
+                <div className="flex-1" />
+                {activeStatus === "pending" && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => void handleBulkStatusChange("winner")}
+                      disabled={bulkUpdateStatus.isPending}
+                      className="rounded-lg bg-green-500/10 px-3 py-1.5 text-xs font-semibold text-green-600 hover:bg-green-500/20 disabled:opacity-50"
+                    >
+                      {t.video.bulkMarkWinner.replace("{0}", String(selectedIds.size))}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleBulkStatusChange("rejected")}
+                      disabled={bulkUpdateStatus.isPending}
+                      className="rounded-lg bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-500/20 disabled:opacity-50"
+                    >
+                      {t.video.bulkReject.replace("{0}", String(selectedIds.size))}
+                    </button>
+                  </>
+                )}
+                {activeStatus === "rejected" && (
+                  <button
+                    type="button"
+                    onClick={() => void handleBulkDelete()}
+                    disabled={bulkDeleteVideos.isPending}
+                    className="rounded-lg bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-500 hover:bg-rose-500/20 disabled:opacity-50"
+                  >
+                    {t.video.bulkDeletePermanently.replace("{0}", String(selectedIds.size))}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setSelectedIds(new Set())}
+                  className="p-1.5 hover:bg-background-elevated rounded-lg transition-colors"
+                  title={t.library.clearSelection}
+                >
+                  <X className="h-4 w-4 text-foreground-subtle" />
+                </button>
+              </div>
+            )}
+
             {/* Video table */}
             {isLoading ? (
               <div className="overflow-hidden rounded-2xl border border-border/20">
@@ -159,7 +259,19 @@ export default function CompetitorVideosPage() {
                 <table className="w-full text-left">
                   <thead>
                     <tr className="border-b border-border/20 bg-background-subtle">
-                      <th className="py-2.5 pl-4 pr-3 text-xs font-medium text-foreground-subtle" />
+                      {selectable && (
+                        <th className="py-2.5 pl-4 pr-2 w-8">
+                          <input
+                            type="checkbox"
+                            checked={filteredVideos.length > 0 && selectedIds.size === filteredVideos.length}
+                            onChange={toggleSelectAllOnPage}
+                            className="h-4 w-4 rounded border-border/40 accent-primary"
+                          />
+                        </th>
+                      )}
+                      {!selectable && (
+                        <th className="py-2.5 pl-4 pr-3 text-xs font-medium text-foreground-subtle" />
+                      )}
                       <th className="py-2.5 pr-4 text-xs font-medium text-foreground-subtle">Video</th>
                       <th className="py-2.5 pr-4 text-right text-xs font-medium text-foreground-subtle">{t.video.views}</th>
                       <th className="py-2.5 pr-4 text-right text-xs font-medium text-foreground-subtle">{t.video.likes}</th>
@@ -178,6 +290,9 @@ export default function CompetitorVideosPage() {
                         key={video.id}
                         video={video}
                         onStatusChange={handleStatusChange2}
+                        selectable={selectable}
+                        selected={selectedIds.has(video.id)}
+                        onToggleSelect={toggleSelect}
                       />
                     ))}
                   </tbody>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { requireUser, handleApiError } from "@/lib/user-context";
 import { CompetitorVideoService } from "@/services/competitorVideoService";
+import { StorageService } from "@/services/storageService";
 import type { VideoStatus } from "@/features/video/types";
 
 const VALID_STATUSES: VideoStatus[] = ["pending", "winner", "rejected"];
@@ -61,6 +62,67 @@ export async function POST(request: NextRequest) {
       }
       throw err;
     }
+  } catch (e) {
+    return handleApiError(e);
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const { userId } = await requireUser(request);
+    const body: unknown = await request.json();
+
+    if (typeof body !== "object" || body === null) {
+      return NextResponse.json({ error: "Invalid body" }, { status: 400 });
+    }
+    const { ids, status } = body as Record<string, unknown>;
+
+    if (!Array.isArray(ids) || ids.length === 0 || !ids.every((id) => typeof id === "string")) {
+      return NextResponse.json({ error: "ids is required" }, { status: 400 });
+    }
+    if (status !== "winner" && status !== "rejected") {
+      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    }
+    // Safe: the guard above already verified `ids` is a non-empty string array.
+    const videoIds = ids as string[];
+
+    const supabase = await createClient();
+    const service = new CompetitorVideoService(supabase, userId);
+    const updated = await service.bulkUpdateStatus(videoIds, status);
+    return NextResponse.json({ updated });
+  } catch (e) {
+    return handleApiError(e);
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { userId } = await requireUser(request);
+    const body: unknown = await request.json();
+
+    if (typeof body !== "object" || body === null) {
+      return NextResponse.json({ error: "Invalid body" }, { status: 400 });
+    }
+    const { ids } = body as Record<string, unknown>;
+
+    if (!Array.isArray(ids) || ids.length === 0 || !ids.every((id) => typeof id === "string")) {
+      return NextResponse.json({ error: "ids is required" }, { status: 400 });
+    }
+    // Safe: the guard above already verified `ids` is a non-empty string array.
+    const videoIds = ids as string[];
+
+    const supabase = await createClient();
+    const service = new CompetitorVideoService(supabase, userId);
+    const storagePaths = await service.bulkDelete(videoIds);
+
+    if (storagePaths.length > 0) {
+      const storage = new StorageService(supabase);
+      await storage.remove("generated-audio", storagePaths).catch((err: unknown) => {
+        console.warn("[video/bulk-delete] Storage cleanup failed:", err);
+      });
+    }
+
+    return NextResponse.json({ deleted: videoIds.length });
   } catch (e) {
     return handleApiError(e);
   }

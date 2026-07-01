@@ -28,6 +28,17 @@ export function useCompetitorVideos(
   });
 }
 
+export function useCompetitorVideo(brandId: string | null, videoId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.competitorVideos.detail(brandId!, videoId!),
+    queryFn: () =>
+      apiFetch<UpdateVideoResponse>(
+        `/api/video/competitors/${videoId}?${new URLSearchParams({ brandId: brandId! }).toString()}`,
+      ),
+    enabled: !!brandId && !!videoId,
+  });
+}
+
 export function useAddCompetitorVideo() {
   const qc = useQueryClient();
   return useMutation({
@@ -58,6 +69,43 @@ export function useUpdateVideoStatus() {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ status }),
+      }),
+    onSuccess: (_data, { brandId }) => {
+      void qc.invalidateQueries({ queryKey: queryKeys.competitorVideos.all(brandId) });
+    },
+  });
+}
+
+export function useBulkUpdateVideoStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      ids,
+      status,
+    }: {
+      ids: string[];
+      status: "winner" | "rejected";
+      brandId: string;
+    }) =>
+      apiFetch<{ updated: number }>("/api/video/competitors", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ ids, status }),
+      }),
+    onSuccess: (_data, { brandId }) => {
+      void qc.invalidateQueries({ queryKey: queryKeys.competitorVideos.all(brandId) });
+    },
+  });
+}
+
+export function useBulkDeleteVideos() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ ids }: { ids: string[]; brandId: string }) =>
+      apiFetch<{ deleted: number }>("/api/video/competitors", {
+        method: "DELETE",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ ids }),
       }),
     onSuccess: (_data, { brandId }) => {
       void qc.invalidateQueries({ queryKey: queryKeys.competitorVideos.all(brandId) });

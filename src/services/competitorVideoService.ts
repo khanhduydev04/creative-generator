@@ -20,6 +20,10 @@ interface CompetitorVideoRow extends Omit<CompetitorVideo, "hasGeneratedAudio" |
   transcripts: TranscriptJoinRow[] | TranscriptJoinRow | null;
 }
 
+interface AudioJoinRow {
+  brand_scripts: { generated_audios: { storage_path: string | null }[] }[] | null;
+}
+
 export class CompetitorVideoService {
   constructor(
     private readonly supabase: SupabaseClient,
@@ -105,6 +109,62 @@ export class CompetitorVideoService {
     // progress, so the caller's cached list (which does) is the source of
     // truth for these two flags until the next full list refetch.
     return { ...data, hasGeneratedAudio: false, transcriptionFailed: false } as CompetitorVideo;
+  }
+
+  async getVideoById(videoId: string, brandId: string): Promise<CompetitorVideo | null> {
+    const { data, error } = await this.supabase
+      .from("competitor_videos")
+      .select(
+        `*, transcripts:transcripts!video_id(whisper_status, brand_scripts(generated_audios(id)))`,
+      )
+      .eq("id", videoId)
+      .eq("brand_id", brandId)
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    if (!data) return null;
+
+    // Safe: shape matches the embedded select() above (same join as listVideos).
+    const { transcripts, ...video } = data as CompetitorVideoRow;
+    return { ...video, ...deriveVideoFlags(transcripts) };
+  }
+
+  async bulkUpdateStatus(videoIds: string[], status: VideoStatus): Promise<number> {
+    const { data, error } = await this.supabase
+      .from("competitor_videos")
+      .update({ status })
+      .in("id", videoIds)
+      .select("id");
+
+    if (error) throw new Error(error.message);
+    return data?.length ?? 0;
+  }
+
+  async bulkDelete(videoIds: string[]): Promise<string[]> {
+    // Cascaded generated_audios rows disappear once competitor_videos rows are
+    // deleted (ON DELETE CASCADE), so their storage_path must be read first.
+    const { data, error: audioError } = await this.supabase
+      .from("transcripts")
+      .select("brand_scripts(generated_audios(storage_path))")
+      .in("video_id", videoIds);
+
+    if (audioError) throw new Error(audioError.message);
+
+    // Safe: shape matches the embedded select() above.
+    const audioRows = (data ?? []) as AudioJoinRow[];
+    const storagePaths = audioRows
+      .flatMap((row) => row.brand_scripts ?? [])
+      .flatMap((script) => script.generated_audios ?? [])
+      .map((audio) => audio.storage_path)
+      .filter((path): path is string => Boolean(path));
+
+    const { error } = await this.supabase
+      .from("competitor_videos")
+      .delete()
+      .in("id", videoIds);
+
+    if (error) throw new Error(error.message);
+    return storagePaths;
   }
 
   async upsertVideos(

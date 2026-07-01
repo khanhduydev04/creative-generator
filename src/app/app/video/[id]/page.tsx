@@ -16,8 +16,8 @@ import {
 } from "@/hooks/api/useTranscripts";
 import { useScripts } from "@/hooks/api/useScripts";
 import { useGeneratedAudiosByScript } from "@/hooks/api/useGeneratedAudios";
+import { useCompetitorVideo } from "@/hooks/api/useCompetitorVideos";
 import { apiFetch } from "@/lib/api";
-import type { CompetitorVideo } from "@/features/video/types";
 import { PipelineStageBar } from "@/features/video/components/PipelineStageBar";
 import { derivePipelineStages, type StageKey } from "@/features/video/utils/pipelineStages";
 
@@ -40,8 +40,6 @@ export default function VideoDetailPage({ params }: VideoDetailPageProps) {
   const { t } = useT();
   const { selectedBrandId } = useApp();
 
-  const [video, setVideo] = useState<CompetitorVideo | null>(null);
-  const [loadingVideo, setLoadingVideo] = useState(true);
   const [transcriptId, setTranscriptId] = useState<string | null>(null);
   const [products, setProducts] = useState<ProductOption[]>([]);
   const [savedScriptId, setSavedScriptId] = useState<string | null>(null);
@@ -52,22 +50,11 @@ export default function VideoDetailPage({ params }: VideoDetailPageProps) {
 
   const createTranscript = useCreateTranscript();
   const runTranscription = useRunTranscription();
+  const { data: videoData, isLoading: loadingVideo } = useCompetitorVideo(selectedBrandId, id);
+  const video = videoData?.video ?? null;
   const { data: transcript } = useTranscriptStatus(transcriptId);
   const { data: scripts = [] } = useScripts(transcriptId);
   const { data: audios = [] } = useGeneratedAudiosByScript(savedScriptId);
-
-  useEffect(() => {
-    setLoadingVideo(true);
-    apiFetch<{ videos: CompetitorVideo[] }>(
-      `/api/video/competitors?brandId=${selectedBrandId ?? ""}`,
-    )
-      .then((data) => {
-        const found = data.videos.find((v) => v.id === id) ?? null;
-        setVideo(found);
-      })
-      .catch(() => setVideo(null))
-      .finally(() => setLoadingVideo(false));
-  }, [id, selectedBrandId]);
 
   useEffect(() => {
     if (!selectedBrandId) return;

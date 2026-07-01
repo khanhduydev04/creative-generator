@@ -35,6 +35,8 @@ export const queryKeys = {
     all: (brandId: string) => ["competitor-videos", brandId] as const,
     list: (brandId: string, status: string, page: number, q?: string) =>
       ["competitor-videos", brandId, status, page, q ?? ""] as const,
+    detail: (brandId: string, videoId: string) =>
+      ["competitor-videos", brandId, "detail", videoId] as const,
   },
   transcripts: {
     detail: (videoId: string) => ["transcripts", videoId] as const,

@@ -18,9 +18,18 @@ const STATUS_BADGE: Record<VideoStatus, string> = {
 interface CompetitorVideoCardProps {
   video: CompetitorVideo;
   onStatusChange: (videoId: string, status: VideoStatus) => Promise<void>;
+  selectable: boolean;
+  selected: boolean;
+  onToggleSelect: (videoId: string) => void;
 }
 
-export function CompetitorVideoCard({ video, onStatusChange }: CompetitorVideoCardProps) {
+export function CompetitorVideoCard({
+  video,
+  onStatusChange,
+  selectable,
+  selected,
+  onToggleSelect,
+}: CompetitorVideoCardProps) {
   const { t } = useT();
   const [showPreview, setShowPreview] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -45,8 +54,20 @@ export function CompetitorVideoCard({ video, onStatusChange }: CompetitorVideoCa
   return (
     <>
       <tr className="border-b border-border/20 transition-colors hover:bg-black/[0.02]">
+        {/* Select */}
+        {selectable && (
+          <td className="py-2 pl-4 pr-2 w-8">
+            <input
+              type="checkbox"
+              checked={selected}
+              onChange={() => onToggleSelect(video.id)}
+              className="h-4 w-4 rounded border-border/40 accent-primary"
+            />
+          </td>
+        )}
+
         {/* Thumbnail */}
-        <td className="py-2 pl-4 pr-3 w-12">
+        <td className={`py-2 pr-3 w-12 ${selectable ? "" : "pl-4"}`}>
           <button
             type="button"
             onClick={() => setShowPreview(true)}

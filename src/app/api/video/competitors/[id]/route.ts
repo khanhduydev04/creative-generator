@@ -6,6 +6,34 @@ import type { VideoStatus } from "@/features/video/types";
 
 const VALID_STATUSES: VideoStatus[] = ["pending", "winner", "rejected"];
 
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { userId } = await requireUser(request);
+    const { id } = await params;
+    const { searchParams } = new URL(request.url);
+    const brandId = searchParams.get("brandId");
+
+    if (!brandId) {
+      return NextResponse.json({ error: "brandId is required" }, { status: 400 });
+    }
+
+    const supabase = await createClient();
+    const service = new CompetitorVideoService(supabase, userId);
+    const video = await service.getVideoById(id, brandId);
+
+    if (!video) {
+      return NextResponse.json({ error: "Video not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ video });
+  } catch (e) {
+    return handleApiError(e);
+  }
+}
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
