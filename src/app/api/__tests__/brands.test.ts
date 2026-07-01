@@ -27,10 +27,17 @@ vi.mock("../../../services/brandService", () => {
   };
 });
 
+vi.mock("@/lib/auth/verify-admin", () => ({
+  verifyAdmin: vi.fn(),
+  isVerifyError: (r: unknown) => r instanceof Response,
+}));
+
 import { GET, POST } from "../brands/route";
+import { verifyAdmin } from "@/lib/auth/verify-admin";
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(verifyAdmin).mockResolvedValue({ userId: "test-user-id", role: "ceo" } as never);
 });
 
 describe("GET /api/brands", () => {

@@ -86,6 +86,27 @@ export class BrandKitService {
   }
 
   /**
+   * Reset the brand kit back to a blank state: default typography/font source,
+   * all colors cleared, logos and font files cleared.
+   */
+  async resetBrandKit(brandId: string): Promise<BrandKitRow> {
+    return this.saveBrandKit(brandId, {
+      typography: 'Inter',
+      font_source: 'google',
+      primary_color_1: null,
+      primary_color_2: null,
+      secondary_color_1: null,
+      secondary_color_2: null,
+      accent_color_1: null,
+      accent_color_2: null,
+      logo_light_path: null,
+      logo_dark_path: null,
+      font_file_paths: null,
+      font_specimen_path: null,
+    })
+  }
+
+  /**
    * Upload a logo and save the path to the brand kit.
    * logoType: 'light' | 'dark'
    */
