@@ -6,8 +6,9 @@ export const SETUP_CHECKLIST_ITEMS: SetupChecklistItem[] = [
   { id: 'select-brand', label: 'Chọn hoặc tạo Thương hiệu', description: 'Dropdown "Thương hiệu" cuối sidebar', required: true, linkTo: '/app/brands' },
   { id: 'brand-identity', label: 'Thiết lập nhận diện thương hiệu', description: 'Thương hiệu → Nhận diện thương hiệu', required: true, linkTo: '/app/brands' },
   { id: 'add-products', label: 'Thêm sản phẩm (kèm ảnh)', description: 'Thương hiệu → tab Sản phẩm', required: true, linkTo: '/app/brands' },
-  { id: 'create-personas', label: 'Tạo/generate Personas', description: 'Thương hiệu → Brand Intelligence', required: false, linkTo: '/app/brands' },
   { id: 'add-research', label: 'Thêm nghiên cứu thương hiệu', description: 'Thương hiệu → Brand Intelligence', required: false, linkTo: '/app/brands' },
+  { id: 'create-personas', label: 'Tạo/generate Personas', description: 'Thương hiệu → Brand Intelligence', required: false, linkTo: '/app/brands' },
+  { id: 'apify-sync', label: 'Cấu hình đồng bộ Apify (Task ID)', description: 'Thương hiệu → cuối trang, phần Apify Sync — chỉ cần nếu dùng tính năng Video', required: false, linkTo: '/app/brands' },
 ]
 
 // ─── Guide Groups ───────────────────────────────────────────────────────────
@@ -225,7 +226,7 @@ export const GUIDE_SECTIONS: GuideSection[] = [
     group: 'images',
     adminOnly: false,
     content: [
-      { type: 'paragraph', text: 'Vị trí: Điều hướng → Cài đặt → Concept. Mọi người dùng đều xem được; chỉ admin (CEO, Super Admin) mới tạo/sửa/xoá được — thành viên thấy chế độ chỉ xem.' },
+      { type: 'paragraph', text: 'Vị trí: Điều hướng → Cài đặt → Concept. Mọi người dùng đã đăng nhập đều tạo/sửa/xoá được concept của riêng mình. Concept hệ thống (built-in, đánh dấu "[System]") chỉ admin (CEO, Super Admin) mới sửa/xoá được.' },
       { type: 'paragraph', text: 'Concept định nghĩa chiến lược sáng tạo dùng trong lúc tạo quảng cáo. Mỗi concept gồm:' },
       { type: 'table', headers: ['Trường', 'Mô tả'], rows: [
         ['Concept ID', 'Định danh duy nhất, chữ thường + gạch dưới (vd. data_hook), không đổi được sau khi tạo'],
@@ -239,7 +240,7 @@ export const GUIDE_SECTIONS: GuideSection[] = [
     subsections: [
       {
         id: '3-1-add-concept',
-        title: '3.1 Thêm Concept (admin)',
+        title: '3.1 Thêm Concept',
         content: [
           { type: 'steps', items: [
             'Bấm "Thêm concept"',
@@ -249,6 +250,7 @@ export const GUIDE_SECTIONS: GuideSection[] = [
             'Bấm "Lưu"',
           ]},
           { type: 'tip', text: 'Bấm mũi tên mở rộng trên bất kỳ thẻ concept nào để xem toàn bộ prompt. Ảnh tham khảo chỉ định hướng phong cách — nội dung sản phẩm và màu thương hiệu không bao giờ bị copy từ ảnh tham khảo.' },
+          { type: 'warning', text: 'Concept hệ thống (nhãn "[System]") chỉ admin sửa/xoá được. Thành viên vẫn tạo và quản lý concept riêng của mình bình thường.' },
         ],
       },
     ],
@@ -534,8 +536,7 @@ export const GUIDE_SECTIONS: GuideSection[] = [
     group: 'brands',
     adminOnly: false,
     content: [
-      { type: 'paragraph', text: 'Vị trí: Điều hướng → Cài đặt → Thương hiệu (trang /app/brands, phần "Nhận diện thương hiệu"). Mọi người dùng xem được; chỉ admin (CEO, Super Admin) chỉnh sửa được.' },
-      { type: 'warning', text: 'Thành viên (Member) thấy banner "Chỉ xem, chỉ admin mới có thể chỉnh sửa cài đặt thương hiệu." và không sửa được các trường bên dưới.' },
+      { type: 'paragraph', text: 'Vị trí: Điều hướng → Cài đặt → Thương hiệu (trang /app/brands, phần "Nhận diện thương hiệu"). Mọi người dùng đã đăng nhập (kể cả Thành viên) đều chỉnh sửa được — chỉ việc tạo mới hoặc xoá cả Thương hiệu mới cần quyền admin (xem mục 9.1).' },
     ],
     subsections: [
       {
@@ -668,21 +669,21 @@ export const GUIDE_SECTIONS: GuideSection[] = [
     icon: 'RefreshCw',
     description: 'Cấu hình Apify task để tự động kéo video TikTok đối thủ',
     group: 'brands',
-    adminOnly: true,
+    adminOnly: false,
     content: [
-      { type: 'paragraph', text: 'Vị trí: cuối trang Thương hiệu, phần "Apify Sync". Chỉ admin (CEO, Super Admin) cấu hình được; thành viên chỉ thấy trạng thái sync gần nhất.' },
+      { type: 'paragraph', text: 'Vị trí: cuối trang Thương hiệu, phần "Apify Sync". Mọi người dùng đều bấm được "Sync ngay" và xem trạng thái — chỉ riêng việc cấu hình Task ID / bật-tắt tự động sync mới cần quyền admin (CEO, Super Admin).' },
     ],
     subsections: [
       {
         id: '13-1-config',
-        title: '13.1 Cấu hình',
+        title: '13.1 Cấu hình (chỉ admin)',
         content: [
           { type: 'steps', items: [
             'Dán Apify Task ID (dạng ~abc123xyz) vào ô tương ứng',
             'Bật/tắt "Bật tự động sync (cron)" — khi bật, hệ thống tự động chạy sync theo lịch cron định kỳ',
             'Bấm "Lưu cấu hình"',
           ]},
-          { type: 'paragraph', text: 'Bấm "Sync ngay" bất kỳ lúc nào để lấy dữ liệu ngay lập tức từ lần chạy thành công gần nhất của task Apify đã cấu hình — video mới sẽ xuất hiện trong danh sách Video Trending (mục 5).' },
+          { type: 'tip', text: 'Bấm "Sync ngay" bất kỳ lúc nào để lấy dữ liệu ngay lập tức từ lần chạy thành công gần nhất của task Apify đã cấu hình — video mới sẽ xuất hiện trong danh sách Video Trending (mục 5). Nút này dùng được cho mọi người dùng, không chỉ admin.' },
         ],
       },
       {
@@ -713,7 +714,7 @@ export const GUIDE_SECTIONS: GuideSection[] = [
     group: 'setting',
     adminOnly: false,
     content: [
-      { type: 'warning', text: 'Không có trang đăng ký công khai. Tài khoản (email @patigroup.com) được quản trị viên cấp trực tiếp — nếu chưa có tài khoản, liên hệ quản trị viên của bạn.' },
+      { type: 'warning', text: 'Không có trang đăng ký công khai. Tài khoản (email @ladospice.com) được quản trị viên cấp trực tiếp — nếu chưa có tài khoản, liên hệ quản trị viên của bạn.' },
     ],
     subsections: [
       {
@@ -722,7 +723,7 @@ export const GUIDE_SECTIONS: GuideSection[] = [
         content: [
           { type: 'steps', items: [
             'Mở địa chỉ ứng dụng trên trình duyệt — hệ thống tự chuyển tới trang đăng nhập nếu chưa đăng nhập',
-            'Nhập email @patigroup.com và mật khẩu, hoặc bấm "Tiếp tục với Google"',
+            'Nhập email @ladospice.com và mật khẩu, hoặc bấm "Tiếp tục với Google"',
             'Bấm nút đăng nhập',
           ]},
         ],
@@ -733,7 +734,7 @@ export const GUIDE_SECTIONS: GuideSection[] = [
         content: [
           { type: 'steps', items: [
             'Bấm "Quên mật khẩu?" trên trang đăng nhập',
-            'Nhập email @patigroup.com',
+            'Nhập email @ladospice.com',
             'Kiểm tra hộp thư để nhận mật khẩu tạm thời mới',
             'Đăng nhập bằng mật khẩu mới rồi đổi lại trong Cài đặt (mục 15)',
           ]},
@@ -748,8 +749,9 @@ export const GUIDE_SECTIONS: GuideSection[] = [
             ['Chọn hoặc tạo Thương hiệu', 'Dropdown "Thương hiệu" cuối sidebar', 'Có'],
             ['Thiết lập nhận diện thương hiệu', 'Thương hiệu → Nhận diện thương hiệu', 'Có'],
             ['Thêm sản phẩm (kèm ảnh)', 'Thương hiệu → tab Sản phẩm', 'Có'],
-            ['Tạo/generate Personas', 'Thương hiệu → Brand Intelligence', 'Nên có'],
             ['Thêm nghiên cứu thương hiệu', 'Thương hiệu → Brand Intelligence', 'Nên có'],
+            ['Tạo/generate Personas', 'Thương hiệu → Brand Intelligence', 'Nên có'],
+            ['Cấu hình đồng bộ Apify (Task ID)', 'Thương hiệu → cuối trang, phần Apify Sync (chỉ admin cấu hình được)', 'Chỉ cần nếu dùng tính năng Video'],
           ]},
         ],
       },
@@ -844,7 +846,7 @@ export const GUIDE_SECTIONS: GuideSection[] = [
           { type: 'table', headers: ['Vai trò', 'Số tài khoản tối đa', 'Mô tả'], rows: [
             ['CEO', '1', 'Quyền cao nhất. Không thể bị xoá hoặc hạ cấp.'],
             ['Super Admin', '2', 'Quản lý được mọi thứ trừ tài khoản CEO.'],
-            ['Thành viên', 'Không giới hạn', 'Nhân viên thông thường. Chỉ xem đối với Thương hiệu, Concept và Đồng bộ Apify.'],
+            ['Thành viên', 'Không giới hạn', 'Nhân viên thông thường. Sửa được Nhận diện thương hiệu/Sản phẩm/Brand Intelligence và concept của riêng mình; không tạo/xoá được Thương hiệu, không sửa concept hệ thống, không cấu hình Đồng bộ Apify, không vào được trang Quản trị.'],
           ]},
         ],
       },
@@ -857,10 +859,13 @@ export const GUIDE_SECTIONS: GuideSection[] = [
             ['Tạo Stealth Ads', 'Có', 'Có', 'Có'],
             ['Xử lý pipeline Video (bóc băng/kịch bản/giọng đọc)', 'Có', 'Có', 'Có'],
             ['Xem Thư viện, Thư viện Audio', 'Có', 'Có', 'Có'],
-            ['Sửa Nhận diện thương hiệu, Sản phẩm, Brand Intelligence', 'Có', 'Có', 'Không (chỉ xem)'],
-            ['Sửa Concept', 'Có', 'Có', 'Không (chỉ xem)'],
-            ['Thêm/xoá/đổi tên Thương hiệu', 'Có', 'Có', 'Không'],
-            ['Cấu hình Đồng bộ Apify', 'Có', 'Có', 'Không (chỉ xem trạng thái)'],
+            ['Sửa Nhận diện thương hiệu, Sản phẩm, Brand Intelligence', 'Có', 'Có', 'Có'],
+            ['Đổi tên Thương hiệu', 'Có', 'Có', 'Có'],
+            ['Tạo hoặc xoá Thương hiệu', 'Có', 'Có', 'Không'],
+            ['Tạo/sửa/xoá Concept của riêng mình', 'Có', 'Có', 'Có'],
+            ['Sửa/xoá Concept hệ thống ("[System]")', 'Có', 'Có', 'Không'],
+            ['Bấm "Sync ngay" video từ Apify', 'Có', 'Có', 'Có'],
+            ['Cấu hình Task ID / bật tự động sync Apify', 'Có', 'Có', 'Không'],
             ['Đổi mật khẩu của chính mình', 'Có', 'Có', 'Có'],
             ['Xem trang Quản trị', 'Có', 'Có', 'Không'],
           ]},
@@ -885,10 +890,10 @@ export const GUIDE_SECTIONS: GuideSection[] = [
         title: '18.1 Lỗi thường gặp',
         content: [
           { type: 'table', headers: ['Vấn đề', 'Cách xử lý'], rows: [
-            ['"Email hoặc mật khẩu không đúng"', 'Kiểm tra email kết thúc bằng @patigroup.com, mật khẩu từ 8 ký tự trở lên'],
+            ['"Email hoặc mật khẩu không đúng"', 'Kiểm tra email kết thúc bằng @ladospice.com, mật khẩu từ 8 ký tự trở lên'],
             ['"Tài khoản đã bị vô hiệu hóa"', 'Liên hệ quản trị viên để kích hoạt lại'],
             ['Không tìm thấy tài khoản', 'Liên hệ quản trị viên — tài khoản có thể chưa được tạo'],
-            ['Trang Thương hiệu / Concept chỉ xem, không sửa được', 'Bạn đang đăng nhập với vai trò Thành viên — nhờ admin chỉnh sửa hoặc nâng quyền'],
+            ['Không thêm/xoá được Thương hiệu, không sửa được Concept hệ thống, không cấu hình được Đồng bộ Apify', 'Các thao tác này chỉ dành cho CEO/Super Admin — nhờ admin thực hiện hoặc nâng quyền'],
             ['Không có sản phẩm trong dropdown', 'Vào Thương hiệu → tab Sản phẩm → thêm sản phẩm trước'],
             ['Không có persona nào', 'Vào Thương hiệu → Brand Intelligence → Tạo 10 Profiles hoặc Thêm Profile'],
             ['Tạo quảng cáo bị treo ở bước đọc trang sản phẩm', 'Kiểm tra URL trang sản phẩm còn hợp lệ và truy cập được'],

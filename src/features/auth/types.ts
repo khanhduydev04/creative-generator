@@ -41,7 +41,7 @@ export function isAdmin(role: UserRole): boolean {
   return ADMIN_ROLES.includes(role)
 }
 
-export const EMAIL_DOMAIN = '@patigroup.com'
+export const EMAIL_DOMAIN = '@ladospice.com'
 
 export function isValidEmail(email: string): boolean {
   return email.endsWith(EMAIL_DOMAIN)

@@ -1,4 +1,4 @@
-# PATI Ads Generator — App Workflow
+# Ladospice — App Workflow
 
 > Tài liệu mô tả toàn bộ luồng sử dụng của tool từ góc nhìn người dùng.
 > Version: 1.2.0 | Cập nhật: July 2026
@@ -30,14 +30,14 @@
 ```
 User mở app
   → Option A: Click "Sign in with Google" (GoogleSignInButton) → OAuth flow → redirect "/app"
-  → Option B: Nhập email (@patigroup.com) + password (8+ ký tự) → Click "Sign In"
+  → Option B: Nhập email (@ladospice.com) + password (8+ ký tự) → Click "Sign In"
       → supabase.auth.signInWithPassword()
       → POST /api/auth/verify-login
           ├── ✓ Success → redirect "/app" → AuthProvider load profile (GET /api/auth/me)
           └── ✗ Fail → hiện lỗi (invalid credentials / account deactivated / account not found)
 ```
 
-Email phải kết thúc bằng `@patigroup.com` (`EMAIL_DOMAIN` trong `src/features/auth/types.ts`), validate ngay trên client trước khi gọi Supabase.
+Email phải kết thúc bằng `@ladospice.com` (`EMAIL_DOMAIN` trong `src/features/auth/types.ts`), validate ngay trên client trước khi gọi Supabase.
 
 ### Forgot Password (`/forgot-password`)
 
@@ -138,9 +138,11 @@ Brand Setup Page
 Save Brand Kit → PATCH /api/brands/{id} + PUT /api/brand-kit/{id}
 ```
 
-**Permission:**
-- Admin (CEO, Super Admin): full edit
-- Member: view only (yellow banner)
+**Permission:** (`canEdit = !!profile` in `BrandSetupForm.tsx` — any authenticated user, including Member, can edit)
+- Brand identity, colors, logo, font, products, research, personas: any logged-in user (CEO, Super Admin, Member)
+- Create / delete a Brand (the sidebar brand selector): Admin only (CEO, Super Admin)
+- Rename a Brand: any logged-in user
+- Apify Sync config (Task ID, auto-sync toggle): Admin only; the "Sync now" button itself is available to everyone
 
 ---
 
@@ -360,7 +362,7 @@ Data Source:
 ### Entry: `/app/concepts`
 
 ```
-Concepts Page (Admin: full CRUD | Member: view only)
+Concepts Page (Admin: full CRUD incl. system concepts | Member: full CRUD on own concepts, cannot edit/delete system ["[System]"] concepts)
 
 Concept Cards (expandable):
   ┌──────────────────────────────────────────────────┐
@@ -545,8 +547,9 @@ Admin Dashboard (GET /api/admin/stats?days=1|7|30)
 
 ```
 CEO           → full quyền
-  └── Super Admin → xem được Admin Dashboard
-        └── Member → chỉ generate ads, view only brand/concepts
+  └── Super Admin → xem được Admin Dashboard, tạo/xoá brand, sửa concept hệ thống, cấu hình Apify
+        └── Member → generate ads, sửa brand identity/products/personas, tạo/sửa concept riêng
+                      (không tạo/xoá brand, không sửa concept hệ thống, không cấu hình Apify, không vào Admin)
 ```
 
 (`isAdmin(role)` = `role === "ceo" || role === "super_admin"`, định nghĩa tại `src/features/auth/types.ts`.)
@@ -645,4 +648,4 @@ API Keys (đọc từ server env vars — dùng chung toàn app, không có DB o
 
 ---
 
-*Last updated: July 2026 — PATI Group Internal*
+*Last updated: July 2026 — Ladospice Internal*

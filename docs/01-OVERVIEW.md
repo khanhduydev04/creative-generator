@@ -2,7 +2,7 @@
 
 ## Mục đích
 
-Công cụ nội bộ của PATI Group (Ladospice) cho hai nhóm việc:
+Công cụ nội bộ Ladospice cho hai nhóm việc:
 
 **A. Tạo ảnh quảng cáo tĩnh (static ads)** cho Meta (Facebook/Instagram). Người dùng nhập thông tin sản phẩm, chọn chiến lược sáng tạo, và hệ thống tự động:
 

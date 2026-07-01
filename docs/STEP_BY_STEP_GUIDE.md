@@ -1,4 +1,4 @@
-# PATI Ads Generator — Step-by-Step Guide
+# Ladospice — Step-by-Step Guide
 
 > Hướng dẫn sử dụng tool tạo quảng cáo. Version: July 2026
 >
@@ -8,7 +8,7 @@
 
 ## 1. Đăng nhập
 
-1. Nhập email `@patigroup.com` + password → Click **"Sign In"**, hoặc click **"Sign in with Google"** để đăng nhập bằng tài khoản Google
+1. Nhập email `@ladospice.com` + password → Click **"Sign In"**, hoặc click **"Sign in with Google"** để đăng nhập bằng tài khoản Google
 2. Quên mật khẩu? Click "Forgot password?" → nhập email → check inbox
 
 ![Trang login](screenshots/01-login.png)
@@ -242,4 +242,4 @@ Vào **Video Trending** trên sidebar (`/app/video`), mục "Video".
 
 ---
 
-*Last updated: July 2026 — PATI Group Internal*
+*Last updated: July 2026 — Ladospice Internal*

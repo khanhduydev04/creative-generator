@@ -7,7 +7,7 @@ import { ArrowRight, CheckCircle2, ChevronDown, ChevronRight, Circle } from "luc
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-const STORAGE_KEY = "pati-guide-checklist";
+const STORAGE_KEY = "ladospice-guide-checklist";
 
 interface ChecklistStorage {
   completedIds: string[];

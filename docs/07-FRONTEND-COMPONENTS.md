@@ -154,7 +154,7 @@ Tab-based form:
 | **Concepts** | `ConceptsTab.tsx` | CRUD concept prompts + reference image upload (cũng render độc lập ở trang `/app/concepts`) |
 | **Personas** | Inline | List personas + `AddProfileModal`/`EditProfileModal`/`DeleteConfirmModal`, sinh persona tự động qua `useGeneratePersonas` (brand intelligence) |
 
-Cuối form còn có **ApifySyncSection** — cấu hình Apify task ID và trigger đồng bộ video trending thủ công, admin-gated (`canManage = isAdmin(profile.role)`), hiển thị trạng thái sync trực tiếp.
+Cuối form còn có **ApifySyncSection** — hiển thị trạng thái sync và nút "Sync ngay" cho mọi user; riêng phần cấu hình Apify task ID + toggle auto-sync mới admin-gated (`canManage = isAdmin(profile.role)`).
 
 ### Key Brand Components (`src/features/brand/components/`)
 
