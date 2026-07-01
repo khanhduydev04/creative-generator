@@ -27,21 +27,23 @@ import {
   Loader2,
   Palette,
   Pencil,
+  Plus,
   Sparkles,
   Trash2,
   UploadCloud,
   X,
 } from "lucide-react";
+import {
+  COLOR_TIERS,
+  EMPTY_BRAND_COLORS,
+  getConfiguredTierColors,
+  hasAnyConfiguredColor,
+  type BrandColors,
+  type ColorKey,
+} from "@/features/brand/utils/brandColorSlots";
 import { useEffect, useRef, useState } from "react";
 
-const DEFAULT_COLORS = {
-  primary1: "#17cf54",
-  primary2: "#15b84b",
-  secondary1: "#1e293b",
-  secondary2: "#334155",
-  accent1: "#facc15",
-  accent2: "#f59e0b",
-};
+const COLOR_PICKER_SEED = "#000000"; // Native <input type="color"> requires a value even before the user has picked one; never displayed as a swatch or persisted on its own.
 
 export function BrandSetupForm() {
   const { selectedBrandId, setSelectedBrandId } = useApp();
@@ -83,7 +85,7 @@ export function BrandSetupForm() {
   const [fontSource, setFontSource] = useState<"google" | "local" | null>(
     "google",
   );
-  const [colors, setColors] = useState(DEFAULT_COLORS);
+  const [colors, setColors] = useState<BrandColors>(EMPTY_BRAND_COLORS);
   const [saved, setSaved] = useState(false);
 
   const [research, setResearch] = useState("");
@@ -107,12 +109,12 @@ export function BrandSetupForm() {
       setTypography((kit.typography as string) ?? "Inter");
       setFontSource((kit.font_source as "google" | "local" | null) ?? "google");
       setColors({
-        primary1: kit.primary_color_1 ?? DEFAULT_COLORS.primary1,
-        primary2: kit.primary_color_2 ?? DEFAULT_COLORS.primary2,
-        secondary1: kit.secondary_color_1 ?? DEFAULT_COLORS.secondary1,
-        secondary2: kit.secondary_color_2 ?? DEFAULT_COLORS.secondary2,
-        accent1: kit.accent_color_1 ?? DEFAULT_COLORS.accent1,
-        accent2: kit.accent_color_2 ?? DEFAULT_COLORS.accent2,
+        primary1: kit.primary_color_1 ?? null,
+        primary2: kit.primary_color_2 ?? null,
+        secondary1: kit.secondary_color_1 ?? null,
+        secondary2: kit.secondary_color_2 ?? null,
+        accent1: kit.accent_color_1 ?? null,
+        accent2: kit.accent_color_2 ?? null,
       });
     }
   }, [brandKit.data]);
@@ -131,8 +133,12 @@ export function BrandSetupForm() {
   const savingResearch = saveResearchMutation.isPending;
   const generatingPersonas = generatePersonasMutation.isPending;
 
-  function updateColor(key: keyof typeof DEFAULT_COLORS, value: string) {
+  function updateColor(key: ColorKey, value: string) {
     setColors((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function clearColor(key: ColorKey) {
+    setColors((prev) => ({ ...prev, [key]: null }));
   }
 
   async function ensureBrand(): Promise<string> {
@@ -253,7 +259,7 @@ export function BrandSetupForm() {
     setBrandDescription("");
     setTypography("Inter");
     setFontSource("google");
-    setColors(DEFAULT_COLORS);
+    setColors(EMPTY_BRAND_COLORS);
     setResearch("");
     if (selectedBrandId) {
       resetBrandMutation.mutate();
@@ -385,65 +391,34 @@ export function BrandSetupForm() {
                   )}
                 </div>
                 <div className="space-y-3">
-                  {(["primary", "secondary", "accent"] as const).map((tier) => {
-                    const key1 = `${tier}1` as keyof typeof DEFAULT_COLORS;
-                    const key2 = `${tier}2` as keyof typeof DEFAULT_COLORS;
+                  {COLOR_TIERS.map((tier) => {
+                    // Template-literal concatenation can't be narrowed to the ColorKey union by TS; both suffixes are always valid for every tier.
+                    const key1 = `${tier}1` as ColorKey;
+                    const key2 = `${tier}2` as ColorKey;
                     return (
                       <div key={tier}>
                         <label className="block text-sm font-semibold text-foreground-muted mb-2">
                           {tierLabels[tier]}
                         </label>
                         <div className="flex gap-2">
-                          <div className="flex-1 flex items-center gap-1.5 p-2 border border-border rounded-lg bg-background-subtle">
-                            <label
-                              className={
-                                canEdit ? "cursor-pointer" : "cursor-default"
-                              }
-                            >
-                              <div
-                                className="w-6 h-6 rounded shrink-0"
-                                style={{ backgroundColor: colors[key1] }}
-                              />
-                              {canEdit && (
-                                <input
-                                  type="color"
-                                  value={colors[key1]}
-                                  onChange={(e) =>
-                                    updateColor(key1, e.target.value)
-                                  }
-                                  className="sr-only"
-                                />
-                              )}
-                            </label>
-                            <span className="text-[10px] font-mono uppercase text-foreground-muted truncate">
-                              {colors[key1]}
-                            </span>
-                          </div>
-                          <div className="flex-1 flex items-center gap-1.5 p-2 border border-border rounded-lg bg-background-subtle">
-                            <label
-                              className={
-                                canEdit ? "cursor-pointer" : "cursor-default"
-                              }
-                            >
-                              <div
-                                className="w-6 h-6 rounded shrink-0"
-                                style={{ backgroundColor: colors[key2] }}
-                              />
-                              {canEdit && (
-                                <input
-                                  type="color"
-                                  value={colors[key2]}
-                                  onChange={(e) =>
-                                    updateColor(key2, e.target.value)
-                                  }
-                                  className="sr-only"
-                                />
-                              )}
-                            </label>
-                            <span className="text-[10px] font-mono uppercase text-foreground-muted truncate">
-                              {colors[key2]}
-                            </span>
-                          </div>
+                          <ColorSlot
+                            value={colors[key1]}
+                            canEdit={canEdit}
+                            notSetLabel={t.brandSetup.colorNotSet}
+                            addAriaLabel={t.brandSetup.addColorAria}
+                            removeAriaLabel={t.brandSetup.removeColorAria}
+                            onChange={(value) => updateColor(key1, value)}
+                            onClear={() => clearColor(key1)}
+                          />
+                          <ColorSlot
+                            value={colors[key2]}
+                            canEdit={canEdit}
+                            notSetLabel={t.brandSetup.colorNotSet}
+                            addAriaLabel={t.brandSetup.addColorAria}
+                            removeAriaLabel={t.brandSetup.removeColorAria}
+                            onChange={(value) => updateColor(key2, value)}
+                            onClear={() => clearColor(key2)}
+                          />
                         </div>
                       </div>
                     );
@@ -505,33 +480,37 @@ export function BrandSetupForm() {
                     <p className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest mb-3">
                       {t.brandSetup.colorSwatches}
                     </p>
-                    <div className="space-y-3">
-                      {(["primary", "secondary", "accent"] as const).map(
-                        (tier) => {
-                          const key1 =
-                            `${tier}1` as keyof typeof DEFAULT_COLORS;
-                          const key2 =
-                            `${tier}2` as keyof typeof DEFAULT_COLORS;
+                    {hasAnyConfiguredColor(colors) ? (
+                      <div className="space-y-3">
+                        {COLOR_TIERS.map((tier) => {
+                          // Template-literal concatenation can't be narrowed to the ColorKey union by TS; both suffixes are always valid for every tier.
+                          const key1 = `${tier}1` as ColorKey;
+                          const key2 = `${tier}2` as ColorKey;
+                          const presentColors = getConfiguredTierColors(colors, [key1, key2]);
+                          if (presentColors.length === 0) return null;
                           return (
                             <div key={tier}>
                               <p className="text-[10px] font-mono uppercase text-foreground-subtle mb-1">
                                 {tierLabels[tier]}
                               </p>
                               <div className="flex gap-2">
-                                <div
-                                  className="flex-1 h-10 rounded-lg shadow-inner"
-                                  style={{ backgroundColor: colors[key1] }}
-                                />
-                                <div
-                                  className="flex-1 h-10 rounded-lg shadow-inner"
-                                  style={{ backgroundColor: colors[key2] }}
-                                />
+                                {presentColors.map(({ key, value }) => (
+                                  <div
+                                    key={key}
+                                    className="flex-1 h-10 rounded-lg shadow-inner"
+                                    style={{ backgroundColor: value }}
+                                  />
+                                ))}
                               </div>
                             </div>
                           );
-                        },
-                      )}
-                    </div>
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-foreground-subtle italic">
+                        {t.brandSetup.noColorsConfigured}
+                      </p>
+                    )}
                   </div>
                   <div className="pt-6 border-t border-border-subtle">
                     <p className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest mb-3">
@@ -901,6 +880,84 @@ function LogoUpload({
         >
           <UploadCloud className="h-7 w-7 mb-2" />
           <span className="text-xs">{t.brandSetup.logoFormatHint}</span>
+        </button>
+      )}
+    </div>
+  );
+}
+
+interface ColorSlotProps {
+  value: string | null;
+  canEdit: boolean;
+  notSetLabel: string;
+  addAriaLabel: string;
+  removeAriaLabel: string;
+  onChange: (value: string) => void;
+  onClear: () => void;
+}
+
+function ColorSlot({
+  value,
+  canEdit,
+  notSetLabel,
+  addAriaLabel,
+  removeAriaLabel,
+  onChange,
+  onClear,
+}: ColorSlotProps) {
+  if (value === null && !canEdit) {
+    return (
+      <div className="flex-1 flex items-center gap-1.5 p-2 border border-dashed border-border rounded-lg bg-background-subtle/50 text-foreground-subtle">
+        <div className="w-6 h-6 rounded shrink-0 border border-dashed border-border-strong" />
+        <span className="text-[10px] uppercase truncate">{notSetLabel}</span>
+      </div>
+    );
+  }
+
+  if (value === null) {
+    return (
+      <label
+        className="flex-1 flex items-center gap-1.5 p-2 border border-dashed border-border rounded-lg bg-background-subtle/50 text-foreground-subtle cursor-pointer hover:border-primary/50 hover:text-primary/60 transition-colors"
+        aria-label={addAriaLabel}
+      >
+        <div className="w-6 h-6 rounded shrink-0 border border-dashed border-border-strong flex items-center justify-center">
+          <Plus className="h-3.5 w-3.5" />
+        </div>
+        <span className="text-[10px] uppercase truncate">{notSetLabel}</span>
+        <input
+          type="color"
+          value={COLOR_PICKER_SEED}
+          onChange={(e) => onChange(e.target.value)}
+          className="sr-only"
+        />
+      </label>
+    );
+  }
+
+  return (
+    <div className="flex-1 flex items-center gap-1.5 p-2 border border-border rounded-lg bg-background-subtle">
+      <label className={canEdit ? "cursor-pointer" : "cursor-default"}>
+        <div className="w-6 h-6 rounded shrink-0" style={{ backgroundColor: value }} />
+        {canEdit && (
+          <input
+            type="color"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="sr-only"
+          />
+        )}
+      </label>
+      <span className="text-[10px] font-mono uppercase text-foreground-muted truncate">
+        {value}
+      </span>
+      {canEdit && (
+        <button
+          type="button"
+          onClick={onClear}
+          aria-label={removeAriaLabel}
+          className="ml-auto shrink-0 text-foreground-subtle hover:text-foreground transition-colors"
+        >
+          <X className="h-3 w-3" />
         </button>
       )}
     </div>

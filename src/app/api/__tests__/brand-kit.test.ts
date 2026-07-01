@@ -104,6 +104,28 @@ describe("PUT /api/brand-kit/[brandId]", () => {
     );
   });
 
+  it("clears a color to null when the field is explicitly sent as null", async () => {
+    mockSaveBrandKit.mockResolvedValue({});
+    mockGetLogoUrls.mockReturnValue(null);
+
+    await PUT(makeRequest({ primary_color_1: null }), { params: mockParams });
+    expect(mockSaveBrandKit).toHaveBeenCalledWith(
+      "brand-123",
+      expect.objectContaining({ primary_color_1: null }),
+    );
+  });
+
+  it("leaves a color untouched when the field is omitted from the payload", async () => {
+    mockSaveBrandKit.mockResolvedValue({});
+    mockGetLogoUrls.mockReturnValue(null);
+
+    await PUT(makeRequest({ typography: "Inter" }), { params: mockParams });
+    expect(mockSaveBrandKit).toHaveBeenCalledWith(
+      "brand-123",
+      expect.objectContaining({ primary_color_1: undefined }),
+    );
+  });
+
   it("returns 400 for non-object body", async () => {
     const response = await PUT(makeRequest("string body"), { params: mockParams });
     expect(response.status).toBe(400);

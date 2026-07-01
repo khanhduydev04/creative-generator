@@ -20,6 +20,12 @@ export async function GET(
   }
 }
 
+function toNullableString(value: unknown): string | null | undefined {
+  if (typeof value === 'string') return value
+  if (value === null) return null
+  return undefined
+}
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ brandId: string }> },
@@ -49,12 +55,12 @@ export async function PUT(
     const kit = await service.saveBrandKit(brandId, {
       typography: typeof typography === 'string' ? typography : undefined,
       font_source: validFontSource,
-      primary_color_1: typeof primary_color_1 === 'string' ? primary_color_1 : undefined,
-      primary_color_2: typeof primary_color_2 === 'string' ? primary_color_2 : undefined,
-      secondary_color_1: typeof secondary_color_1 === 'string' ? secondary_color_1 : undefined,
-      secondary_color_2: typeof secondary_color_2 === 'string' ? secondary_color_2 : undefined,
-      accent_color_1: typeof accent_color_1 === 'string' ? accent_color_1 : undefined,
-      accent_color_2: typeof accent_color_2 === 'string' ? accent_color_2 : undefined,
+      primary_color_1: toNullableString(primary_color_1),
+      primary_color_2: toNullableString(primary_color_2),
+      secondary_color_1: toNullableString(secondary_color_1),
+      secondary_color_2: toNullableString(secondary_color_2),
+      accent_color_1: toNullableString(accent_color_1),
+      accent_color_2: toNullableString(accent_color_2),
     })
 
     const logoUrls = service.getLogoUrls(kit)
