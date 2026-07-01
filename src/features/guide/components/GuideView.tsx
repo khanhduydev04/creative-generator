@@ -1,17 +1,36 @@
 "use client";
 // Client Component: needs useState, useMemo, useRef, useEffect for search/expand/scroll + useAuth for role filtering
 
-import { GUIDE_SECTIONS } from "@/features/guide/guide-data";
+import { GUIDE_GROUPS, GUIDE_SECTIONS } from "@/features/guide/guide-data";
 import { APP_VERSION } from "@/lib/version";
-import type { GuideContentBlock, GuideSearchResult, GuideSection as GuideSectionType } from "@/features/guide/types";
+import type {
+  GuideContentBlock,
+  GuideGroup,
+  GuideSearchResult,
+  GuideSection as GuideSectionType,
+} from "@/features/guide/types";
 import { useAuth } from "@/features/auth/context";
 import { isAdmin } from "@/features/auth/types";
 import { GuideSearch } from "@/features/guide/components/GuideSearch";
 import { GuideSection } from "@/features/guide/components/GuideSection";
 import { GuideTableOfContents } from "@/features/guide/components/GuideTableOfContents";
 import { SetupChecklist } from "@/features/guide/components/SetupChecklist";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Film, Palette, Settings, Sparkles, type LucideIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+// ─── Group Icon Map ─────────────────────────────────────────────────────────
+
+const GROUP_ICON_MAP: Record<string, LucideIcon> = {
+  Sparkles,
+  Film,
+  Palette,
+  Settings,
+};
+
+interface SectionGroupEntry {
+  group: GuideGroup;
+  sections: GuideSectionType[];
+}
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -103,6 +122,13 @@ export function GuideView() {
     () => GUIDE_SECTIONS.filter((s) => !s.adminOnly || userIsAdmin),
     [userIsAdmin]
   );
+
+  const groupedSections = useMemo<SectionGroupEntry[]>(() => {
+    return GUIDE_GROUPS.map((group) => ({
+      group,
+      sections: visibleSections.filter((s) => s.group === group.id),
+    })).filter((entry) => entry.sections.length > 0);
+  }, [visibleSections]);
 
   // State
   const [searchQuery, setSearchQuery] = useState("");
@@ -202,13 +228,13 @@ export function GuideView() {
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
               <BookOpen className="h-5 w-5 text-primary" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">User Guide</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Hướng dẫn sử dụng</h1>
             <span className="text-[10px] font-mono text-foreground-subtle bg-background-elevated px-2 py-0.5 rounded-full">
               v{APP_VERSION}
             </span>
           </div>
           <p className="text-foreground-muted text-sm mt-1">
-            Everything you need to know about using Ladospice.
+            Mọi thứ bạn cần biết để sử dụng Ladospice.
           </p>
         </div>
         <div className="w-72 shrink-0 hidden sm:block">
@@ -241,10 +267,14 @@ export function GuideView() {
           onChange={(e) => scrollToSection(e.target.value)}
           className="w-full rounded-xl border border-border bg-background-elevated px-4 py-2.5 text-sm text-foreground-muted focus:border-primary focus:ring-1 focus:ring-primary outline-none"
         >
-          {visibleSections.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.number}. {s.title}
-            </option>
+          {groupedSections.map(({ group, sections }) => (
+            <optgroup key={group.id} label={group.label}>
+              {sections.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.number}. {s.title}
+                </option>
+              ))}
+            </optgroup>
           ))}
         </select>
       </div>
@@ -254,7 +284,7 @@ export function GuideView() {
         {/* Sidebar TOC — desktop only */}
         <aside className="hidden lg:block w-[260px] shrink-0">
           <GuideTableOfContents
-            sections={visibleSections}
+            groupedSections={groupedSections}
             activeSection={activeSection}
             onSectionClick={scrollToSection}
             searchMatchIds={searchMatchSectionIds}
@@ -262,17 +292,30 @@ export function GuideView() {
         </aside>
 
         {/* Content */}
-        <main className="flex-1 min-w-0 space-y-4 pb-16">
-          {visibleSections.map((section) => (
-            <GuideSection
-              key={section.id}
-              ref={setSectionRef(section.id)}
-              section={section}
-              isExpanded={expandedSections.has(section.id)}
-              onToggle={() => toggleSection(section.id)}
-              searchQuery={searchQuery.trim() || undefined}
-            />
-          ))}
+        <main className="flex-1 min-w-0 space-y-6 pb-16">
+          {groupedSections.map(({ group, sections }) => {
+            const GroupIcon = GROUP_ICON_MAP[group.icon];
+            return (
+              <div key={group.id} className="space-y-4">
+                <div className="flex items-center gap-2 px-1">
+                  {GroupIcon && <GroupIcon className="h-4 w-4 text-primary/70" />}
+                  <h2 className="text-xs font-bold uppercase tracking-widest text-foreground-subtle">
+                    {group.label}
+                  </h2>
+                </div>
+                {sections.map((section) => (
+                  <GuideSection
+                    key={section.id}
+                    ref={setSectionRef(section.id)}
+                    section={section}
+                    isExpanded={expandedSections.has(section.id)}
+                    onToggle={() => toggleSection(section.id)}
+                    searchQuery={searchQuery.trim() || undefined}
+                  />
+                ))}
+              </div>
+            );
+          })}
         </main>
       </div>
     </div>

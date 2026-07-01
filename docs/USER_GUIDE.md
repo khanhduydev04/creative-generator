@@ -1,721 +1,515 @@
-# PATI Group — Static Ads Generator: User Guide
+# Ladospice — Hướng dẫn sử dụng
 
-> Internal tool for generating high-quality static advertisement creatives using AI.
-> Version: March 2026 | For: PATI Group team members
-
----
-
-## Table of Contents
-
-1. [Getting Started](#1-getting-started)
-2. [Dashboard & Navigation](#2-dashboard--navigation)
-3. [Brand Setup](#3-brand-setup)
-4. [Concepts Management](#4-concepts-management)
-5. [Standard Ad Generation (Home)](#5-standard-ad-generation-home)
-6. [Stealth Ad Generation](#6-stealth-ad-generation)
-7. [Library (Ad Gallery)](#7-library-ad-gallery)
-8. [Settings & Profile](#8-settings--profile)
-9. [Admin Panel](#9-admin-panel)
-10. [Role Permissions](#10-role-permissions)
-11. [Troubleshooting](#11-troubleshooting)
+> Công cụ nội bộ dùng AI để tạo ảnh quảng cáo tĩnh và xử lý video đối thủ (bóc băng → viết kịch bản thương hiệu → tạo giọng đọc).
+> Nội dung này khớp với trang **Hướng dẫn** trong app (`/app/guide`, dữ liệu tại `src/features/guide/guide-data.ts`) — sửa cả hai nơi khi cập nhật.
 
 ---
 
-## 1. Getting Started
+## Mục lục
 
-### 1.1 Login
+**Nhóm Ảnh**
+1. [Tạo quảng cáo](#1-tạo-quảng-cáo)
+2. [Stealth Ads](#2-stealth-ads)
+3. [Concept](#3-concept)
+4. [Thư viện](#4-thư-viện)
 
-1. Open the tool URL in your browser
-2. Enter your **@patigroup.com** email and password
-3. Click **Sign In**
+**Nhóm Video**
+5. [Video Trending](#5-video-trending)
+6. [Pipeline xử lý video](#6-pipeline-xử-lý-video)
+7. [Voice Lab (Cấu Hình Giọng)](#7-voice-lab-cấu-hình-giọng)
+8. [Thư Viện Audio](#8-thư-viện-audio)
 
-> First-time users: your admin will provide a temporary password via email. Change it immediately after login.
+**Nhóm Thương hiệu**
+9. [Chọn & quản lý thương hiệu](#9-chọn--quản-lý-thương-hiệu)
+10. [Nhận diện thương hiệu](#10-nhận-diện-thương-hiệu)
+11. [Sản phẩm](#11-sản-phẩm)
+12. [Brand Intelligence](#12-brand-intelligence)
+13. [Đồng bộ video đối thủ (Apify)](#13-đồng-bộ-video-đối-thủ-apify)
 
-### 1.2 Forgot Password
-
-1. Click **"Forgot password?"** on the login page
-2. Enter your @patigroup.com email
-3. Check your inbox for a new temporary password
-4. Login with the new password and change it in Settings
-
-### 1.3 First-Time Setup Checklist
-
-Before generating ads, you need:
-
-| Step | Where | Required |
-|------|-------|----------|
-| Create a Client | Header → "New Client" button | Yes |
-| Set up Brand Identity | Brand Setup → Brand Identity tab | Yes |
-| Add Products (with images) | Brand Setup → Products tab | Yes |
-| Create/Generate Personas | Brand Setup → Personas tab | Recommended |
-| Add Brand Research | Brand Setup → Brand Intelligence tab | Recommended |
-
----
-
-## 2. Dashboard & Navigation
-
-### 2.1 Header Bar
-
-The top header contains:
-
-- **Logo & App Name** — click to go Home
-- **Navigation Links:**
-  - **Home** — Standard ad generation workspace
-  - **Stealth Ads** — Native-looking ad generator
-  - **Brand Setup** — Configure brand identity, products, personas
-  - **Concepts** — Manage creative concepts (admin only)
-  - **Library** — View & download saved ads
-  - **Admin** — User management + settings (admin only, shown with shield icon)
-- **Client Selector** — dropdown to switch between clients
-- **Client Actions** — Rename (pencil), Delete (trash), New Client (green button)
-- **User Menu** — click your avatar initials to access:
-  - **Settings** — profile & password
-  - **Sign Out**
-
-### 2.2 Client Management
-
-Each client has its own brands, products, markets, and generated ads.
-
-| Action | How |
-|--------|-----|
-| Create client | Click green **"New Client"** button in header |
-| Switch client | Click client name dropdown → select another |
-| Rename client | Click pencil icon next to client selector |
-| Delete client | Click trash icon next to client selector |
+**Nhóm Cài đặt**
+14. [Đăng nhập & truy cập lần đầu](#14-đăng-nhập--truy-cập-lần-đầu)
+15. [Hồ sơ cá nhân](#15-hồ-sơ-cá-nhân)
+16. [Quản trị](#16-quản-trị)
+17. [Phân quyền vai trò](#17-phân-quyền-vai-trò)
+18. [Xử lý sự cố & mẹo hay](#18-xử-lý-sự-cố--mẹo-hay)
 
 ---
 
-## 3. Brand Setup
+# Nhóm: Ảnh
 
-**Location:** Navigation → **Brand Setup**
-**Access:** All users can view. Only admins (CEO, Super Admin) can edit.
+## 1. Tạo quảng cáo
 
-> Members see a yellow "View only" banner and cannot modify any settings.
+**Vị trí:** Điều hướng → Ảnh → Tạo quảng cáo (trang chủ `/app`). Workspace chính để cấu hình thông số và tạo ảnh quảng cáo tĩnh bằng AI.
 
-### 3.1 Brand Identity Tab (Left Column)
+### 1.1 Brand Product
+- Chọn **Sản phẩm** từ dropdown (bắt buộc)
+- Trạng thái dữ liệu sản phẩm hiển thị ngay bên dưới: "Đã cache dữ liệu, sẵn sàng tạo" (xanh) / "Sheet đã liên kết, chưa thu thập" / "Chưa có nguồn dữ liệu"
+- Nếu sản phẩm chưa có URL trang sản phẩm, hệ thống nhắc thêm URL trong **Thương hiệu → tab Sản phẩm** để có kết quả tốt hơn
 
-| Field | Description | Required |
-|-------|-------------|----------|
-| **Brand Name** | Your brand's display name | Yes |
-| **Brand Description** | Brief brand overview, positioning, key messages | Recommended |
-| **Typography** | Select a Google Font or upload a local font file | Recommended |
-| **Color Palette** | 6 colors: Primary 1&2, Secondary 1&2, Accent 1&2 | Yes |
-| **Logo (Light)** | Logo for light backgrounds (SVG, PNG, or JPG) | Recommended |
-| **Logo (Dark)** | Logo for dark backgrounds | Recommended |
+### 1.2 Chế độ tạo
+- **Concept** (mặc định) — AI áp dụng các concept sáng tạo đã chọn
+- **Competitor Ref** — tải lên ảnh quảng cáo đối thủ, AI phân tích layout/màu sắc/kiểu chữ rồi tái tạo với thương hiệu của bạn (xem mục 1.6)
 
-**How to set colors:**
-1. Click the color swatch
-2. A color picker opens — select your brand color
-3. The hex code updates automatically
+### 1.3 Concepts (bắt buộc nếu dùng chế độ Concept)
+- Tick chọn một hoặc nhiều concept để áp dụng
+- Mỗi concept tạo ra ảnh với chiến lược sáng tạo khác nhau
+- Concept có nhãn "Competitor" cần dữ liệu thị trường/sản phẩm đối thủ đi kèm
+- Xem mục 3 (Concept) để biết cách tạo và quản lý
 
-**How to upload a logo:**
-1. Click the dashed upload area
-2. Select a file (SVG, PNG, or JPG, max 2MB)
-3. Preview appears immediately
-4. Click X to remove and re-upload
+### 1.4 Ad Copy (Tuỳ chọn)
+- **Tiêu đề** — ghi đè headline do AI tạo
+- **Nội dung** — ghi đè body copy
+- **Ghi chú thêm** — chỉ dẫn cụ thể cho AI
+- Nút "Xoá tất cả" để reset
 
-**Save:** Click **"Save Brand Kit"** (top right) to persist all changes.
+### 1.5 Đối tượng mục tiêu & Số lượng đầu ra
+- **Đối tượng mục tiêu**: chọn một hoặc nhiều persona (mỗi persona chọn sẽ tạo ra một biến thể riêng); dùng "Tất cả profiles" để tối đa đa dạng
+- **Số lượng đầu ra**: Tỷ lệ khung hình (1:1 Vuông / 4:5 Portrait / 9:16 Story), Số lượng quảng cáo (1–10 ảnh mỗi tổ hợp concept × persona)
 
-### 3.2 Live Brand Preview (Right Column)
+### 1.6 Chế độ Competitor Ref
+1. Tải lên hoặc kéo-thả ảnh quảng cáo đối thủ
+2. AI phân tích layout, màu sắc, kiểu chữ, bố cục
+3. Chọn sub-mode: **Standard** hoặc **Stealth**
 
-A real-time preview card shows:
-- Brand name with your typography
-- Color swatches (Primary, Secondary, Accent)
-- Typography example ("Aa Bb Cc 123")
+**Sub-mode Standard** — tạo một ảnh tái hiện layout đối thủ, dùng sản phẩm/màu sắc/thông điệp của thương hiệu bạn; bảng màu đối thủ bị chặn hoàn toàn.
 
-This updates as you modify settings — no need to save first.
+**Sub-mode Stealth** — tạo stealth ads lấy cảm hứng từ ảnh tham khảo, theo luồng 2 bước (xem mục 2); có thêm Độ nhạy sản phẩm và Độ tuổi đối tượng.
 
-### 3.3 Products Tab
+> 💡 Nếu tải lên từ 2 ảnh tham khảo trở lên, hệ thống tạo Số lượng quảng cáo × Số ảnh tham khảo ("Pack Mode"), hiển thị tiến trình dạng "Đang tạo (ref 1/3)...".
 
-Located in the **Products** tab on Brand Setup page.
+### 1.7 Tạo & Kết quả
 
-**Add a Product:**
-1. Click **"Add Product"**
-2. Enter **Product Name** (required)
-3. Enter **Description** (optional but recommended — key features, ingredients, benefits)
-4. Upload **Product Images** (required, max 5):
-   - First image = **MAIN** (used as hero in ads)
-   - Click the crown icon to change which image is primary
-   - Use arrows to reorder
-   - Click X to remove
-5. Click **"Create Product"**
+Bấm "Tạo quảng cáo" (nút khoá tới khi đã chọn đủ Sản phẩm + Đối tượng mục tiêu + Concept hoặc ảnh tham khảo đối thủ). Trong lúc tạo, hệ thống hiển thị tiến trình từng bước.
 
-**Edit/Delete:** Use the pencil (edit) and trash (delete) icons on each product card.
+**Thao tác trên từng ảnh kết quả:**
 
-> Product images are critical for ad quality. Use high-resolution photos showing the actual product from multiple angles.
+| Nút | Hành động |
+|---|---|
+| Lưu vào thư viện | Lưu ảnh vào Thư viện |
+| Sao chép prompt | Copy prompt tạo ảnh đầy đủ |
+| Tải ảnh | Tải file ảnh về máy |
+| Xoá khỏi kết quả | Xoá ảnh khỏi danh sách kết quả hiện tại |
 
-### 3.4 Brand Intelligence Tab
-
-Located in the **Brand Intelligence** tab on Brand Setup page.
-
-#### Research Summary
-1. Paste competitor research, product notes, brand briefs, or market insights into the large text area
-2. Click **"Save Research Summary"**
-3. This context helps AI generate better personas and ad copy
-
-#### Personas Tab (Target Audiences)
-
-**Auto-generate:**
-1. Ensure you have research saved in Brand Intelligence
-2. Go to **Personas** tab → Click **"Generate 10 Profiles"**
-3. AI analyzes your brand + research → creates persona profiles
-4. Each persona has: Title, Pain Point, Angle, Emotion
-
-**Manual add:**
-1. Click **"Add Profile"**
-2. Fill in: Title, Pain, Angle, Emotion
-3. Click **"Create"**
-
-**Edit/Delete:** Use Edit and Delete buttons on each persona card.
-
-> Personas are used during ad generation to tailor messaging to specific audience segments.
+**Thao tác hàng loạt:** Lưu tất cả / Tải tất cả (ZIP) / Xoá.
 
 ---
 
-## 4. Concepts Management
+## 2. Stealth Ads
 
-**Location:** Navigation → **Concepts**
-**Access:** Admins can create/edit/delete. Members see view-only mode.
+**Vị trí:** Điều hướng → Ảnh → Stealth Ads. Stealth ads trông như ảnh iPhone, screenshot tin nhắn, khoảnh khắc đời thường, với sản phẩm đặt tự nhiên bên trong — người xem không nhận ra đây là quảng cáo nên tránh được "ad fatigue".
 
-Concepts define creative strategies used during ad generation. Each concept has:
+### 2.1 Luồng 2 bước
+1. **Lập kế hoạch cảnh** — AI tạo mô tả cảnh chi tiết
+2. **Tạo ảnh** — AI dựng ảnh photorealistic từ từng kế hoạch cảnh
 
-| Field | Description |
-|-------|-------------|
-| **Concept ID** | Unique identifier (e.g., `data_hook`, `social_proof`) |
-| **Label** | Display name |
-| **Description** | What strategy this concept uses |
-| **Requires Competitor** | Whether this concept needs competitor data |
-| **Prompt** | Full creative strategy + visual direction for the AI |
-| **Reference Images** | Up to 2 reference images for visual style |
+### 2.2 Cấu hình
 
-### Built-in Concepts
+Sản phẩm & Ngôn ngữ: giống hệt mục 1.1 và 1.5.
 
-| Concept | Strategy |
-|---------|----------|
-| **Data Hook** | Statistics, numbers, data-driven messaging |
-| **Before/After** | Transformation narrative |
-| **VS Competitor** | Direct comparison (needs competitor data) |
-| **Social Proof** | Reviews, testimonials, usage evidence |
-| **Ingredient Callout** | Highlight key ingredients/components |
-| **Urgency/Scarcity** | Limited time, limited stock messaging |
+**Chọn cảnh:**
+- **AI tự chọn** (khuyến nghị) — AI tự chọn cảnh phù hợp nhất theo sản phẩm và đối tượng
+- **Chọn cảnh** — duyệt thư viện cảnh, tick chọn cảnh muốn dùng
 
-### How to Add a Concept (Admin)
+| Danh mục | Mã | Mô tả | Ví dụ cảnh |
+|---|---|---|---|
+| Human-Centric | HUM | Người là trung tâm, sản phẩm chỉ xuất hiện phụ | Gym Mirror Selfie, Post-Workout Glow, Beach Candid |
+| Environment | ENV | Sản phẩm đặt tự nhiên trong bối cảnh đời thực | Morning Counter, Gym Bag Flat Lay, Nightstand |
+| Content Format | FMT | Sản phẩm trong screenshot/nội dung số | iPhone Screenshot, Chat Bubble, Review Box |
+| Story | STR | Sản phẩm lồng ghép vào câu chuyện | Daily Routine, Transformation Journey, Gifting Story |
 
-1. Click **"Add Concept"**
-2. Fill in all fields
-3. In the **Prompt** field, you can structure multiple layout variants using `### Variant A`, `### Variant B`, etc. — AI will rotate through them per generation
-4. Optionally upload reference images (max 2) for visual style guidance
-5. Click **"Save"**
+> 💡 Có thể thêm cảnh tuỳ chỉnh: "Thêm cảnh tùy chỉnh" → điền ID, danh mục, tên, mô tả, phương pháp đặt sản phẩm, sản phẩm/đối tượng phù hợp. Có thể sửa/xoá sau.
 
-Click the expand arrow on any concept card to view its full prompt.
+**Tinh chỉnh đối tượng:**
 
----
+| Thiết lập | Tuỳ chọn | Khi nào dùng |
+|---|---|---|
+| Độ nhạy sản phẩm | Bình thường / Cao (Body/Beauty) | Dùng "Cao" cho sản phẩm liên quan cơ thể, cân nặng, làm đẹp |
+| Độ tuổi đối tượng | 18–25, 25–35, 35–45, 40–55, 50+ | Điều chỉnh đạo cụ, phong cách text, tính xác thực theo platform |
 
-## 5. Standard Ad Generation (Home)
+> ⚠️ Độ nhạy "Cao" đảm bảo: không so sánh before/after cơ thể, không dùng ngôn ngữ "cải thiện/biến đổi", không nêu công dụng trực tiếp — chỉ thể hiện sự hiện diện của sản phẩm; hình thể thể hiện dưới dạng "khát vọng khả thi" thay vì hình mẫu/vận động viên.
 
-**Location:** Navigation → **Home**
+### 2.3 Kế hoạch cảnh & Kết quả
 
-This is the main workspace for generating polished, brand-consistent ad creatives.
-
-### 5.1 Left Panel — Configuration
-
-Fill in these sections from top to bottom:
-
-#### Step 1: Brand Product (Required)
-- Select a **Product** from the dropdown
-- Enter the **Landing Page URL** (the product's web page — AI reads this for context)
-
-#### Step 2: Language
-- Select the **Language** for the ad copy
-- All generated text — headlines, body copy, and image text overlays — will be in this language
-- Supported: English (US/UK), German, French, Spanish, Vietnamese
-
-#### Step 3: Generation Mode
-Choose between:
-- **Concept-Based** (default) — AI applies selected concepts creatively
-- **Competitor Reference** — Upload a competitor's ad image → AI replicates its layout with your brand
-
-> See [Section 5.4](#54-competitor-reference-mode) for full details on Competitor Reference mode.
-
-#### Step 4: Concepts (Required — Concept-Based mode only)
-- Check one or more **concepts** to apply
-- Each concept generates ads with a different creative strategy
-- Concepts marked **"Competitor"** badge need market data with a linked sheet
-
-#### Step 5: Ad Copy Override (Optional)
-- Click to expand this section
-- **Headline** — custom headline text (overrides AI-generated headline)
-- **Body Text** — custom body copy
-- **Additional Notes** — specific direction for the AI
-- Click **"Clear"** to reset all overrides
-
-#### Step 6: Target Audience (Required)
-- Select one or more **personas**
-- Each selected persona generates a variant tailored to that audience
-- Use **"Select All"** for maximum variety
-- Selected personas appear as chips — click X to remove
-
-#### Step 7: Output Configuration
-- **Aspect Ratio:** 1:1 (Square), 4:5 (Portrait), 9:16 (Story)
-- **Ad Count:** 1–10 ads per concept × persona combination
-
-#### Generate
-Click the green **"Generate Ads"** button at the bottom.
-
-### 5.2 Right Panel — Progress & Results
-
-**During generation:**
-- Step-by-step progress shows:
-  1. Reading product page...
-  2. Analyzing competitor data...
-  3. Applying concept strategy...
-  4. Assembling prompt...
-  5. Generating image...
-- Each step shows status: Pending → Running → Completed
-
-**Results:**
-- Generated ad images appear as cards
-- Each card shows: image preview, headline, concept name, market
-
-**Actions per ad:**
-| Button | Action |
-|--------|--------|
-| Bookmark | Save to Library |
-| Copy | Copy the generation prompt |
-| Download | Download image file |
-| Trash | Remove from results |
-
-**Bulk actions:**
-- **Save All** — save all results to Library
-- **Download All as ZIP** — download all images in a single ZIP file
-- **Clear** — remove all results
-
-> Results are cached locally for 1 hour. Navigating away and back preserves your results.
-
-### 5.3 Concepts with Variant Prompts
-
-When a concept has `### Variant A`, `### Variant B` blocks in its prompt, the AI rotates through these variants to ensure visual diversity across generated ads. This means:
-- 3 concepts × 2 personas × 2 count = 12 ads with unique layouts and angles
-- No two ads use the same visual layout, headline angle, or emotional hook
-
-### 5.4 Reference Images for Concepts
-
-Concepts can have up to 2 reference images. These are:
-- Sent to the image generator alongside product images
-- Used for visual style guidance only (layout, composition, mood)
-- Product content, brand colors, and headline text are NEVER copied from references
-
-### 5.5 Language Support
-
-Supported languages:
-| Code | Language |
-|------|----------|
-| en-US | English (US) |
-| en-UK | English (UK) |
-| de | German |
-| fr | French |
-| es | Spanish |
-| vi | Vietnamese |
-
-Language is applied to ALL generated text: headline, body copy, and any text overlays in the image.
-
-### 5.6 Competitor Reference Mode
-
-**For Competitor Reference mode:**
-1. Click the upload area or drag-drop a competitor ad image
-2. AI analyzes the layout, colors, typography, and composition
-3. Choose a sub-mode:
-
-#### Sub-mode: Standard Ad
-- AI generates a single ad replicating the competitor's layout
-- Uses YOUR brand's product, colors, and messaging
-- Competitor color scheme is explicitly blocked
-
-#### Sub-mode: Stealth Ad
-- AI generates scene-based stealth ads inspired by the competitor's reference
-- 2-step flow: Plan Scenes → Generate
-- Additional options:
-  - **Sensitivity Level:** Normal / High
-  - **Audience Age Range:** 18-25, 25-35, 35-45, 45-55, 55+
-- See [Section 6](#6-stealth-ad-generation) for details on stealth ads
+Bấm "Lập kế hoạch cảnh" → AI sinh các thẻ kế hoạch (tên cảnh, mức hiện diện sản phẩm, bố cục, vị trí đặt sản phẩm, nội dung text). Bấm vào từng trường để sửa trực tiếp, sắp xếp lại bằng mũi tên, xoá, tạo lại một kế hoạch, hoặc thêm cảnh từ thư viện. Sau khi rà soát, bấm "Tạo tất cả". Kết quả có nút lưu/tải/sao chép mô tả/xoá/tạo lại; hàng loạt: Tải tất cả (ZIP), Lưu tất cả.
 
 ---
 
-## 6. Stealth Ad Generation
+## 3. Concept
 
-**Location:** Navigation → **Stealth Ads**
+**Vị trí:** Điều hướng → Cài đặt → Concept. Mọi người dùng xem được; chỉ admin (CEO, Super Admin) tạo/sửa/xoá được — thành viên thấy chế độ chỉ xem.
 
-Stealth ads look like organic, everyday content — iPhone photos, text screenshots, candid moments — with the product subtly placed. They bypass "ad fatigue" because viewers don't recognize them as ads.
+Concept định nghĩa chiến lược sáng tạo dùng trong lúc tạo quảng cáo:
 
-### 6.1 How Stealth Ads Work
+| Trường | Mô tả |
+|---|---|
+| Concept ID | Định danh duy nhất, chữ thường + gạch dưới (vd. `data_hook`), không đổi được sau khi tạo |
+| Nhãn | Tên hiển thị |
+| Mô tả | Chiến lược mà concept này sử dụng |
+| Yêu cầu sản phẩm đối thủ | Có cần dữ liệu/ảnh đối thủ đi kèm hay không |
+| Prompt | Chiến lược sáng tạo + hướng dẫn hình ảnh đầy đủ cho AI |
+| Ảnh tham khảo | Tối đa 2 ảnh định hướng phong cách hình ảnh |
 
-**2-Step Flow:**
-1. **Plan Scenes** — AI generates detailed scene descriptions
-2. **Generate Images** — AI creates photorealistic images from each scene plan
+### 3.1 Thêm Concept (admin)
+1. Bấm "Thêm concept"
+2. Điền đầy đủ các trường
+3. Trong Prompt, có thể chia nhiều biến thể layout bằng `### Variant A`, `### Variant B`... — AI luân phiên qua các biến thể ở mỗi lần tạo
+4. Tuỳ chọn tải thêm ảnh tham khảo (tối đa 2)
+5. Bấm "Lưu"
 
-### 6.2 Left Panel — Configuration
-
-#### Step 1–2: Product & Language
-Same as Standard Ads — select product, URL, and language.
-
-#### Step 3: Scene Selection
-
-**Auto Mode (recommended):**
-- AI automatically selects the best scenes based on your product and audience
-- Scene priority hints shown (top pick / acceptable / avoid)
-
-**Manual Mode:**
-- Browse 45 scenes across 4 categories:
-
-| Category | Code | Description | Example Scenes |
-|----------|------|-------------|----------------|
-| **Human-Centric** | HUM | Person is the hero, product is incidental | Gym Mirror Selfie, Post-Workout Glow, Beach Candid |
-| **Environment** | ENV | Product placed naturally in real settings | Morning Counter, Gym Bag Flat Lay, Nightstand |
-| **Content Format** | FMT | Product in screenshots/text content | iPhone Screenshot, Chat Bubble, Review Box |
-| **Story** | STR | Product woven into narratives | Daily Routine, Transformation Journey, Gifting Story |
-
-- Check scenes you want, expand categories to see all options
-- Use **"Select All"** / **"Deselect All"** per category
-
-**Custom Scenes:**
-- Click **"Add Custom Scene"** to create your own scene template
-- Fill in: ID, category, name, description, placement method, best-for tags
-- Custom scenes appear alongside built-in ones
-- Edit or delete custom scenes with the pencil/trash icons
-
-#### Step 4: Target Audience
-Same as Standard Ads — select personas.
-
-#### Step 5: Audience Tuning
-
-| Setting | Options | When to Use |
-|---------|---------|-------------|
-| **Sensitivity Level** | Normal / High | Use "High" for body image, weight, beauty products |
-| **Age Range** | 18-25, 25-35, 35-45, 45-55, 55+ | Adjusts cultural references, props, text style |
-
-**High sensitivity** ensures:
-- No before/after body comparisons
-- No enhancement language
-- Product benefit never stated — only presence shown
-- Body type shown as "attainable aspiration" (fit but not model/bodybuilder)
-
-#### Step 6: Output
-Same as Standard Ads — aspect ratio + count.
-
-### 6.3 Right Panel — Scene Plans & Results
-
-#### Planning Phase
-
-Click **"Plan Scenes"** → AI generates scene plans.
-
-Each plan card shows:
-- Scene name & category badge
-- Product visibility: **Physical** (product appears) or **Name-only** (only text mention)
-- Composition preview (camera angle, lighting, color mood)
-- Product placement details (location, size, integration method)
-- Text content (what text appears in the image)
-
-**Edit plans before generating:**
-- Click any field to edit inline
-- Reorder plans with up/down arrows
-- Delete plans you don't want
-- Regenerate a single plan with the refresh icon
-- Add scenes from the scene library using the **"Add Scene"** button
-
-#### Generation Phase
-
-Click **"Generate"** → images are created one by one via SSE stream.
-
-Each result shows the generated image with:
-- Save to Library button
-- Download button
-- Copy description button
-- Delete button
-- Refresh (regenerate) single image button
-
-**Bulk actions:**
-- **Download All as ZIP** — download all stealth images in one file
-- **Save All to Library** — bookmark all results
-
-### 6.4 Scene Categories Explained
-
-**HUM (Human-Centric) — 17 scenes**
-- A real person is the hero (gym selfie, cooking, running)
-- Product appears far in background, easy to miss
-- Body is the scroll-stopper, product enters subconscious
-- Text is minimal (caption-style, timestamp)
-- Scenes: Gym Mirror Selfie, Progress Check Mirror, Kitchen Meal Prep, Post-Workout Glow, Beach/Pool Candid, Couple Workout, Yoga/Pilates Mat, Running Outdoors, Getting Ready Mirror, Living Room Workout, Gym Action Shot, Smoothie Making, Friend Group Gym, Shirtless Morning Routine, Locker Room Candid, Gym Outfit Check, Between Sets Rest
-
-**ENV (Environment) — 10 scenes**
-- Product sitting naturally in everyday settings
-- Morning counter, bathroom shelf, gym bag, desk
-- iPhone-quality photo, unedited feel
-- Text overlays allowed (lifestyle captions)
-
-**FMT (Content Format) — 10 scenes**
-- Product embedded in digital content
-- Screenshots, chat messages, reviews, receipts
-- Platform-accurate UI (iMessage, Instagram, Notes app)
-- Product name mentioned casually in text
-
-**STR (Story) — 8 scenes**
-- Product woven into a visual narrative
-- The STORY is the hero, product is a supporting detail
-- Daily routines, transformation journeys, social moments
+> 💡 Ảnh tham khảo chỉ định hướng phong cách — nội dung sản phẩm và màu thương hiệu không bao giờ bị copy từ ảnh tham khảo.
 
 ---
 
-## 7. Library (Ad Gallery)
+## 4. Thư viện
 
-**Location:** Navigation → **Library**
+**Vị trí:** Điều hướng → Ảnh → Thư viện.
 
-### 7.1 Viewing Ads
+### 4.1 Xem quảng cáo
 
-| Control | Options |
-|---------|---------|
-| **View Mode** | Grid (image tiles) / List (table rows) |
-| **Sort** | Newest First / Oldest First |
-| **Product Filter** | All Products / [Specific Product] / Untagged |
-| **Date Filter** | All Time, Today, This Week, This Month, Last Month |
-| **Search** | Search by filename |
-| **Refresh** | Reload gallery from storage |
+| Điều khiển | Tuỳ chọn |
+|---|---|
+| Chế độ xem | Grid (lưới) / List (danh sách) |
+| Sắp xếp | Mới nhất trước / Cũ nhất trước |
+| Lọc theo ngày | Hôm nay, Tuần này, Tháng này, Tháng trước... |
+| Tìm kiếm | Tìm theo tên file |
 
-### 7.2 Product Filter
+### 4.2 Thao tác
 
-Ads are automatically tagged with the product used during generation. Use the **Product** dropdown to filter:
-- **All Products** — show all ads
-- **[Product Name]** — show only ads generated for that product
-- **Untagged** — show legacy ads that were saved before product tagging was added
+| Thao tác | Cách làm |
+|---|---|
+| Xem chi tiết | Bấm vào ảnh → mở modal Chi tiết ảnh |
+| Tải ảnh | Icon tải trên thẻ ảnh |
+| Xoá | Icon thùng rác → xác nhận |
+| Chỉnh sửa quảng cáo | Trong Chi tiết ảnh, mô tả thay đổi (text, màu, logo, layout...), có thể đính kèm thêm ảnh, bấm "Áp dụng chỉnh sửa" để tạo phiên bản mới |
 
-### 7.3 Actions
+### 4.3 Thao tác hàng loạt
 
-| Action | How |
-|--------|-----|
-| View full size | Click on any image → opens Detail Modal |
-| Download single | Click download icon on the card |
-| Delete | Click trash icon → confirm |
-| Refresh | Click refresh button to reload |
-| Adapt Content | Select ads → click "Adapt Content" → choose product → generate captions |
-
-When you open an ad in the Detail Modal, the **Product Reference** dropdown auto-fills based on:
-1. The product the ad was generated for (stored in metadata)
-2. The active product filter in the Library
-3. The only product (if the brand has just one)
-
-### 7.4 Bulk Actions
-
-- **Select multiple ads** using checkboxes
-- **Download selected as ZIP** — batch download in one file
-- **Adapt Content** — generate social media captions for selected ads
-- **Delete selected** — batch delete with confirmation
+Chọn nhiều ảnh bằng checkbox → Tải ZIP hoặc Xoá hàng loạt (có xác nhận).
 
 ---
 
-## 8. Settings & Profile
+# Nhóm: Video
 
-**Location:** User Menu (avatar) → **Settings**
+## 5. Video Trending
 
-### 8.1 Profile Information
+**Vị trí:** Điều hướng → Video → Video Trending. Nơi tập hợp video TikTok đối thủ để phân tích và làm nguyên liệu sản xuất nội dung (bóc băng → viết lại kịch bản → tạo giọng đọc).
 
-Displays your:
-- Full Name
-- Email (@patigroup.com)
-- Role (CEO, Super Admin, or Member)
-- Department
-- Join date & last login
+### 5.1 Thêm video
+- **"Sync từ Apify"** — lấy dữ liệu từ lần chạy thành công gần nhất của Apify task đã cấu hình cho thương hiệu hiện tại (xem mục 13)
+- **"Thêm Video"** — dán trực tiếp URL TikTok (`https://www.tiktok.com/@handle/video/...`); hệ thống kiểm tra định dạng và trùng lặp
 
-### 8.2 Change Password
-
-1. Enter your **current password**
-2. Enter a **new password** (minimum 8 characters)
-3. **Confirm** the new password
-4. Click **"Change Password"**
+### 5.2 Lọc, tìm kiếm & trạng thái
+- Tab lọc: Tất cả / Chờ duyệt / Winner / Đã từ chối
+- Tìm theo URL hoặc tên tác giả
+- Bảng: lượt xem, lượt thích, chia sẻ, bình luận, trạng thái
+- Trên mỗi video: mở chi tiết để xử lý, đánh dấu Winner, Từ chối, hoặc mở trên TikTok
 
 ---
 
-## 9. Admin Panel
+## 6. Pipeline xử lý video
 
-**Location:** Navigation → **Admin** (shield icon)
-**Access:** CEO and Super Admin only
+**Vị trí:** bấm vào một video trong Video Trending để mở trang chi tiết. Đầu trang là trình phát video + metadata. Ngay dưới là thanh tiến trình 4 bước (bấm để nhảy nhanh): **Bóc băng → Kịch bản → Giọng đọc → Hoàn tất**. Mỗi bước chỉ mở khoá sau khi bước trước hoàn tất.
 
-The Admin panel has two tabs: **Users** and **Settings**.
+### 6.1 Bước 1 — Bóc băng (Phiên Âm)
 
----
+Trạng thái: Chờ xử lý → Đang phiên âm... → Hoàn thành / Thất bại.
 
-### 9.1 Users Tab
+1. Bấm "Bắt đầu phiên âm" nếu video chưa có transcript
+2. Sau khi Hoàn thành, transcript hiện trong ô văn bản có thể sửa trực tiếp
+3. Sửa nội dung nếu AI nghe sai, bấm "Lưu"
+4. Cần bóc lại thì bấm "Phiên âm lại" (chỉ khả dụng khi trạng thái Hoàn thành/Thất bại)
 
-#### Dashboard Overview
+### 6.2 Bước 2 — Kịch Bản Thương Hiệu
 
-4 stat cards at the top:
-- **Total Users** — all accounts
-- **Active** — currently active accounts
-- **Inactive** — deactivated accounts
-- **Admins** — CEO + Super Admin count
+Mở khoá khi Bóc băng ở trạng thái Hoàn thành.
 
-#### User Table
+**Cấu hình sản phẩm:** chọn sản phẩm từ dropdown (hoặc "Không chọn sản phẩm"); các trường Đặc tính, Đối tượng KH, Điểm bán/USP nạp sẵn từ sản phẩm nhưng sửa được riêng cho video này mà không ảnh hưởng sản phẩm gốc.
 
-Columns: User (name + email + avatar), Role, Department, Status, Last Login, Actions
+**Tham số:** Giọng điệu (Hài hước / Chân thực / Kịch tính), Ghi chú (USP, hashtag, khuyến mãi...).
 
-**Search:** Type in the search bar to filter by name, email, role, or department.
+1. Bấm "Tạo kịch bản ✦" — AI viết lại kịch bản theo cấu trúc/nhịp điệu transcript gốc nhưng thay hoàn toàn nội dung theo thương hiệu bạn, hiện dần theo streaming
+2. Sửa trực tiếp nếu cần
+3. Bấm "Lưu kịch bản" (bắt buộc trước khi sang bước Giọng đọc)
 
-#### Create a New User
+### 6.3 Bước 3 — Tạo Giọng Đọc
 
-1. Click **"Create User"** (green button, top right)
-2. Fill in the form:
-   - **Email** — enter username (auto-appends @patigroup.com)
-   - **Full Name** — required
-   - **Department** — optional (Executive, Performance Marketing, Creative, HR, CRO, CS)
-   - **Role** — Member (default), or Super Admin (CEO only)
-3. Click **"Create Account"**
-4. A temporary password is generated:
-   - If email is configured: sent to the user's email
-   - If not: displayed in a toast notification (30 seconds) — copy it and share manually
+Mở khoá khi kịch bản đã lưu.
 
-#### User Actions
-
-Click **"Actions"** dropdown on any user row:
-
-| Action | Description | Who Can |
-|--------|-------------|---------|
-| **Reset Password** | Generates new password, sends via email | All admins (not on CEO unless you are CEO) |
-| **Deactivate** | Soft-disable — user can't login | All admins (not on CEO, super_admin needs CEO) |
-| **Reactivate** | Re-enable a deactivated account | Same rules |
-| **Promote to Super Admin** | Change role to super_admin | CEO only |
-| **Demote to Member** | Change role to member | CEO only |
-| **Delete Account** | Permanent deletion — type email to confirm | All admins (same hierarchy rules) |
-
-#### Activity Log
-
-At the bottom of the Admin Users tab — shows recent admin actions:
-- Who did what, to whom, when
-- Actions: create_user, reset_password, deactivate_user, reactivate_user, change_role, delete_user
+1. Chọn Voice Preset (tạo sẵn trong Voice Lab, mục 7)
+2. Bấm "Tạo giọng đọc ♪"
+3. Audio xuất hiện trong danh sách bên dưới, kèm trình phát, thông tin preset, thời lượng, nút xoá
 
 ---
 
-### 9.2 Settings Tab — API Key Management
+## 7. Voice Lab (Cấu Hình Giọng)
 
-**Location:** Admin → **Settings** tab
+**Vị trí:** Điều hướng → Video → Cấu Hình Giọng. Thử giọng đọc và lưu thành preset để dùng ở bước Tạo Giọng Đọc. Hỗ trợ 2 nhà cung cấp TTS: **Vbee** (tiếng Việt) và **ElevenLabs**.
 
-This section allows admins to configure the API keys used by the tool at runtime — no server restart required.
+### 7.1 Tab Vbee
 
-| Key | Purpose |
-|-----|---------|
-| **Google API Key** | Gemini 2.5 Flash — product page reading, concept strategy, scene planning, prompt synthesis |
-| **Anthropic API Key** | Claude Haiku 4.5 — competitor ad analysis, competitor sheet analysis, landing page analysis, persona generation |
-| **KIE API Key** | nano-banana-2 model — image generation |
-| **Google Console API Key** | Google Sheets API (competitor data) + Google Fonts API |
+**Thư Viện Giọng (trái):** lọc theo Giới tính (Tất cả/Nữ/Nam), Vùng miền (Tất cả/Bắc/Trung/Nam), sắp xếp theo Điểm viral hoặc Tên A-Z; mỗi giọng có nút "Test nhanh".
 
-#### How to Update an API Key
+**Thử Giọng (phải):** nhập văn bản thử (≤500 ký tự, có mẫu sẵn), chỉnh Tốc độ (0.5x–2.0x) & Cao độ (0.5–2.0), bấm "▶ Nghe thử".
 
-1. Go to **Admin → Settings**
-2. Find the key you want to update
-3. Click the **edit (pencil) icon** next to the key
-4. The current value is masked (shows first and last 3 characters only)
-5. Enter the new key value
-6. Click the **eye icon** to toggle visibility while typing
-7. Click **"Save"**
-8. A success notification appears for 3 seconds
+**Đánh giá & Lưu preset:** đánh giá viral potential (1–5 sao) + ghi chú tuỳ chọn → "Lưu rating"; đặt Tên preset → "💾 Lưu thành preset" (lưu giọng + tốc độ + cao độ để dùng nhanh trong pipeline video).
 
-#### Key Priority
+### 7.2 Tab ElevenLabs
 
-Keys are resolved in this order:
-1. **Database** (set via Admin UI) — takes priority
-2. **Environment variable** (`.env.local`) — fallback if no DB value
+Danh sách giọng (trái) có "Nghe thử"/"Chọn"; bên phải hiển thị giọng đã chọn + preview. Chọn Model: **v2.5 Flash** (nhanh, ổn định) hoặc **v3** (expression tags, tự nhiên nhất). Đặt tên → "Lưu thành preset".
 
-> If you set a key via the Admin UI, it overrides the environment variable. To revert to the env var, clear the DB value.
-
-#### Notes
-
-- All key changes are recorded in the activity log
-- Keys are cached in memory for 60 seconds after loading
-- The actual key value is never displayed in full — only masked previews
+> 💡 Model v3 hỗ trợ expression tags (vd. `[amused]`, `[excited]`) giúp giọng đọc biểu cảm hơn.
 
 ---
 
-## 10. Role Permissions
+## 8. Thư Viện Audio
 
-### 10.1 Role Hierarchy
+**Vị trí:** Điều hướng → Video → Thư Viện Audio.
 
-| Role | Max Accounts | Description |
-|------|:---:|---|
-| **CEO** | 1 | Highest authority. Cannot be deleted or demoted. |
-| **Super Admin** | 2 | Can manage all users except CEO. |
-| **Member** | Unlimited | Standard employee. View-only on brand setup & concepts. |
+Bảng: đoạn kịch bản (rút gọn), giọng đọc/preset, thời lượng, ngày tạo. Hành động: Tải xuống hoặc Xoá. Bấm vào một dòng để xem Chi tiết Audio (kịch bản đầy đủ, giọng đọc, nhà cung cấp, tốc độ, thời lượng, ngày tạo).
 
-### 10.2 Permission Matrix
-
-| Action | CEO | Super Admin | Member |
-|--------|:---:|:---:|:---:|
-| Generate ads (Home) | Yes | Yes | Yes |
-| Generate stealth ads | Yes | Yes | Yes |
-| View Library | Yes | Yes | Yes |
-| Edit Brand Setup | Yes | Yes | No (view only) |
-| Edit Concepts | Yes | Yes | No (view only) |
-| Change own password | Yes | Yes | Yes |
-| View Admin panel | Yes | Yes | No |
-| Manage API keys | Yes | Yes | No |
-| Create users | Yes | Yes | No |
-| Reset passwords | Yes | Yes (not CEO) | No |
-| Deactivate users | Yes | Yes (not CEO) | No |
-| Delete users | Yes | Yes (not CEO) | No |
-| Change roles | Yes | No | No |
-
-### 10.3 CEO Protection
-
-- CEO account **cannot** be deleted, deactivated, or demoted by anyone
-- Only CEO can promote/demote Super Admin roles
-- Maximum 3 admin accounts total (1 CEO + 2 Super Admin)
+> Nếu chưa tạo audio nào: "Chưa có audio nào."
 
 ---
 
-## 11. Troubleshooting
+# Nhóm: Thương hiệu
 
-### Common Issues
+## 9. Chọn & quản lý thương hiệu
 
-| Problem | Solution |
-|---------|----------|
-| "Invalid email or password" | Ensure email ends with @patigroup.com, password is 8+ chars |
-| "Account deactivated" | Contact your admin to reactivate |
-| Brand Setup is read-only | You are a Member — ask an admin to make changes |
-| Concepts page is read-only | You are a Member — ask an admin to make changes |
-| No products in dropdown | Go to Brand Setup → Products tab → add products first |
-| No personas available | Go to Brand Setup → Personas tab → Generate or Add profiles |
-| Generation stuck at "Reading product page" | Check the Landing Page URL is valid and accessible |
-| Generated images look wrong | Ensure product images are high-quality, well-lit, showing the actual product |
-| Admin link not visible | Only CEO and Super Admin roles see the Admin link |
-| Can't delete a user | The user may have activity log entries — this is handled automatically |
-| API key not working | Go to Admin → Settings → update the key; check the key is active and has correct permissions |
-| Competitor data not loading | Ensure the Google Sheet is publicly accessible (Share → Anyone with the link can view) |
-| KIE generation timeout | Large images take longer; try reducing ad count or product image file sizes |
-| Stealth images not generating | Check that Plan Scenes was completed first before clicking Generate |
+Mỗi **Thương hiệu (Brand)** là một không gian làm việc độc lập — sản phẩm, concept, video, quảng cáo riêng. Dropdown "Thương hiệu" nằm cuối sidebar, luôn hiển thị.
 
-### Tips for Best Results
+| Thao tác | Cách làm |
+|---|---|
+| Chuyển thương hiệu | Bấm dropdown "Thương hiệu" cuối sidebar → chọn tên khác |
+| Thêm thương hiệu | "Thêm thương hiệu" trong dropdown (chỉ admin) |
+| Đổi tên | Icon "⋯" (Thao tác) cạnh dropdown → Đổi tên |
+| Xoá thương hiệu | Icon "⋯" → Xoá (chỉ admin) |
 
-1. **Product Images Matter Most** — Use 3-5 high-res photos from different angles
-2. **Fill in Brand Colors** — Accurate brand colors = consistent ad output
-3. **Write Good Research** — The more competitor/market data you provide, the sharper the AI personas
-4. **Use Multiple Concepts** — Combining 2-3 concepts generates more diverse creatives
-5. **Try Both Modes** — Standard for brand ads, Stealth for organic-looking content
-6. **Competitor Reference** — Upload a competitor ad you admire, the AI will replicate its layout with your brand
-7. **Adjust Sensitivity** — For health/body products, use "High" sensitivity in Stealth mode
-8. **Edit Scene Plans** — Before generating stealth images, review and tweak the AI-generated plans for best results
-9. **Use Age Range Tuning** — Match the audience age range to your target demographic for more authentic stealth content
-10. **Download as ZIP** — For batch campaigns, use "Download All as ZIP" to get all images at once
-
-### Text & Logo Quality Rules
-
-The AI enforces the following quality rules automatically in all generated ads:
-
-**Text Capitalization:**
-- All visible text uses **consistent capitalization**: either Title Case (Capitalize First Letter Of Each Word) or ALL CAPS
-- Random mixed case is never allowed — no "bOoSt yOuR eNeRgY" style text
-- This applies to headlines, body text, captions, and all text overlays
-
-**Brand Logo:**
-- The AI will **never generate, invent, or create** a brand logo from scratch
-- If a brand logo image is uploaded in Brand Setup, it is reproduced **exactly as-is** — zero modifications, zero redesign
-- If no logo image is provided, only the logo naturally printed on the product packaging is allowed
+> 💡 Thương hiệu đang chọn được ghi nhớ tự động, giữ nguyên qua các lần tải lại trang.
 
 ---
 
-*Last updated: March 2026 — PATI Group Internal*
+## 10. Nhận diện thương hiệu
+
+**Vị trí:** Điều hướng → Cài đặt → Thương hiệu (`/app/brands`, phần "Nhận diện thương hiệu"). Mọi người xem được; chỉ admin (CEO, Super Admin) chỉnh sửa được.
+
+> ⚠️ Thành viên (Member) thấy banner "Chỉ xem, chỉ admin mới có thể chỉnh sửa cài đặt thương hiệu." và không sửa được các trường bên dưới.
+
+| Trường | Mô tả |
+|---|---|
+| Tên thương hiệu | Tên hiển thị |
+| Mô tả thương hiệu | Tổng quan, định vị, thông điệp chính |
+| Kiểu chữ | Chọn Google Font hoặc tải font riêng |
+| Bảng màu | 6 màu: Primary 1&2, Secondary 1&2, Accent 1&2 |
+| Logo (Nền sáng) | SVG/PNG/JPG, tối đa 2MB |
+| Logo (Nền tối) | SVG/PNG/JPG, tối đa 2MB |
+
+**Cách chọn font:** "Chọn font..." → hộp thoại "Chọn Font" → tab Google Fonts (tìm kiếm) hoặc tab Tải Font lên (kéo-thả file `.ttf/.otf/.woff/.woff2` cho từng biến thể Regular/Bold/Italic...).
+
+**Cách tải logo:** bấm khu vực tải lên (viền nét đứt) → chọn file → xem trước ngay → "Xóa logo" để gỡ và tải lại.
+
+> 💡 Bấm "Lưu Brand Kit" (góc phải trên) để lưu toàn bộ. Cột "Xem trước thương hiệu" bên phải cập nhật real-time, không cần lưu trước.
+
+---
+
+## 11. Sản phẩm
+
+**Vị trí:** trang Thương hiệu → tab Sản phẩm.
+
+### 11.1 Thêm sản phẩm
+1. Bấm "Thêm sản phẩm"
+2. Nhập Tên sản phẩm (bắt buộc)
+3. Nhập Mô tả (nên có — tính năng chính, thành phần, lợi ích)
+4. Nhập URL trang sản phẩm — AI thu thập trang để trích xuất giá/thành phần/lợi ích
+5. Tải Ảnh sản phẩm (bắt buộc, tối đa 5): icon vương miện đặt ảnh chính, mũi tên sắp xếp thứ tự Trước (chính) → Sau → Bên → Chi tiết
+6. (Tuỳ chọn) Mở rộng "Màu sản phẩm" để ghi đè bảng màu thương hiệu riêng cho sản phẩm này
+7. Bấm "Tạo sản phẩm"
+
+Dùng icon Chỉnh sửa / Xóa trên từng thẻ để quản lý.
+
+> 💡 Ảnh sản phẩm ảnh hưởng trực tiếp chất lượng quảng cáo — nên dùng ảnh độ phân giải cao, chụp thật từ nhiều góc.
+
+### 11.2 Trạng thái thu thập dữ liệu trang sản phẩm
+- "Dữ liệu sản phẩm đã cache" — trang đã được AI đọc, sẵn sàng dùng
+- "Chưa thu thập" — bấm "Thu thập ngay" hoặc để hệ thống tự lấy ở lần tạo quảng cáo đầu tiên
+
+---
+
+## 12. Brand Intelligence
+
+**Vị trí:** trang Thương hiệu → phần Brand Intelligence. Ngữ cảnh AI dùng để tạo persona chính xác hơn và viết ad copy sát đối tượng mục tiêu.
+
+### 12.1 Tóm tắt nghiên cứu
+1. Dán nghiên cứu đối thủ, ghi chú sản phẩm, brief thương hiệu, hoặc insight thị trường vào ô văn bản lớn
+2. Bấm "Lưu tóm tắt nghiên cứu"
+
+### 12.2 Personas (đối tượng mục tiêu)
+
+**Tự động tạo:**
+1. Đảm bảo đã lưu tóm tắt nghiên cứu
+2. Bấm "Tạo 10 Profiles"
+3. Mỗi persona gồm: Tên, Pain (nỗi đau), Angle (góc tiếp cận), Emotion (cảm xúc)
+
+**Thêm thủ công:** "Thêm Profile" → điền Tên Profile, Pain Point, Angle, Emotion → "Tạo Profile".
+
+Dùng nút Chỉnh sửa / Xóa trên từng thẻ persona để quản lý.
+
+> 💡 Persona được dùng ở bước "Đối tượng mục tiêu" khi tạo quảng cáo (mục 1.5) để cá nhân hoá thông điệp theo phân khúc.
+
+---
+
+## 13. Đồng bộ video đối thủ (Apify)
+
+**Vị trí:** cuối trang Thương hiệu, phần "Apify Sync". Chỉ admin cấu hình được; thành viên chỉ xem trạng thái.
+
+### 13.1 Cấu hình
+1. Dán Apify Task ID (dạng `~abc123xyz`)
+2. Bật/tắt "Bật tự động sync (cron)" — khi bật, hệ thống tự chạy sync theo lịch cron định kỳ
+3. Bấm "Lưu cấu hình"
+
+Bấm "Sync ngay" bất kỳ lúc nào để lấy dữ liệu ngay từ lần chạy thành công gần nhất — video mới xuất hiện trong Video Trending (mục 5).
+
+### 13.2 Trạng thái
+- "Lần cuối sync: [ngày giờ]" (xanh, thành công)
+- "Lỗi lần trước: [nội dung lỗi]" (đỏ, thất bại)
+- Sau sync thành công: "✓ Sync thành công (N video)"
+
+---
+
+# Nhóm: Cài đặt
+
+## 14. Đăng nhập & truy cập lần đầu
+
+> ⚠️ Không có trang đăng ký công khai. Tài khoản (email `@patigroup.com`) được quản trị viên cấp trực tiếp — nếu chưa có tài khoản, liên hệ quản trị viên của bạn.
+
+### 14.1 Đăng nhập
+1. Mở địa chỉ ứng dụng — tự chuyển tới trang đăng nhập nếu chưa đăng nhập
+2. Nhập email `@patigroup.com` và mật khẩu, hoặc bấm "Tiếp tục với Google"
+3. Bấm nút đăng nhập
+
+### 14.2 Quên mật khẩu
+1. Bấm "Quên mật khẩu?" trên trang đăng nhập
+2. Nhập email `@patigroup.com`
+3. Kiểm tra hộp thư để nhận mật khẩu tạm thời mới
+4. Đăng nhập bằng mật khẩu mới rồi đổi lại trong Cài đặt (mục 15)
+
+### 14.3 Checklist thiết lập lần đầu
+
+| Bước | Ở đâu | Bắt buộc |
+|---|---|---|
+| Chọn hoặc tạo Thương hiệu | Dropdown "Thương hiệu" cuối sidebar | Có |
+| Thiết lập nhận diện thương hiệu | Thương hiệu → Nhận diện thương hiệu | Có |
+| Thêm sản phẩm (kèm ảnh) | Thương hiệu → tab Sản phẩm | Có |
+| Tạo/generate Personas | Thương hiệu → Brand Intelligence | Nên có |
+| Thêm nghiên cứu thương hiệu | Thương hiệu → Brand Intelligence | Nên có |
+
+---
+
+## 15. Hồ sơ cá nhân
+
+**Vị trí:** menu Tài khoản (avatar) → Cài đặt, hoặc Điều hướng → Cài đặt → Cài đặt.
+
+### 15.1 Thông tin hồ sơ
+Hiển thị: Họ tên, Email, Vai trò (CEO / Super Admin / Thành viên), Phòng ban, ngày tham gia, lần đăng nhập gần nhất.
+
+### 15.2 Đổi mật khẩu
+1. Nhập Mật khẩu hiện tại
+2. Nhập Mật khẩu mới (tối thiểu 8 ký tự)
+3. Xác nhận mật khẩu mới
+4. Bấm "Đổi mật khẩu"
+
+---
+
+## 16. Quản trị
+
+**Vị trí:** Tài khoản → Quản trị (icon khiên). Chỉ CEO và Super Admin nhìn thấy mục này.
+
+### 16.1 Dashboard phân tích
+- Chọn khoảng thời gian: Hôm nay / 7 ngày / 30 ngày (mặc định)
+- 4 thẻ số liệu: Lượt xem trang, Khách truy cập, Tài khoản, Quảng cáo đã lưu
+- Biểu đồ xu hướng lượt xem theo ngày
+
+### 16.2 Quản lý tài khoản & API key
+
+> ⚠️ Trang Quản trị hiện chỉ có dashboard phân tích. Việc tạo/xoá tài khoản người dùng và đổi vai trò được thực hiện trực tiếp trong hệ thống quản trị (Supabase) bởi người phụ trách hạ tầng, **không** có sẵn trên giao diện Admin.
+>
+> API key của các dịch vụ AI (Gemini, Claude, KIE, Apify, Vbee, ElevenLabs...) được cấu hình qua **biến môi trường trên server** (`.env` / hosting config), dùng chung cho toàn bộ tài khoản — không có giao diện tự quản lý key trong Cài đặt. Liên hệ người phụ trách hạ tầng nếu cần cập nhật key.
+
+---
+
+## 17. Phân quyền vai trò
+
+### 17.1 Cấp bậc vai trò
+
+| Vai trò | Số tài khoản tối đa | Mô tả |
+|---|:---:|---|
+| CEO | 1 | Quyền cao nhất. Không thể bị xoá hoặc hạ cấp. |
+| Super Admin | 2 | Quản lý được mọi thứ trừ tài khoản CEO. |
+| Thành viên | Không giới hạn | Nhân viên thông thường. Chỉ xem đối với Thương hiệu, Concept và Đồng bộ Apify. |
+
+### 17.2 Ma trận quyền hạn
+
+| Hành động | CEO | Super Admin | Thành viên |
+|---|:---:|:---:|:---:|
+| Tạo quảng cáo (Ảnh) | Có | Có | Có |
+| Tạo Stealth Ads | Có | Có | Có |
+| Xử lý pipeline Video | Có | Có | Có |
+| Xem Thư viện, Thư viện Audio | Có | Có | Có |
+| Sửa Nhận diện thương hiệu, Sản phẩm, Brand Intelligence | Có | Có | Không (chỉ xem) |
+| Sửa Concept | Có | Có | Không (chỉ xem) |
+| Thêm/xoá/đổi tên Thương hiệu | Có | Có | Không |
+| Cấu hình Đồng bộ Apify | Có | Có | Không (chỉ xem trạng thái) |
+| Đổi mật khẩu của chính mình | Có | Có | Có |
+| Xem trang Quản trị | Có | Có | Không |
+
+---
+
+## 18. Xử lý sự cố & mẹo hay
+
+### 18.1 Lỗi thường gặp
+
+| Vấn đề | Cách xử lý |
+|---|---|
+| "Email hoặc mật khẩu không đúng" | Kiểm tra email kết thúc bằng `@patigroup.com`, mật khẩu từ 8 ký tự |
+| "Tài khoản đã bị vô hiệu hóa" | Liên hệ quản trị viên để kích hoạt lại |
+| Không tìm thấy tài khoản | Liên hệ quản trị viên — tài khoản có thể chưa được tạo |
+| Trang Thương hiệu / Concept chỉ xem | Bạn đang ở vai trò Thành viên — nhờ admin chỉnh sửa hoặc nâng quyền |
+| Không có sản phẩm trong dropdown | Vào Thương hiệu → tab Sản phẩm → thêm sản phẩm trước |
+| Không có persona nào | Vào Thương hiệu → Brand Intelligence → Tạo 10 Profiles hoặc Thêm Profile |
+| Tạo quảng cáo treo ở bước đọc trang sản phẩm | Kiểm tra URL trang sản phẩm còn hợp lệ và truy cập được |
+| Ảnh tạo ra không như mong đợi | Đảm bảo ảnh sản phẩm chất lượng cao, đủ sáng, đúng sản phẩm thật |
+| Không thấy mục Quản trị | Chỉ vai trò CEO và Super Admin nhìn thấy |
+| Video không phiên âm được | Kiểm tra video còn truy cập được trên TikTok; thử "Phiên âm lại" |
+| Không tạo được giọng đọc | Kiểm tra đã lưu kịch bản (Bước 2) và đã chọn Voice Preset |
+| Sync Apify thất bại | Kiểm tra Apify Task ID còn đúng và task còn khả dụng trên Apify |
+| Ảnh Stealth không tạo được | Kiểm tra đã hoàn tất "Lập kế hoạch cảnh" trước khi bấm "Tạo tất cả" |
+
+### 18.2 Mẹo để có kết quả tốt nhất
+
+1. **Ảnh sản phẩm là yếu tố quan trọng nhất** — dùng 3–5 ảnh độ phân giải cao, nhiều góc
+2. **Điền đúng màu thương hiệu** — quảng cáo đồng nhất, chuyên nghiệp hơn
+3. **Viết nghiên cứu đầy đủ** — càng nhiều dữ liệu, persona AI tạo càng sắc bén
+4. **Kết hợp nhiều Concept** — dùng 2–3 concept cùng lúc để creative đa dạng hơn
+5. **Thử cả 2 chế độ** — Concept cho quảng cáo thương hiệu, Stealth cho nội dung tự nhiên
+6. **Dùng Competitor Ref** — tải ảnh quảng cáo đối thủ hiệu quả, AI tái hiện layout đó với thương hiệu bạn
+7. **Điều chỉnh Độ nhạy** — sản phẩm sức khỏe/cơ thể luôn dùng độ nhạy "Cao" trong Stealth
+8. **Rà soát kế hoạch cảnh** — chỉnh lại kế hoạch AI sinh ra trước khi tạo ảnh Stealth
+9. **Tinh chỉnh độ tuổi đối tượng** — khớp nhóm khách hàng mục tiêu để nội dung Stealth chân thực hơn
+10. **Tải ZIP cho chiến dịch lớn** — dùng "Tải tất cả" khi cần nhiều ảnh cùng lúc
+11. **Video pipeline giữ nguyên nhịp điệu gốc** — AI cố tình giữ số câu/đoạn giống transcript gốc khi viết kịch bản, chỉ thay nội dung
+12. **Voice Lab: lưu preset tốt để dùng lại** — một giọng/tốc độ/cao độ ưng ý nên lưu preset ngay
+
+### 18.3 Quy tắc chất lượng text & logo (AI tự áp dụng)
+
+**Viết hoa chữ:**
+- Mọi text hiển thị dùng cách viết hoa nhất quán: Title Case hoặc VIẾT HOA TOÀN BỘ
+- Không trộn lẫn kiểu chữ tuỳ tiện
+- Áp dụng cho headline, body text, caption, text overlay
+
+**Logo thương hiệu:**
+- AI không bao giờ tự vẽ, bịa hoặc tạo mới logo
+- Nếu đã tải logo, logo được tái hiện y nguyên — không chỉnh sửa, không thiết kế lại
+- Nếu chưa có ảnh logo, chỉ logo in sẵn tự nhiên trên bao bì sản phẩm mới được phép xuất hiện
+
+---
+
+*Cập nhật lần cuối: 2026-07-01 — nội dung đồng bộ với `src/features/guide/guide-data.ts`.*

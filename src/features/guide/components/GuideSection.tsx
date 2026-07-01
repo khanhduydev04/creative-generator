@@ -4,18 +4,26 @@
 import type { GuideContentBlock, GuideSection as GuideSectionType } from "@/features/guide/types";
 import {
   Bookmark,
+  Brain,
+  Building2,
   ChevronDown,
   ChevronRight,
   EyeOff,
+  Film,
   FolderOpen,
   LayoutDashboard,
   Lightbulb,
   Lock,
+  Mic,
+  Music,
+  Package,
   Palette,
+  RefreshCw,
   Rocket,
   Settings,
   Shield,
   Sparkles,
+  Workflow,
   Wrench,
   type LucideIcon,
 } from "lucide-react";
@@ -36,6 +44,14 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Shield,
   Lock,
   Wrench,
+  Film,
+  Workflow,
+  Mic,
+  Music,
+  Building2,
+  Package,
+  Brain,
+  RefreshCw,
 };
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -207,7 +223,7 @@ export const GuideSection = forwardRef<HTMLElement, GuideSectionProps>(
           </div>
           {section.adminOnly && (
             <span className="text-[10px] font-medium text-warning bg-warning/10 border border-warning/20 px-2 py-0.5 rounded-full shrink-0">
-              Admin Only
+              Chỉ Admin
             </span>
           )}
         </button>

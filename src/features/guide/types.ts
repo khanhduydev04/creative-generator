@@ -9,6 +9,18 @@ export type GuideContentBlock =
   | { type: 'warning'; text: string }
   | { type: 'list'; items: string[]; ordered?: boolean }
 
+// ─── Guide Groups ───────────────────────────────────────────────────────────
+
+// Mirrors the sidebar nav groupings (Ảnh / Video / Cài đặt) plus Brands split
+// out as its own group, per the in-app User Guide restructure.
+export type GuideGroupId = 'images' | 'videos' | 'brands' | 'setting'
+
+export interface GuideGroup {
+  id: GuideGroupId
+  label: string
+  icon: string
+}
+
 // ─── Guide Structure ────────────────────────────────────────────────────────
 
 export interface GuideSubSection {
@@ -23,6 +35,7 @@ export interface GuideSection {
   title: string
   icon: string
   description: string
+  group: GuideGroupId
   adminOnly: boolean
   content: GuideContentBlock[]
   subsections: GuideSubSection[]
