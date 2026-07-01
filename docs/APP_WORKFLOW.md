@@ -1,24 +1,25 @@
 # PATI Ads Generator — App Workflow
 
 > Tài liệu mô tả toàn bộ luồng sử dụng của tool từ góc nhìn người dùng.
-> Version: 1.1.0 | Cập nhật: March 2026
+> Version: 1.2.0 | Cập nhật: July 2026
 
 ---
 
 ## Mục lục
 
 1. [Authentication](#1-authentication)
-2. [Client & Brand Selection](#2-client--brand-selection)
+2. [Brand Selection](#2-brand-selection)
 3. [Brand Setup](#3-brand-setup)
 4. [Standard Ad Generation](#4-standard-ad-generation-workspace)
 5. [Stealth Ad Generation](#5-stealth-ad-generation)
 6. [Competitor Reference Mode](#6-competitor-reference-mode)
 7. [Library](#7-library)
 8. [Concepts Management](#8-concepts-management)
-9. [User Guide](#9-user-guide)
-10. [Admin Panel](#10-admin-panel)
-11. [Settings](#11-settings)
-12. [Data Dependencies](#12-data-dependencies)
+9. [Video Pipeline](#9-video-pipeline)
+10. [User Guide](#10-user-guide)
+11. [Admin Panel](#11-admin-panel)
+12. [Settings](#12-settings)
+13. [Data Dependencies](#13-data-dependencies)
 
 ---
 
@@ -28,12 +29,15 @@
 
 ```
 User mở app
-  → Nhập email (@patigroup.com) + password (8+ ký tự)
-  → Click "Sign In"
-  → POST /api/auth/verify-login
-      ├── ✓ Success → redirect "/" → AuthProvider load profile (GET /api/auth/me)
-      └── ✗ Fail → hiện lỗi (wrong password / account deactivated / invalid email)
+  → Option A: Click "Sign in with Google" (GoogleSignInButton) → OAuth flow → redirect "/app"
+  → Option B: Nhập email (@patigroup.com) + password (8+ ký tự) → Click "Sign In"
+      → supabase.auth.signInWithPassword()
+      → POST /api/auth/verify-login
+          ├── ✓ Success → redirect "/app" → AuthProvider load profile (GET /api/auth/me)
+          └── ✗ Fail → hiện lỗi (invalid credentials / account deactivated / account not found)
 ```
+
+Email phải kết thúc bằng `@patigroup.com` (`EMAIL_DOMAIN` trong `src/features/auth/types.ts`), validate ngay trên client trước khi gọi Supabase.
 
 ### Forgot Password (`/forgot-password`)
 
@@ -56,43 +60,50 @@ Click avatar (header phải) → "Sign Out"
 
 ---
 
-## 2. Client & Brand Selection
+## 2. Brand Selection
+
+**Brand** là đơn vị workspace cấp cao nhất (không còn khái niệm "Client"). Mỗi Brand có Products, Videos, Ads riêng. Brand selector nằm ở cuối sidebar trái (`DashboardLayout`), không phải trên header.
 
 ### Auto-Selection (khi load app)
 
 ```
+AppProvider mount
+  → Đọc "selected-brand-id" từ localStorage (brandHydrated = true sau khi đọc xong)
 DashboardLayout mount
-  → GET /api/clients → load danh sách clients
-  → Nếu chưa chọn client:
-      → Auto-select client đầu tiên
-      → GET /api/brands?clientId={id} → load brands
-      → Auto-select brand đầu tiên
-  → AppContext lưu: selectedClientId + selectedBrandId
+  → GET /api/brands (useBrands hook) → load danh sách brands của user
+  → Sau khi brandHydrated && brands.length > 0:
+      → Nếu brand đã lưu (localStorage) không còn tồn tại → auto-select brand đầu tiên
+      → Ngược lại giữ nguyên brand đã chọn (persist qua reload)
+  → AppContext lưu: selectedBrandId (localStorage key "selected-brand-id")
 ```
 
-### Client CRUD (Header)
+### Brand selector (Sidebar, cuối menu điều hướng)
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│ [Logo]  Home  Stealth  Brand  Concepts  Library  Guide  │
-│                                                         │
-│         [Client Dropdown ▾]  [✏️] [🗑️]  [+ New Client]  │
-│                                            [? Help] [👤]│
-└─────────────────────────────────────────────────────────┘
+┌───────────────────────────────┐
+│ THƯƠNG HIỆU                   │
+│ [Tên brand ▾]           [⋯]  │
+└───────────────────────────────┘
 
-• New Client    → Modal nhập tên → POST /api/clients → auto-select
-• Rename        → Modal sửa tên → PATCH /api/clients/{id}
-• Delete        → Modal confirm → DELETE /api/clients/{id} → select next
-• Switch Client → Click dropdown item → applyClient() → fetch brands
+Click dropdown ▾  → danh sách brands → click 1 brand để chuyển
+  (nếu là Admin) → mục "+ Thêm thương hiệu" ở cuối danh sách
+
+Click [⋯] (brand actions)
+  → "Đổi tên"  → mọi user đều dùng được → PATCH /api/brands/{id}
+  → "Xóa"      → chỉ Admin (CEO/Super Admin) → DELETE /api/brands/{id} → tự chọn brand khác
+
+Thêm thương hiệu (chỉ Admin) → Modal nhập tên → POST /api/brands → auto-select brand mới
 ```
+
+**Permission:** `POST /api/brands` (tạo) và `DELETE /api/brands/{id}` (xóa) yêu cầu quyền Admin (CEO/Super Admin — `verifyAdmin()`). `PATCH /api/brands/{id}` (đổi tên) mở cho mọi user đã đăng nhập.
 
 ---
 
 ## 3. Brand Setup
 
-### Entry: `/brand-setup`
+### Entry: `/app/brands`
 
-**Yêu cầu:** Đã chọn Client. Nếu chưa có Brand → tự tạo khi Save lần đầu.
+**Yêu cầu:** Đã chọn Brand (xem mục 2). Nếu chưa có Brand nào, Admin cần tạo trước qua "+ Thêm thương hiệu" ở sidebar.
 
 ```
 Brand Setup Page
@@ -135,7 +146,7 @@ Save Brand Kit → PATCH /api/brands/{id} + PUT /api/brand-kit/{id}
 
 ## 4. Standard Ad Generation (Workspace)
 
-### Entry: `/` (Home)
+### Entry: `/app` (Home)
 
 **Layout:** 2 cột — Left (420px inputs) | Right (flexible output)
 
@@ -216,7 +227,7 @@ Cache: Results lưu localStorage 1 giờ (survive navigation)
 
 ## 5. Stealth Ad Generation
 
-### Entry: `/stealth-ads`
+### Entry: `/app/stealth-ads`
 
 **Mục đích:** Tạo quảng cáo trông như nội dung organic (ảnh iPhone, screenshots, candid)
 
@@ -273,7 +284,7 @@ Results: Save / Download / Download All ZIP
 
 ## 6. Competitor Reference Mode
 
-### Trong Workspace (`/` → Generation Mode: Competitor Reference)
+### Trong Workspace (`/app` → Generation Mode: Competitor Reference)
 
 ```
 Upload competitor ad image
@@ -301,7 +312,7 @@ B) Stealth Ad (2 steps)
 
 ## 7. Library
 
-### Entry: `/library`
+### Entry: `/app/library`
 
 ```
 Library Page
@@ -346,7 +357,7 @@ Data Source:
 
 ## 8. Concepts Management
 
-### Entry: `/concepts`
+### Entry: `/app/concepts`
 
 ```
 Concepts Page (Admin: full CRUD | Member: view only)
@@ -373,89 +384,178 @@ Edit/Delete (Admin):
 
 ---
 
-## 9. User Guide
+## 9. Video Pipeline
 
-### Entry: `/guide` hoặc click `?` icon trên header
+**Mục đích:** Crawl video TikTok của đối thủ, bóc băng lời thoại, viết lại thành kịch bản theo giọng brand của mình, và tạo giọng đọc AI — phục vụ team Content/Creative tái sử dụng ý tưởng viral nhanh hơn.
+
+### 9.1 Video Trending — danh sách video (`/app/video`)
+
+```
+CompetitorVideosPage
+├── Filter theo Status: Pending | Approved | Rejected (tabs)
+├── Search (server-side, debounce 300ms)
+├── Pagination (20 video/trang, server-side)
+├── [+ Add Video] → AddVideoModal
+│     → Nhập TikTok URL thủ công → validate url chứa "tiktok.com"
+│     → POST /api/video/competitors → 409 nếu URL đã tồn tại
+├── [🔄 Sync Apify] → gọi lại Apify dataset mới nhất cho brand hiện tại
+│     → POST /api/video/apify-config/sync
+└── Video Cards (CompetitorVideoCard)
+      ├── Thumbnail (CDN, tự fetch lại nếu hết hạn)
+      ├── Caption, tác giả, lượt xem
+      ├── Đổi Status (Pending/Approved/Rejected)
+      └── Click card → vào trang chi tiết `/app/video/{id}`
+```
+
+**Nguồn video:**
+- **Tự động (cron):** `GET /api/cron/sync-apify` chạy theo lịch (Thứ 2 + Thứ 5, 10:00 sáng giờ VN — cấu hình trong `vercel.json`), lặp qua tất cả brand đã bật Apify config (`BrandApifyConfigService`), lấy run gần nhất thành công từ Apify actor task, upsert video mới (chỉ lấy item có `isAd: true` và URL chứa `tiktok.com`).
+- **Thủ công:** nút "Sync Apify" trên trang, hoặc thêm 1 URL TikTok cụ thể qua "+ Add Video".
+- Apify cũng có thể gọi ngược vào app qua webhook (`POST /api/apify/webhook`).
+
+### 9.2 Chi tiết video — Pipeline 4 bước (`/app/video/{id}`)
+
+```
+VideoDetailPage
+├── VideoPlayer (preview TikTok video)
+├── PipelineStageBar — 4 giai đoạn: Bóc băng → Kịch bản → Giọng đọc → Hoàn tất
+│     (mỗi stage: idle / running / done — done tự suy ra từ dữ liệu đã lưu, không phải bước riêng)
+│
+├── [1] BÓC BĂNG (Transcribe)
+│     → Click "Bóc băng" → POST /api/video/transcripts (tạo record) 
+│       → POST /api/video/transcripts/{id}/run
+│       → Server tải audio từ TikTok (qua tikwm.com), gửi cho Gemini 2.5 Flash
+│       → Gemini trả về lời thoại tiếng Việt → lưu vào transcript, status = done
+│     → TranscriptEditor: xem/sửa lại lời thoại đã bóc băng
+│
+├── [2] KỊCH BẢN (Script) — mở khi đã có transcript
+│     → Chọn Product (để AI biết USP, chèn tên brand)
+│     → Generate → POST /api/video/scripts (SSE stream)
+│       → Claude Sonnet phân tích transcript gốc (hook, cấu trúc, tông giọng, CTA)
+│       → Viết lại HOÀN TOÀN kịch bản mới, giữ nhịp/cấu trúc gốc, chèn tên brand,
+│         điều chỉnh hướng dẫn đọc theo TTS provider đã chọn (Vbee/ElevenLabs)
+│     → ScriptEditor: sửa kịch bản → Save
+│
+├── [3] GIỌNG ĐỌC (Voice) — mở khi đã lưu Script
+│     → VoiceGenerationPanel: chọn Voice Preset (đã tạo sẵn ở /app/video/voice-config)
+│     → Generate → POST /api/video/audio
+│         → Preset provider = "elevenlabs" → ElevenLabsService.synthesize()
+│         → Preset provider = "vbee" → VbeeService.synthesize()
+│       → File audio lưu vào Supabase Storage bucket "generated-audio"
+│     → Nghe thử (AudioPlayer), có thể tạo nhiều bản với preset khác nhau, xoá bản không ưng
+│
+└── [4] HOÀN TẤT (Done)
+      → Trạng thái suy ra tự động khi đã có audio (không phải thao tác riêng)
+      → Audio xuất hiện trong Audio Library (/app/video/audio) để tải về/dùng
+```
+
+### 9.3 Thư viện Audio (`/app/video/audio`)
+
+```
+Audio Library Page
+├── Danh sách audio đã tạo (tất cả video/script trong brand)
+├── Click 1 audio → AudioDetailModal (read-only)
+│     ├── AudioPlayer (nghe lại)
+│     ├── Metadata: voice preset, provider, speed, thời lượng, ngày tạo
+│     └── Toàn bộ nội dung script đã dùng để tạo audio
+└── Đánh giá chất lượng (Voice Rating — sao) → POST /api/video/voice-ratings
+```
+
+### 9.4 Cấu hình Giọng đọc (`/app/video/voice-config`)
+
+```
+Voice Config Page ("Voice Lab")
+├── Tabs theo provider: Vbee | ElevenLabs
+├── Danh sách Voice Preset hiện có (sort theo điểm viral từ voice_ratings)
+├── Live preview giọng đọc trước khi lưu preset
+└── Tạo Preset mới
+      ├── Vbee: chọn voice_code + speed/pitch/pause
+      └── ElevenLabs: chọn provider_voice_id + model (mặc định eleven_flash_v2_5)
+      → POST /api/video/voice-presets
+```
+
+---
+
+## 10. User Guide
+
+### Entry: `/app/guide` hoặc click icon Guide trong sidebar
 
 ```
 Guide Page
 ├── Header: "User Guide" + version badge + search bar
 │
 ├── Setup Checklist (dismissible, localStorage persist)
-│   ├── ☐ Create a Client (Required)
-│   ├── ☐ Set up Brand Identity (Required)
-│   ├── ☐ Add Products (Required)
-│   ├── ☐ Create/Generate Personas
-│   └── ☐ Add Brand Research
+│   ├── ☐ Chọn hoặc tạo Thương hiệu (Required)
+│   ├── ☐ Thiết lập nhận diện thương hiệu (Required)
+│   ├── ☐ Thêm sản phẩm kèm ảnh (Required)
+│   ├── ☐ Tạo/generate Personas (optional)
+│   └── ☐ Thêm nghiên cứu thương hiệu (optional)
 │   Progress bar: 0/5 → 5/5 "All done!"
 │
 ├── Table of Contents (sticky sidebar, desktop only)
-│   └── 11 sections with active highlight + search match dots
+│   └── 18 sections, nhóm theo Ảnh / Video / Thương hiệu / Cài đặt, active highlight + search match dots
 │
 └── Content Sections (collapsible cards)
-    ├── 1. Getting Started
-    ├── 2. Dashboard & Navigation
-    ├── 3. Brand Setup
-    ├── 4. Concepts Management
-    ├── 5. Standard Ad Generation
-    ├── 6. Stealth Ad Generation
-    ├── 7. Library
-    ├── 8. Settings & Profile
-    ├── 9. Admin Panel (admin only)
-    ├── 10. Role Permissions (admin only)
-    └── 11. Troubleshooting
+    ├── Tạo quảng cáo
+    ├── Stealth Ads
+    ├── Concept
+    ├── Thư viện
+    ├── Video Trending
+    ├── Pipeline xử lý video
+    ├── Voice Lab (Cấu Hình Giọng)
+    ├── Thư Viện Audio
+    ├── Chọn & quản lý thương hiệu
+    ├── Nhận diện thương hiệu
+    ├── Sản phẩm
+    ├── Brand Intelligence
+    ├── Đồng bộ video đối thủ (Apify)
+    ├── Đăng nhập & truy cập lần đầu
+    ├── Hồ sơ cá nhân
+    ├── Quản trị (admin only)
+    ├── Phân quyền vai trò (admin only)
+    └── Xử lý sự cố & mẹo hay
 
 Features:
   • Search → real-time filter + yellow highlight matches
-  • Role-aware → sections 9-10 ẩn cho Member
+  • Role-aware → "Quản trị" và "Phân quyền vai trò" ẩn cho Member
   • Mobile → TOC thay bằng dropdown selector
   • Content blocks: paragraphs, steps, tables, tips, warnings, lists
 ```
 
 ---
 
-## 10. Admin Panel
+## 11. Admin Panel
 
-### Entry: `/admin/users` (CEO + Super Admin only)
+### Entry: `/app/admin` (CEO + Super Admin only)
+
+Trang admin hiện là **1 page duy nhất, thuần analytics dashboard** (`AdminDashboard`) — không còn quản lý user (tạo/reset password/deactivate/đổi role/xóa) và không còn tab API Keys. Non-admin bị redirect về `/app` (`router.replace("/app")`).
 
 ```
-Admin Panel
-├── Tab: Users
-│   ├── Stats Cards: Total | Active | Inactive | Admins
-│   ├── Search bar (name, email, role, department)
-│   ├── User Table: Name, Role, Department, Status, Last Login, Actions
-│   ├── Create User → Modal: email + name + department + role
-│   │   → POST /api/admin/users → temp password (toast hoặc email)
-│   └── Per-User Actions (dropdown):
-│       ├── Reset Password → POST /api/admin/reset-password
-│       ├── Deactivate/Reactivate → PATCH /api/admin/toggle-active
-│       ├── Promote/Demote → PATCH /api/admin/change-role (CEO only)
-│       └── Delete Account → DELETE /api/admin/delete-user (type email confirm)
-│
-├── Tab: Settings (API Keys)
-│   ├── Google API Key (Gemini) — masked, edit, save
-│   ├── KIE API Key (Image gen) — masked, edit, save
-│   └── Google Console API Key (Sheets + Fonts) — masked, edit, save
-│   → PUT /api/admin/settings → app_settings DB + activity log
-│   → Priority: DB value > .env fallback (60s cache)
-│
-└── Activity Log (bottom)
-    └── Recent actions: who did what, to whom, when
+Admin Dashboard (GET /api/admin/stats?days=1|7|30)
+├── Range toggle: Today | Last 7 Days | Last 30 Days
+├── Stat Cards: Total Page Views | Total Visitors | Total Accounts | Total Ads Saved
+├── Daily Trend — bar chart views/visitors theo ngày
+└── Top Pages — bảng path + views
 ```
+
+**API keys** (ANTHROPIC_API_KEY, GOOGLE_API_KEY, KIE_API_KEY, VBEE_API_KEY, ELEVENLABS_API_KEY, APIFY_TOKEN) không còn chỉnh được từ UI — chỉ đọc trực tiếp từ biến môi trường server (`src/lib/key-provider.ts`), dùng chung cho toàn bộ user, không có DB override. Muốn đổi key phải sửa env var trên server/hosting và deploy lại.
+
+**Quản lý user** (tạo tài khoản, đổi role, deactivate...) hiện không có UI trong app — thực hiện trực tiếp qua Supabase (bảng `profiles` + Supabase Auth) nếu cần.
 
 ### Role Hierarchy
 
 ```
-CEO (1 max)           → full quyền, không thể bị xóa/deactivate
-  └── Super Admin (2 max) → quản lý users (trừ CEO)
-        └── Member (unlimited) → chỉ generate ads, view only brand/concepts
+CEO           → full quyền
+  └── Super Admin → xem được Admin Dashboard
+        └── Member → chỉ generate ads, view only brand/concepts
 ```
+
+(`isAdmin(role)` = `role === "ceo" || role === "super_admin"`, định nghĩa tại `src/features/auth/types.ts`.)
 
 ---
 
-## 11. Settings
+## 12. Settings
 
-### Entry: `/settings` (User Menu → Settings)
+### Entry: `/app/settings` (User Menu → Settings)
 
 ```
 Settings Page
@@ -477,14 +577,14 @@ Settings Page
 
 ---
 
-## 12. Data Dependencies
+## 13. Data Dependencies
 
 ### Khởi tạo ban đầu (first-time flow)
 
 ```
 1. Login
    ↓
-2. Create Client (header → "+ New Client")
+2. Tạo/chọn Brand (Admin tạo qua sidebar "+ Thêm thương hiệu")
    ↓
 3. Brand Setup
    ├── 3a. Set brand name + colors + typography + logos
@@ -498,29 +598,34 @@ Settings Page
    └── Stealth Ads → Scene-Based Ads
    ↓
 5. Results → Save to Library → Download
+
+(Song song) Video Pipeline:
+   Video Trending → chọn video → Bóc băng → Kịch bản → Giọng đọc → Hoàn tất
 ```
 
 ### Dependency Map
 
 ```
-Client (required)
-  └── Brand (auto-created on first save)
-        ├── Products (required for generation)
-        │   └── Product Images (required, max 5)
-        ├── Brand Kit (colors, typography, logos)
-        ├── Research Summary (optional)
-        └── Personas (optional, improves targeting)
+Brand (đơn vị workspace cấp cao nhất — Admin tạo)
+  ├── Products (required for generation)
+  │   └── Product Images (required, max 5)
+  ├── Brand Kit (colors, typography, logos)
+  ├── Research Summary (optional)
+  ├── Personas (optional, improves targeting)
+  ├── Competitor Videos (crawl qua Apify — cron hoặc thêm URL thủ công)
+  │   └── Transcript → Script → Generated Audio
+  └── Voice Presets (Vbee / ElevenLabs, dùng cho bước Giọng đọc)
 
 Concepts (global, not per-brand)
 
-API Keys (admin-managed, runtime override)
+API Keys (đọc từ server env vars — dùng chung toàn app, không có DB override)
 ```
 
 ### Yêu cầu tối thiểu để generate
 
 | Field | Standard Ads | Stealth Ads | Competitor Ref |
 |-------|:---:|:---:|:---:|
-| Client + Brand | ✅ | ✅ | ✅ |
+| Brand đã chọn | ✅ | ✅ | ✅ |
 | Product selected | ✅ | ✅ | ✅ |
 | Landing Page URL | ✅ | ✅ | ✅ |
 | Language | ✅ | ✅ | ✅ |
@@ -529,6 +634,15 @@ API Keys (admin-managed, runtime override)
 | Competitor Image | — | — | ✅ |
 | Scene Selection | — | ✅ (auto/manual) | — |
 
+### Yêu cầu tối thiểu cho Video Pipeline
+
+| Field | Bóc băng | Kịch bản | Giọng đọc |
+|-------|:---:|:---:|:---:|
+| Video đã crawl/thêm | ✅ | ✅ | ✅ |
+| Transcript hoàn tất | — | ✅ | ✅ |
+| Script đã lưu | — | — | ✅ |
+| Voice Preset đã tạo | — | — | ✅ |
+
 ---
 
-*Last updated: March 2026 — PATI Group Internal*
+*Last updated: July 2026 — PATI Group Internal*

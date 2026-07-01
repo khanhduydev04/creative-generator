@@ -46,5 +46,8 @@ Tài liệu bàn giao dự án. Đọc theo thứ tự sau:
 | File | Mô tả |
 |------|-------|
 | `CLAUDE.md` | Rules cho Claude Code AI assistant |
+| `docs/BRAND_GUIDELINE.md` | Brand guideline nội bộ (Ladospice) |
+| `docs/video-pipeline-cost-report.md` | Chi phí AI (Gemini/Claude/Vbee/ElevenLabs) cho Video pipeline |
+| `docs/manual-qa-checklist.md` | Checklist QA thủ công trước khi release |
 | `SECURITY_AUDIT_REPORT.md` | Báo cáo security audit (findings + fixes) |
 | `.env.local.template` | Template env vars (copy → .env.local) |
