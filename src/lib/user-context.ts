@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { ProviderError } from "@/services/providerError";
 
 export class ApiError extends Error {
   constructor(public status: number, public code: string, public details?: unknown) {
@@ -28,6 +29,9 @@ export async function requireAdmin(req: NextRequest): Promise<{ userId: string }
 }
 
 export function handleApiError(e: unknown): NextResponse {
+  if (e instanceof ProviderError) {
+    return NextResponse.json({ error: `${e.provider}_${e.kind}` }, { status: e.httpStatus });
+  }
   if (e instanceof ApiError) {
     return NextResponse.json(
       { error: e.code, ...(e.details ? { details: e.details } : {}) },

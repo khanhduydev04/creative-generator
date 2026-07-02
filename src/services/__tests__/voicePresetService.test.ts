@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { VoicePresetService } from "@/services/voicePresetService";
 
@@ -54,5 +54,62 @@ describe("VoicePresetService.create", () => {
         elevenLabsModel: "eleven_flash_v2_5",
       }),
     ).rejects.toThrow("boom");
+  });
+
+  it("persists provider_config for a minimax preset", async () => {
+    const single = vi.fn().mockResolvedValue({ data: { id: "p1" }, error: null });
+    const select = vi.fn(() => ({ single }));
+    const insert = vi.fn((_row: Record<string, unknown>) => ({ select }));
+    const from = vi.fn(() => ({ insert }));
+    const supabase = { from } as unknown as SupabaseClient;
+
+    const svc = new VoicePresetService(supabase);
+    await svc.create({
+      brandId: "b1",
+      displayName: "MM preset",
+      voiceCode: "",
+      speed: 1.1,
+      pitch: 1.0,
+      stability: 0.5,
+      provider: "minimax",
+      providerVoiceId: "Wise_Woman",
+      elevenLabsModel: null,
+      providerConfig: {
+        kind: "minimax",
+        model: "speech-2.6-hd",
+        audio: { format: "mp3", sampleRate: 32000, bitrate: 128000, channel: 1 },
+      },
+    });
+
+    const inserted = insert.mock.calls[0][0];
+    expect(inserted.provider).toBe("minimax");
+    expect(inserted.provider_voice_id).toBe("Wise_Woman");
+    expect(inserted.provider_config).toEqual({
+      kind: "minimax",
+      model: "speech-2.6-hd",
+      audio: { format: "mp3", sampleRate: 32000, bitrate: 128000, channel: 1 },
+    });
+  });
+
+  it("writes null provider_config for non-minimax presets", async () => {
+    const single = vi.fn().mockResolvedValue({ data: { id: "p2" }, error: null });
+    const select = vi.fn(() => ({ single }));
+    const insert = vi.fn((_row: Record<string, unknown>) => ({ select }));
+    const from = vi.fn(() => ({ insert }));
+    const supabase = { from } as unknown as SupabaseClient;
+
+    const svc = new VoicePresetService(supabase);
+    await svc.create({
+      brandId: "b1",
+      displayName: "Vbee preset",
+      voiceCode: "hn_male",
+      speed: 1,
+      pitch: 1,
+      stability: 0.5,
+      provider: "vbee",
+      providerVoiceId: null,
+      elevenLabsModel: null,
+    });
+    expect(insert.mock.calls[0][0].provider_config).toBeNull();
   });
 });

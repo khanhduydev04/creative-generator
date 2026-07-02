@@ -99,6 +99,32 @@ export async function POST(request: NextRequest) {
         // v3 does not support speed control — only pass it for v2.5 Flash
         speed: typedPreset.elevenlabs_model === "eleven_v3" ? undefined : typedPreset.speed,
       });
+    } else if (typedPreset.provider === "minimax") {
+      if (!typedPreset.provider_voice_id) {
+        return NextResponse.json({ error: "minimax_voice_id_missing" }, { status: 400 });
+      }
+      const { getMiniMaxCredentials } = await import("@/lib/key-provider");
+      const { apiKey, groupId } = getMiniMaxCredentials();
+      const { MiniMaxService } = await import("@/services/minimaxService");
+      const { parseMiniMaxConfig, defaultMiniMaxConfig } = await import(
+        "@/features/video/providerConfig"
+      );
+      const cfg = parseMiniMaxConfig(typedPreset.provider_config) ?? defaultMiniMaxConfig();
+      const result = await new MiniMaxService(apiKey, groupId).synthesize({
+        text: textToSpeak,
+        voiceId: typedPreset.provider_voice_id,
+        model: cfg.model,
+        speed: typedPreset.speed,
+        vol: cfg.vol,
+        pitch: cfg.pitch,
+        emotion: cfg.emotion,
+        languageBoost: cfg.languageBoost,
+        audio: cfg.audio,
+        voiceModify: cfg.voiceModify,
+        pronunciationDict: cfg.pronunciationDict,
+      });
+      audioBuffer = result.audio;
+      durationSecs = result.durationSecs;
     } else {
       // Vbee flow: synthesize returns an audio_url which must be downloaded to get binary
       const vbeeKey = await getUserApiKey(userId, "vbee");

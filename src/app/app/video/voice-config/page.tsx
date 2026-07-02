@@ -15,6 +15,7 @@ import {
   useElevenLabsPreview,
 } from "@/hooks/api/useVoicePresets";
 import { VoiceRatingStars } from "@/features/video/components/VoiceRatingStars";
+import { MiniMaxVoicePanel } from "@/features/video/components/MiniMaxVoicePanel";
 import { apiFetch } from "@/lib/api";
 import type { VbeeVoice, ElevenLabsVoice } from "@/features/video/types";
 import type { ElevenLabsModel } from "@/services/scriptPrompt";
@@ -55,7 +56,7 @@ const ELEVENLABS_MODELS: { value: ElevenLabsModel; label: string }[] = [
 type Gender = "all" | "male" | "female";
 type Region = "all" | "north" | "central" | "south";
 type SortBy = "viral" | "name";
-type ActiveTab = "vbee" | "elevenlabs";
+type ActiveTab = "vbee" | "elevenlabs" | "minimax";
 
 export default function VoiceConfigPage() {
   const { t } = useT();
@@ -255,6 +256,17 @@ export default function VoiceConfigPage() {
           >
             ElevenLabs
           </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("minimax")}
+            className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ${
+              activeTab === "minimax"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-foreground-muted hover:text-foreground"
+            }`}
+          >
+            MiniMax
+          </button>
         </div>
 
         {activeTab === "vbee" ? (
@@ -453,7 +465,7 @@ export default function VoiceConfigPage() {
               )}
             </div>
           </div>
-        ) : (
+        ) : activeTab === "elevenlabs" ? (
           /* ElevenLabs tab */
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Left: ElevenLabs Voice Picker */}
@@ -669,6 +681,8 @@ export default function VoiceConfigPage() {
               )}
             </div>
           </div>
+        ) : (
+          <MiniMaxVoicePanel brandId={selectedBrandId} />
         )}
       </div>
     </DashboardLayout>

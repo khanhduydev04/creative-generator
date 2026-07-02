@@ -237,7 +237,7 @@ export function ScriptEditor({
           Định dạng giọng đọc
         </label>
         <div className="flex rounded-lg border border-border overflow-hidden text-sm">
-          {(["vbee", "elevenlabs"] as TtsProvider[]).map((p) => (
+          {(["vbee", "elevenlabs", "minimax"] as TtsProvider[]).map((p) => (
             <button
               key={p}
               type="button"
@@ -248,7 +248,7 @@ export function ScriptEditor({
                   : "bg-background text-foreground-muted hover:bg-background-elevated"
               }`}
             >
-              {p === "vbee" ? "Vbee" : "ElevenLabs"}
+              {p === "vbee" ? "Vbee" : p === "elevenlabs" ? "ElevenLabs" : "MiniMax"}
             </button>
           ))}
         </div>

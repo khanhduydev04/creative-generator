@@ -1,4 +1,10 @@
-import type { TtsProvider, ElevenLabsModel } from "@/services/scriptPrompt";
+import type {
+  TtsProvider,
+  ElevenLabsModel,
+  MiniMaxModel,
+  MiniMaxEmotion,
+  MiniMaxSoundEffect,
+} from "@/services/scriptPrompt";
 import type { BrandProduct } from "@/features/brand/types";
 
 export type VideoStatus = "pending" | "winner" | "rejected";
@@ -123,6 +129,50 @@ export interface CreateScriptResponse {
   script: BrandScript;
 }
 
+export interface MiniMaxAudioSetting {
+  format: "mp3";
+  sampleRate: number; // 8000|16000|22050|24000|32000|44100
+  bitrate: number;    // 32000|64000|128000|256000
+  channel: 1 | 2;
+}
+
+export interface MiniMaxVoiceModify {
+  pitch?: number;     // -100..100
+  intensity?: number; // -100..100
+  timbre?: number;    // -100..100
+  soundEffects?: MiniMaxSoundEffect;
+}
+
+export interface MiniMaxProviderConfig {
+  kind: "minimax";
+  model: MiniMaxModel;
+  emotion?: MiniMaxEmotion;
+  vol?: number;                 // (0,10] default 1
+  pitch?: number;               // -12..12 int default 0
+  languageBoost?: string;       // default "Vietnamese"
+  audio: MiniMaxAudioSetting;
+  voiceModify?: MiniMaxVoiceModify;
+  pronunciationDict?: string[]; // ["từ/cách đọc", ...]
+}
+
+export interface MiniMaxVoice {
+  voice_id: string;
+  name: string;
+  category: "system" | "cloned";
+}
+
+export interface MiniMaxClonedVoice {
+  id: string;
+  brand_id: string;
+  voice_id: string;
+  display_name: string;
+  model: string;
+  status: "pending" | "ready" | "failed";
+  source_storage_path: string | null;
+  preview_storage_path: string | null;
+  created_at: string;
+}
+
 export interface VoicePreset {
   id: string;
   brand_id: string;
@@ -136,6 +186,7 @@ export interface VoicePreset {
   provider: TtsProvider;
   provider_voice_id: string | null;
   elevenlabs_model: ElevenLabsModel | null;
+  provider_config: MiniMaxProviderConfig | null;
   created_at: string;
 }
 

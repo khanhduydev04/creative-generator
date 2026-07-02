@@ -1,5 +1,15 @@
-export type TtsProvider = "vbee" | "elevenlabs";
+export type TtsProvider = "vbee" | "elevenlabs" | "minimax";
 export type ElevenLabsModel = "eleven_v3" | "eleven_flash_v2_5";
+export type MiniMaxModel =
+  | "speech-2.6-hd"
+  | "speech-2.6-turbo"
+  | "speech-02-hd"
+  | "speech-02-turbo";
+export type MiniMaxEmotion =
+  | "happy" | "sad" | "angry" | "fearful" | "disgusted"
+  | "surprised" | "calm" | "fluent" | "whisper";
+export type MiniMaxSoundEffect =
+  | "spacious_echo" | "auditorium_echo" | "lofi_telephone" | "robotic";
 
 export const TONE_MAP: Record<string, string> = {
   humor: "Hài hước, gần gũi, vui vẻ",
@@ -41,6 +51,13 @@ function providerFormattingInstructions(
       "- Thay bằng: CHỮ HOA để nhấn từ quan trọng, ... để nghỉ kịch tính",
       "- Câu ngắn tạo urgency, lặp từ để nhấn mạnh: \"ngon, ngon thật luôn\"",
       "- Dấu ! cho hứng khởi, ? cho tò mò/câu hỏi tu từ",
+    ].join("\n");
+  }
+  if (ttsProvider === "minimax") {
+    return [
+      "KỸ THUẬT NHẤN NHÁ (MiniMax TTS):",
+      "- Dùng dấu câu tự nhiên; chèn khoảng nghỉ tùy chỉnh bằng cú pháp <#số_giây#>, ví dụ <#0.5#> nghỉ 0.5 giây",
+      "- Dùng CHỮ HOA để nhấn từ quan trọng, câu ngắn tạo urgency",
     ].join("\n");
   }
   // vbee

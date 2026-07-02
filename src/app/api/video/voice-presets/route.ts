@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireUser, handleApiError } from "@/lib/user-context";
 import { VoicePresetService } from "@/services/voicePresetService";
 import type { TtsProvider, ElevenLabsModel } from "@/services/scriptPrompt";
+import { parseMiniMaxConfig } from "@/features/video/providerConfig";
 
 export async function GET(request: NextRequest) {
   try {
@@ -38,6 +39,7 @@ export async function POST(request: NextRequest) {
       provider?: string;
       providerVoiceId?: string | null;
       elevenLabsModel?: string | null;
+      providerConfig?: unknown;
     };
 
     if (!body.brandId || !body.displayName) {
@@ -47,7 +49,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const provider: TtsProvider = body.provider === "elevenlabs" ? "elevenlabs" : "vbee";
+    const provider: TtsProvider =
+      body.provider === "elevenlabs" || body.provider === "minimax"
+        ? body.provider
+        : "vbee";
 
     if (provider === "vbee" && !body.voiceCode) {
       return NextResponse.json(
@@ -56,12 +61,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (provider === "elevenlabs" && !body.providerVoiceId) {
+    if ((provider === "elevenlabs" || provider === "minimax") && !body.providerVoiceId) {
       return NextResponse.json(
-        { error: "providerVoiceId is required for elevenlabs provider" },
+        { error: "providerVoiceId is required for this provider" },
         { status: 400 },
       );
     }
+
+    const providerConfig =
+      provider === "minimax" ? parseMiniMaxConfig(body.providerConfig) : null;
 
     const supabase = await createClient();
     const service = new VoicePresetService(supabase);
@@ -78,6 +86,7 @@ export async function POST(request: NextRequest) {
       providerVoiceId: body.providerVoiceId ?? null,
       // Safe: validated against CHECK constraint in DB; unknown strings are rejected at the DB level
       elevenLabsModel: (body.elevenLabsModel as ElevenLabsModel | null) ?? null,
+      providerConfig,
     });
 
     return NextResponse.json({ preset }, { status: 201 });

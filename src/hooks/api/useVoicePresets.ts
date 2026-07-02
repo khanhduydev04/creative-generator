@@ -1,11 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import { queryKeys } from "@/lib/query/keys";
-import type { VoicePreset, VbeeVoice, VoiceAvgRating, ElevenLabsVoice } from "@/features/video/types";
-import type { TtsProvider, ElevenLabsModel } from "@/services/scriptPrompt";
+import type {
+  VoicePreset,
+  VbeeVoice,
+  VoiceAvgRating,
+  ElevenLabsVoice,
+  MiniMaxVoice,
+  MiniMaxProviderConfig,
+  MiniMaxVoiceModify,
+} from "@/features/video/types";
+import type { TtsProvider, ElevenLabsModel, MiniMaxModel, MiniMaxEmotion } from "@/services/scriptPrompt";
 
 const VBEE_VOICES_STALE_MS = 5 * 60 * 1000;
 const ELEVENLABS_VOICES_STALE_MS = 10 * 60 * 1000;
+const MINIMAX_VOICES_STALE_MS = 10 * 60 * 1000;
 
 export function useVoicePresets(brandId: string | null) {
   return useQuery({
@@ -31,6 +40,7 @@ export function useCreateVoicePreset() {
       provider?: TtsProvider;
       providerVoiceId?: string | null;
       elevenLabsModel?: ElevenLabsModel | null;
+      providerConfig?: MiniMaxProviderConfig | null;
       isDefault?: boolean;
     }) =>
       apiFetch<{ preset: VoicePreset }>("/api/video/voice-presets", {
@@ -123,6 +133,83 @@ export function useSubmitVoiceRating() {
       }),
     onSuccess: (_data, { brandId }) => {
       void qc.invalidateQueries({ queryKey: queryKeys.voiceRatings.avg(brandId) });
+    },
+  });
+}
+
+export interface MiniMaxPreviewInput {
+  voiceId: string;
+  text: string;
+  model?: MiniMaxModel;
+  speed?: number;
+  vol?: number;
+  pitch?: number;
+  emotion?: MiniMaxEmotion;
+  languageBoost?: string;
+  voiceModify?: MiniMaxVoiceModify;
+  pronunciationDict?: string[];
+}
+
+export function buildMiniMaxPreviewBody(input: MiniMaxPreviewInput): Record<string, unknown> {
+  return {
+    voice_id: input.voiceId,
+    text: input.text,
+    model: input.model,
+    speed: input.speed,
+    vol: input.vol,
+    pitch: input.pitch,
+    emotion: input.emotion,
+    languageBoost: input.languageBoost,
+    voiceModify: input.voiceModify,
+    pronunciationDict: input.pronunciationDict,
+  };
+}
+
+export function useMiniMaxVoices(brandId: string | null, enabled: boolean) {
+  return useQuery({
+    queryKey: ["minimax-voices", brandId],
+    queryFn: () =>
+      apiFetch<{ voices: MiniMaxVoice[] }>(`/api/video/minimax/voices?brandId=${brandId}`),
+    select: (d) => d.voices,
+    staleTime: MINIMAX_VOICES_STALE_MS,
+    enabled: enabled && !!brandId,
+  });
+}
+
+export function useMiniMaxPreview() {
+  return useMutation({
+    mutationFn: (input: MiniMaxPreviewInput) =>
+      apiFetch<{ audioUrl: string }>("/api/video/minimax/preview", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(buildMiniMaxPreviewBody(input)),
+      }),
+  });
+}
+
+export function useCloneMiniMaxVoice() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: {
+      brandId: string;
+      displayName: string;
+      voiceId: string;
+      model: MiniMaxModel;
+      file: File;
+    }) => {
+      const form = new FormData();
+      form.append("brandId", input.brandId);
+      form.append("displayName", input.displayName);
+      form.append("voiceId", input.voiceId);
+      form.append("model", input.model);
+      form.append("file", input.file);
+      return apiFetch<{ voice: { id: string; voice_id: string }; demoAudioUrl?: string }>(
+        "/api/video/minimax/clone",
+        { method: "POST", body: form },
+      );
+    },
+    onSuccess: (_data, { brandId }) => {
+      void qc.invalidateQueries({ queryKey: ["minimax-voices", brandId] });
     },
   });
 }

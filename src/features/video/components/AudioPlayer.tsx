@@ -18,11 +18,13 @@ interface AudioPlayerProps {
 const PROVIDER_BADGE: Record<TtsProvider, string> = {
   vbee: "bg-purple-500/15 text-purple-600",
   elevenlabs: "bg-blue-500/15 text-blue-600",
+  minimax: "bg-emerald-500/15 text-emerald-600",
 };
 
 const PROVIDER_LABEL: Record<TtsProvider, string> = {
   vbee: "Vbee",
   elevenlabs: "ElevenLabs",
+  minimax: "MiniMax",
 };
 
 export function AudioPlayer({ audio, publicUrl, onDelete, isDeleting }: AudioPlayerProps) {
