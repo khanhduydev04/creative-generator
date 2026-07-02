@@ -1,4 +1,5 @@
 import type { TtsProvider, ElevenLabsModel } from "@/services/scriptPrompt";
+import type { BrandProduct } from "@/features/brand/types";
 
 export type VideoStatus = "pending" | "winner" | "rejected";
 export type ScrapeStatus = "success" | "failed";
@@ -77,6 +78,7 @@ export interface BrandScript {
   transcript_id: string;
   brand_id: string;
   prompt_config: PromptConfig;
+  product_id: string | null;
   raw_text: string | null;
   final_text: string | null;
   llm_model: string | null;
@@ -155,7 +157,11 @@ export interface GeneratedAudio {
   duration_secs: number | null;
   created_at: string;
   voice_preset?: Pick<VoicePreset, "display_name" | "voice_code" | "speed"> | null;
-  brand_script?: Pick<BrandScript, "final_text" | "raw_text"> | null;
+  brand_script?:
+    | (Pick<BrandScript, "final_text" | "raw_text"> & {
+        brand_product?: Pick<BrandProduct, "id" | "name"> | null;
+      })
+    | null;
 }
 
 export interface ElevenLabsVoice {

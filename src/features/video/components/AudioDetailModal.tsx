@@ -68,6 +68,12 @@ export function AudioDetailModal({ audio, publicUrl, onClose }: AudioDetailModal
           <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
             <div>
               <dt className="text-xs font-medium uppercase tracking-wider text-foreground-subtle">
+                Sản phẩm
+              </dt>
+              <dd className="mt-0.5 text-foreground">{audio.brand_script?.brand_product?.name ?? "—"}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium uppercase tracking-wider text-foreground-subtle">
                 {t.video.audioDetailVoice}
               </dt>
               <dd className="mt-0.5 text-foreground">{voiceLabel}</dd>

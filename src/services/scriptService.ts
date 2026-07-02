@@ -33,6 +33,7 @@ export class ScriptService {
         brand_id: brandId,
         raw_text: rawText,
         prompt_config: promptConfig,
+        product_id: promptConfig.productId ?? null,
         llm_model: llmModel,
         tts_provider: ttsProvider,
         elevenlabs_model: elevenLabsModel,

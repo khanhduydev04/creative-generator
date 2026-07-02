@@ -8,12 +8,14 @@ export class GeneratedAudioService {
   async listByBrand(brandId: string): Promise<GeneratedAudio[]> {
     const { data, error } = await this.supabase
       .from("generated_audios")
-      .select("*, voice_preset:voice_presets(display_name, voice_code, speed), brand_script:brand_scripts(final_text, raw_text)")
+      .select(
+        "*, voice_preset:voice_presets(display_name, voice_code, speed), brand_script:brand_scripts(final_text, raw_text, brand_product:brand_products(id, name))",
+      )
       .eq("brand_id", brandId)
       .order("created_at", { ascending: false });
 
     if (error) throw new Error(error.message);
-    // Safe: Supabase returns generated_audios rows with joined voice_preset and brand_script
+    // Safe: Supabase returns generated_audios rows with joined voice_preset and brand_script(brand_product)
     return (data ?? []) as GeneratedAudio[];
   }
 

@@ -65,6 +65,7 @@ export default function AudioLibraryPage() {
               <thead>
                 <tr className="border-b border-border/20 bg-background-elevated/50 text-left">
                   <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-foreground-subtle">{t.video.audioTableScript}</th>
+                  <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-foreground-subtle">Sản phẩm</th>
                   <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-foreground-subtle">{t.video.audioTableVoice}</th>
                   <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-foreground-subtle">{t.video.audioTableDuration}</th>
                   <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-foreground-subtle">{t.video.audioTableCreated}</th>
@@ -89,6 +90,9 @@ export default function AudioLibraryPage() {
                     >
                       <td className="max-w-xs px-4 py-3">
                         <p className="line-clamp-1 text-sm text-foreground">{scriptText}</p>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-foreground-muted">
+                        {audio.brand_script?.brand_product?.name ?? "—"}
                       </td>
                       <td className="px-4 py-3 text-sm text-foreground-muted">
                         {audio.voice_preset?.display_name ?? "—"}
