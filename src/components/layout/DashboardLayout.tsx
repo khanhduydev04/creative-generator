@@ -33,12 +33,16 @@ import {
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useBrands, useCreateBrand, useRenameBrand, useDeleteBrand } from "@/hooks/api/useBrands";
+import { Breadcrumb, type BreadcrumbItem } from "@/components/layout/Breadcrumb";
 
 const SIDEBAR_STORAGE_KEY_PREFIX = "sidebar-open-";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
   activePath: string;
+  // Explicit breadcrumb trail for the header. When omitted, a single crumb is
+  // derived from `activePath` using the sidebar nav labels.
+  breadcrumb?: BreadcrumbItem[];
 }
 
 type ModalState =
@@ -294,7 +298,7 @@ function DeleteConfirm({
 }
 
 /* ── Main layout ── */
-export function DashboardLayout({ children, activePath }: DashboardLayoutProps) {
+export function DashboardLayout({ children, activePath, breadcrumb }: DashboardLayoutProps) {
   const { selectedBrandId, setSelectedBrandId, brandHydrated } = useApp();
   const { profile, loading: authLoading, signOut } = useAuth();
   const canManageBrands = Boolean(profile && isAdmin(profile.role));
@@ -439,6 +443,21 @@ export function DashboardLayout({ children, activePath }: DashboardLayoutProps) 
       ],
     },
   ];
+
+  // Header breadcrumb: use the page-provided trail, else derive a single crumb
+  // from the active path via the sidebar nav labels (falls back to account paths).
+  function deriveFallbackBreadcrumb(): BreadcrumbItem[] {
+    const navMatch = NAV_SECTIONS.flatMap((section) => section.items).find((item) =>
+      item.match(activePath),
+    );
+    if (navMatch) return [{ label: navMatch.label }];
+    if (activePath === "/app/guide") return [{ label: t.nav.guide }];
+    if (activePath === "/app/admin") return [{ label: t.nav.admin }];
+    if (activePath === "/app/admin/users") return [{ label: t.adminUsers.navLabel }];
+    return [];
+  }
+
+  const resolvedBreadcrumb = breadcrumb ?? deriveFallbackBreadcrumb();
 
   const sidebarContent = (
     <>
@@ -649,19 +668,21 @@ export function DashboardLayout({ children, activePath }: DashboardLayoutProps) 
 
       {/* Main content area */}
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        {/* Top bar — mobile-only nav trigger + account menu, no desktop header */}
-        <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between border-b border-border/30 bg-background/80 px-4 backdrop-blur-xl sm:px-6 lg:hidden">
+        {/* Top bar — breadcrumb header (all sizes); hamburger + account menu are mobile-only */}
+        <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-border/30 bg-background/80 px-4 backdrop-blur-xl sm:px-6">
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
-            className="cursor-pointer rounded-lg p-2 text-foreground-muted transition-colors hover:bg-black/[0.05] hover:text-foreground"
+            className="cursor-pointer rounded-lg p-2 text-foreground-muted transition-colors hover:bg-black/[0.05] hover:text-foreground lg:hidden"
           >
             <Menu className="h-5 w-5" />
           </button>
 
+          <Breadcrumb items={resolvedBreadcrumb} />
+
           <div className="flex-1" />
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 lg:hidden">
             {/* Mobile user menu */}
             <div className="relative">
               <button

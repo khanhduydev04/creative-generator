@@ -1,7 +1,8 @@
 // Client Component: uses state for filter, search, pagination, and modal
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, Plus, RefreshCw, X } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -23,10 +24,16 @@ import { queryKeys } from "@/lib/query/keys";
 
 const PAGE_SIZE = 20;
 
-export default function CompetitorVideosPage() {
+function CompetitorVideosContent() {
   const { t } = useT();
   const { selectedBrandId } = useApp();
-  const [activeStatus, setActiveStatus] = useState<VideoStatus>("pending");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  // The active tab lives in the URL (?status=…) so it survives navigating into a
+  // pipeline and back; an unknown/absent value falls back to "pending".
+  const statusParam = searchParams.get("status");
+  const activeStatus: VideoStatus =
+    statusParam === "winner" || statusParam === "rejected" ? statusParam : "pending";
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -65,7 +72,10 @@ export default function CompetitorVideosPage() {
   }, [activeStatus, page, debouncedSearch]);
 
   function handleStatusChange(status: VideoStatus) {
-    setActiveStatus(status);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("status", status);
+    // replace (not push) so switching tabs doesn't stack browser-history entries
+    router.replace(`/app/video?${params.toString()}`);
     setPage(1);
     setSearch("");
     setDebouncedSearch("");
@@ -376,5 +386,14 @@ export default function CompetitorVideosPage() {
         </div>
       )}
     </DashboardLayout>
+  );
+}
+
+// useSearchParams requires a Suspense boundary (same pattern as the login page).
+export default function CompetitorVideosPage() {
+  return (
+    <Suspense>
+      <CompetitorVideosContent />
+    </Suspense>
   );
 }

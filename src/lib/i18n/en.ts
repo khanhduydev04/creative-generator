@@ -819,6 +819,7 @@ export const en: Dictionary = {
     stage5Placeholder: "Save a script first to generate voice.",
     videoDetailNotFound: "Video not found.",
     loadingVideo: "Loading...",
+    pipelineCrumb: "Video detail",
     syncApify: "Sync from Apify",
     syncApifyDesc: "Fetches data from the latest succeeded Apify task run configured for this brand.",
     syncing: "Syncing...",

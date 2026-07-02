@@ -3,6 +3,7 @@
 
 import { use, useState, useEffect, useRef } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import type { BreadcrumbItem } from "@/components/layout/Breadcrumb";
 import { useT } from "@/lib/i18n/useTranslation";
 import { useApp } from "@/features/app/context";
 import { VideoPlayer } from "@/features/video/components/VideoPlayer";
@@ -55,6 +56,13 @@ export default function VideoDetailPage({ params }: VideoDetailPageProps) {
   const { data: transcript } = useTranscriptStatus(transcriptId);
   const { data: scripts = [] } = useScripts(transcriptId);
   const { data: audios = [] } = useGeneratedAudiosByScript(savedScriptId);
+
+  // Pipeline is only reachable from the winner tab (the "Mở pipeline" button
+  // renders only for winner videos), so the parent crumb returns there.
+  const breadcrumb: BreadcrumbItem[] = [
+    { label: t.nav.competitorVideos, href: "/app/video?status=winner" },
+    { label: video?.author_handle ? `@${video.author_handle}` : t.video.pipelineCrumb },
+  ];
 
   useEffect(() => {
     if (!selectedBrandId) return;
@@ -125,7 +133,7 @@ export default function VideoDetailPage({ params }: VideoDetailPageProps) {
 
   if (loadingVideo) {
     return (
-      <DashboardLayout activePath="/app/video">
+      <DashboardLayout activePath="/app/video" breadcrumb={breadcrumb}>
         <div className="flex min-h-[60vh] items-center justify-center">
           <p className="text-sm text-foreground-muted">{t.video.loadingVideo}</p>
         </div>
@@ -135,7 +143,7 @@ export default function VideoDetailPage({ params }: VideoDetailPageProps) {
 
   if (!video) {
     return (
-      <DashboardLayout activePath="/app/video">
+      <DashboardLayout activePath="/app/video" breadcrumb={breadcrumb}>
         <div className="flex min-h-[60vh] items-center justify-center">
           <p className="text-sm text-foreground-muted">{t.video.videoDetailNotFound}</p>
         </div>
@@ -144,7 +152,7 @@ export default function VideoDetailPage({ params }: VideoDetailPageProps) {
   }
 
   return (
-    <DashboardLayout activePath="/app/video">
+    <DashboardLayout activePath="/app/video" breadcrumb={breadcrumb}>
       <div className="mx-auto max-w-3xl px-6 py-8">
         <div className="mb-6 max-w-xs">
           <VideoPlayer

@@ -816,6 +816,7 @@ export const vi = {
     stage5Placeholder: "Lưu kịch bản trước để tạo giọng đọc.",
     videoDetailNotFound: "Không tìm thấy video.",
     loadingVideo: "Đang tải...",
+    pipelineCrumb: "Chi tiết video",
     syncApify: "Sync từ Apify",
     syncApifyDesc: "Lấy dữ liệu từ lần chạy thành công gần nhất của Apify task đã cấu hình cho brand này.",
     syncing: "Đang sync...",
