@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { CompetitorVideo, VideoStatus } from "@/features/video/types";
+import type { CompetitorVideo, VideoStatus, VideoSort, VideoSource } from "@/features/video/types";
 import { deriveVideoFlags, type TranscriptJoinRow } from "@/features/video/utils/deriveVideoFlags";
+import { fetchTikTokOembed } from "@/services/tiktokOembedService";
 
 export interface ApifyVideoItem {
   webVideoUrl?: string;
@@ -36,6 +37,8 @@ export class CompetitorVideoService {
     page = 1,
     limit = 20,
     q?: string,
+    sort: VideoSort = "recent",
+    source: VideoSource = "all",
   ): Promise<{ videos: CompetitorVideo[]; total: number }> {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
@@ -46,14 +49,22 @@ export class CompetitorVideoService {
         `*, transcripts:transcripts!video_id(whisper_status, brand_scripts(generated_audios(id)))`,
         { count: "exact" },
       )
-      .eq("brand_id", brandId)
-      // Newest-first within null-views group so manually-added videos surface at top
-      .order("views", { ascending: false, nullsFirst: false })
-      .order("created_at", { ascending: false })
-      .range(from, to);
+      .eq("brand_id", brandId);
+
+    query =
+      sort === "views"
+        ? query.order("views", { ascending: false, nullsFirst: false }).order("created_at", { ascending: false })
+        : query.order("scraped_at", { ascending: false, nullsFirst: false }).order("created_at", { ascending: false });
+
+    query = query.range(from, to);
 
     if (status) {
       query = query.eq("status", status);
+    }
+    if (source === "apify") {
+      query = query.not("apify_run_id", "is", null);
+    } else if (source === "manual") {
+      query = query.is("apify_run_id", null);
     }
     if (q && q.trim()) {
       const like = `%${q.trim()}%`;
@@ -76,6 +87,8 @@ export class CompetitorVideoService {
 
   async addVideo(brandId: string, tiktokUrl: string): Promise<CompetitorVideo> {
     const videoId = extractTikTokVideoId(tiktokUrl);
+    // Best-effort: oEmbed has no view/like/comment counts, only handle + thumbnail.
+    const oembed = await fetchTikTokOembed(tiktokUrl);
     const { data, error } = await this.supabase
       .from("competitor_videos")
       .insert({
@@ -84,6 +97,9 @@ export class CompetitorVideoService {
         video_id: videoId,
         status: "pending",
         scrape_status: "success",
+        author_handle: oembed?.authorHandle ?? null,
+        cover_url: oembed?.coverUrl ?? null,
+        scraped_at: new Date().toISOString(),
       })
       .select()
       .single();

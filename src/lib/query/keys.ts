@@ -33,8 +33,8 @@ export const queryKeys = {
   },
   competitorVideos: {
     all: (brandId: string) => ["competitor-videos", brandId] as const,
-    list: (brandId: string, status: string, page: number, q?: string) =>
-      ["competitor-videos", brandId, status, page, q ?? ""] as const,
+    list: (brandId: string, status: string, page: number, q?: string, sort?: string, source?: string) =>
+      ["competitor-videos", brandId, status, page, q ?? "", sort ?? "", source ?? ""] as const,
     detail: (brandId: string, videoId: string) =>
       ["competitor-videos", brandId, "detail", videoId] as const,
   },

@@ -3,9 +3,10 @@
 
 import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronLeft, ChevronRight, Plus, RefreshCw, X } from "lucide-react";
+import { Plus, RefreshCw, X } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { Pagination } from "@/components/ui/Pagination";
 import { useApp } from "@/features/app/context";
 import { useT } from "@/lib/i18n/useTranslation";
 import {
@@ -18,7 +19,7 @@ import {
 import { VideoStatusFilter } from "@/features/video/components/VideoStatusFilter";
 import { CompetitorVideoCard } from "@/features/video/components/CompetitorVideoCard";
 import { AddVideoModal } from "@/features/video/components/AddVideoModal";
-import type { CompetitorVideo, VideoStatus } from "@/features/video/types";
+import type { CompetitorVideo, VideoStatus, VideoSort, VideoSource } from "@/features/video/types";
 import { apiFetch } from "@/lib/api";
 import { queryKeys } from "@/lib/query/keys";
 
@@ -34,6 +35,11 @@ function CompetitorVideosContent() {
   const statusParam = searchParams.get("status");
   const activeStatus: VideoStatus =
     statusParam === "winner" || statusParam === "rejected" ? statusParam : "pending";
+  const sortParam = searchParams.get("sort");
+  const activeSort: VideoSort = sortParam === "views" ? "views" : "recent";
+  const sourceParam = searchParams.get("source");
+  const activeSource: VideoSource =
+    sourceParam === "apify" || sourceParam === "manual" ? sourceParam : "all";
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -54,6 +60,8 @@ function CompetitorVideosContent() {
     activeStatus,
     page,
     debouncedSearch || undefined,
+    activeSort,
+    activeSource,
   );
   const videos: CompetitorVideo[] = data?.videos ?? [];
   const total: number = data?.total ?? 0;
@@ -79,6 +87,20 @@ function CompetitorVideosContent() {
     setPage(1);
     setSearch("");
     setDebouncedSearch("");
+  }
+
+  function handleSortChange(sort: VideoSort) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("sort", sort);
+    router.replace(`/app/video?${params.toString()}`);
+    setPage(1);
+  }
+
+  function handleSourceChange(source: VideoSource) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("source", source);
+    router.replace(`/app/video?${params.toString()}`);
+    setPage(1);
   }
 
   function handleSearchChange(value: string) {
@@ -195,6 +217,10 @@ function CompetitorVideosContent() {
                 search={search}
                 onSearchChange={handleSearchChange}
                 activeTotal={total}
+                sort={activeSort}
+                onSortChange={handleSortChange}
+                source={activeSource}
+                onSourceChange={handleSourceChange}
               />
             </div>
 
@@ -279,9 +305,7 @@ function CompetitorVideosContent() {
                           />
                         </th>
                       )}
-                      {!selectable && (
-                        <th className="py-2.5 pl-4 pr-3 text-xs font-medium text-foreground-subtle" />
-                      )}
+                      <th className={`py-2.5 pr-3 text-xs font-medium text-foreground-subtle ${selectable ? "" : "pl-4"}`} />
                       <th className="py-2.5 pr-4 text-xs font-medium text-foreground-subtle">Video</th>
                       <th className="py-2.5 pr-4 text-right text-xs font-medium text-foreground-subtle">{t.video.views}</th>
                       <th className="py-2.5 pr-4 text-right text-xs font-medium text-foreground-subtle">{t.video.likes}</th>
@@ -316,27 +340,7 @@ function CompetitorVideosContent() {
                 <p className="text-sm text-foreground-subtle">
                   {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} / {total}
                 </p>
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page === 1}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/40 text-foreground-muted transition-colors hover:bg-black/[0.04] disabled:opacity-40"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </button>
-                  <span className="px-3 text-sm text-foreground-muted">
-                    {page} / {totalPages}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={page === totalPages}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/40 text-foreground-muted transition-colors hover:bg-black/[0.04] disabled:opacity-40"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                </div>
+                <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
               </div>
             )}
           </>

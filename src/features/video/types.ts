@@ -2,6 +2,8 @@ import type { TtsProvider, ElevenLabsModel } from "@/services/scriptPrompt";
 import type { BrandProduct } from "@/features/brand/types";
 
 export type VideoStatus = "pending" | "winner" | "rejected";
+export type VideoSort = "recent" | "views";
+export type VideoSource = "all" | "apify" | "manual";
 export type ScrapeStatus = "success" | "failed";
 
 export interface CompetitorVideo {

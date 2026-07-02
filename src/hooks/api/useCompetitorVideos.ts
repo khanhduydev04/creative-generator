@@ -7,6 +7,8 @@ import type {
   AddVideoResponse,
   UpdateVideoResponse,
   VideoStatus,
+  VideoSort,
+  VideoSource,
 } from "@/features/video/types";
 
 export function useCompetitorVideos(
@@ -14,11 +16,13 @@ export function useCompetitorVideos(
   status: VideoStatus = "pending",
   page = 1,
   q?: string,
+  sort: VideoSort = "recent",
+  source: VideoSource = "all",
 ) {
   return useQuery({
-    queryKey: queryKeys.competitorVideos.list(brandId!, status, page, q),
+    queryKey: queryKeys.competitorVideos.list(brandId!, status, page, q, sort, source),
     queryFn: () => {
-      const params = new URLSearchParams({ brandId: brandId!, status, page: String(page) });
+      const params = new URLSearchParams({ brandId: brandId!, status, page: String(page), sort, source });
       if (q && q.trim()) params.set("q", q.trim());
       return apiFetch<CompetitorVideosResponse>(
         `/api/video/competitors?${params.toString()}`,
