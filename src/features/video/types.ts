@@ -126,6 +126,7 @@ export interface VoicePreset {
   voice_code: string;
   speed: number;
   pitch: number;
+  stability: number;
   pause_config: Record<string, unknown> | null;
   is_default: boolean;
   provider: TtsProvider;

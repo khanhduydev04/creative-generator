@@ -56,7 +56,7 @@ export class ElevenLabsService {
           stability: request.stability ?? 0.5,
           similarity_boost: request.similarity_boost ?? 0.75,
           style: request.style ?? 0.0,
-          speed: request.speed ?? 1.0,
+          ...(request.speed !== undefined ? { speed: request.speed } : {}),
           use_speaker_boost: true,
         },
       }),

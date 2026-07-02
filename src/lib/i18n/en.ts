@@ -772,6 +772,7 @@ export const en: Dictionary = {
     bulkReject: "Reject ({0})",
     bulkDeletePermanently: "Delete permanently ({0})",
     bulkDeleteConfirm: "Permanently delete {0} selected videos? This cannot be undone.",
+    elevenLabsPreviewCreditNote: "Each preview generation uses ElevenLabs credits.",
     bulkActionFailed: "Action failed:",
     selectAllOnPage: "Select all on this page",
     openTikTok: "Open TikTok",

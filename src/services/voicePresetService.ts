@@ -8,6 +8,7 @@ export interface CreateVoicePresetInput {
   voiceCode: string;
   speed: number;
   pitch: number;
+  stability: number;
   pauseConfig?: Record<string, unknown> | null;
   isDefault?: boolean;
   provider: TtsProvider;
@@ -39,6 +40,7 @@ export class VoicePresetService {
         voice_code: input.voiceCode,
         speed: input.speed,
         pitch: input.pitch,
+        stability: input.stability,
         pause_config: input.pauseConfig ?? null,
         is_default: input.isDefault ?? false,
         provider: input.provider,

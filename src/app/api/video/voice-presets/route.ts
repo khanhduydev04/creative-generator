@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
       voiceCode?: string;
       speed?: number;
       pitch?: number;
+      stability?: number;
       pauseConfig?: Record<string, unknown> | null;
       isDefault?: boolean;
       provider?: string;
@@ -70,6 +71,7 @@ export async function POST(request: NextRequest) {
       voiceCode: body.voiceCode ?? "",
       speed: body.speed ?? 1.0,
       pitch: body.pitch ?? 1.0,
+      stability: body.stability ?? 0.5,
       pauseConfig: body.pauseConfig ?? null,
       isDefault: body.isDefault ?? false,
       provider,

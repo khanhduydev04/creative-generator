@@ -95,7 +95,9 @@ export async function POST(request: NextRequest) {
         text: textToSpeak,
         voice_id: typedPreset.provider_voice_id,
         model_id: typedPreset.elevenlabs_model ?? undefined,
-        speed: typedPreset.speed,
+        stability: typedPreset.stability,
+        // v3 does not support speed control — only pass it for v2.5 Flash
+        speed: typedPreset.elevenlabs_model === "eleven_v3" ? undefined : typedPreset.speed,
       });
     } else {
       // Vbee flow: synthesize returns an audio_url which must be downloaded to get binary

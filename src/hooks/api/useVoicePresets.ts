@@ -26,6 +26,7 @@ export function useCreateVoicePreset() {
       voiceCode: string;
       speed: number;
       pitch: number;
+      stability: number;
       pauseConfig?: Record<string, unknown> | null;
       provider?: TtsProvider;
       providerVoiceId?: string | null;
@@ -50,6 +51,29 @@ export function useElevenLabsVoices(enabled: boolean) {
     select: (d) => d.voices,
     staleTime: ELEVENLABS_VOICES_STALE_MS,
     enabled,
+  });
+}
+
+export function useElevenLabsPreview() {
+  return useMutation({
+    mutationFn: (input: {
+      voiceId: string;
+      text: string;
+      modelId?: ElevenLabsModel;
+      stability?: number;
+      speed?: number;
+    }) =>
+      apiFetch<{ audioUrl: string }>("/api/video/elevenlabs/preview", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          voice_id: input.voiceId,
+          text: input.text,
+          model_id: input.modelId,
+          stability: input.stability,
+          speed: input.speed,
+        }),
+      }),
   });
 }
 

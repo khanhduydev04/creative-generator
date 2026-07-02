@@ -769,6 +769,7 @@ export const vi = {
     bulkReject: "Từ chối ({0})",
     bulkDeletePermanently: "Xóa vĩnh viễn ({0})",
     bulkDeleteConfirm: "Xóa vĩnh viễn {0} video đã chọn? Không thể hoàn tác.",
+    elevenLabsPreviewCreditNote: "Mỗi lần tạo preview sẽ trừ credit ElevenLabs.",
     bulkActionFailed: "Thao tác thất bại:",
     selectAllOnPage: "Chọn tất cả trang này",
     openTikTok: "Mở TikTok",

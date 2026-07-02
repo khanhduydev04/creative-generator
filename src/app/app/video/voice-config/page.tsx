@@ -12,6 +12,7 @@ import {
   useSubmitVoiceRating,
   useCreateVoicePreset,
   useElevenLabsVoices,
+  useElevenLabsPreview,
 } from "@/hooks/api/useVoicePresets";
 import { VoiceRatingStars } from "@/features/video/components/VoiceRatingStars";
 import { apiFetch } from "@/lib/api";
@@ -29,6 +30,22 @@ const SPEED_STEP = 0.1;
 const PITCH_MIN = 0.5;
 const PITCH_MAX = 2.0;
 const PITCH_STEP = 0.1;
+// Vbee has no stability concept in its own API; this matches the server-side
+// default used in the voice-presets create route (Task 2) for non-ElevenLabs presets.
+const VBEE_DEFAULT_STABILITY = 0.5;
+
+const EL_STABILITY_MIN = 0;
+const EL_STABILITY_MAX = 1;
+const EL_STABILITY_STEP = 0.05;
+const EL_SPEED_MIN = 0.7;
+const EL_SPEED_MAX = 1.2;
+const EL_SPEED_STEP = 0.05;
+
+const EL_V3_STABILITY_PRESETS: { value: number; label: string }[] = [
+  { value: 0, label: "Creative" },
+  { value: 0.5, label: "Natural" },
+  { value: 1, label: "Robust" },
+];
 
 const ELEVENLABS_MODELS: { value: ElevenLabsModel; label: string }[] = [
   { value: "eleven_flash_v2_5", label: "v2.5 Flash (nhanh, ổn định)" },
@@ -57,6 +74,11 @@ export default function VoiceConfigPage() {
   const [elVoiceName, setElVoiceName] = useState<string>("");
   const [elModel, setElModel] = useState<ElevenLabsModel>("eleven_flash_v2_5");
   const [elPreviewUrl, setElPreviewUrl] = useState<string | null>(null);
+  const [elStability, setElStability] = useState(0.5);
+  const [elSpeed, setElSpeed] = useState(1.0);
+  const [elGeneratedPreviewUrl, setElGeneratedPreviewUrl] = useState<string | null>(null);
+  const [generatingElPreview, setGeneratingElPreview] = useState(false);
+  const [elPreviewError, setElPreviewError] = useState<string | null>(null);
 
   // Shared state
   const [testText, setTestText] = useState(SAMPLE_TEXT);
@@ -76,6 +98,7 @@ export default function VoiceConfigPage() {
   const { data: ratings = [] } = useVoiceRatings(selectedBrandId);
   const submitRating = useSubmitVoiceRating();
   const createPreset = useCreateVoicePreset();
+  const generateElPreview = useElevenLabsPreview();
 
   const ratingMap = new Map(ratings.map((r) => [r.vbee_voice_code, r.avg_score]));
 
@@ -130,12 +153,34 @@ export default function VoiceConfigPage() {
         voiceCode: selectedVoice.voice_code,
         speed,
         pitch,
+        stability: VBEE_DEFAULT_STABILITY,
       });
       setPresetSaved(true);
       setPresetName("");
       setTimeout(() => setPresetSaved(false), PRESET_SAVED_FEEDBACK_MS);
     } finally {
       setSavingPreset(false);
+    }
+  }
+
+  async function handleGenerateElPreview() {
+    if (!elVoiceId || !testText.trim()) return;
+    setGeneratingElPreview(true);
+    setElGeneratedPreviewUrl(null);
+    setElPreviewError(null);
+    try {
+      const res = await generateElPreview.mutateAsync({
+        voiceId: elVoiceId,
+        text: testText,
+        modelId: elModel,
+        stability: elStability,
+        speed: elModel === "eleven_v3" ? undefined : elSpeed,
+      });
+      setElGeneratedPreviewUrl(res.audioUrl);
+    } catch {
+      setElPreviewError(t.video.audioFailed);
+    } finally {
+      setGeneratingElPreview(false);
     }
   }
 
@@ -147,8 +192,9 @@ export default function VoiceConfigPage() {
         brandId: selectedBrandId,
         displayName: presetName.trim(),
         voiceCode: "",
-        speed,
-        pitch,
+        speed: elModel === "eleven_v3" ? 1.0 : elSpeed,
+        pitch: 1.0,
+        stability: elStability,
         provider: "elevenlabs",
         providerVoiceId: elVoiceId,
         elevenLabsModel: elModel,
@@ -510,6 +556,92 @@ export default function VoiceConfigPage() {
                         </button>
                       ))}
                     </div>
+                  </div>
+
+                  {/* Stability + Speed */}
+                  {elModel === "eleven_v3" ? (
+                    <div>
+                      <p className="mb-2 text-xs font-medium text-foreground-muted">Stability</p>
+                      <div className="flex gap-2">
+                        {EL_V3_STABILITY_PRESETS.map((preset) => (
+                          <button
+                            key={preset.value}
+                            type="button"
+                            onClick={() => setElStability(preset.value)}
+                            className={`flex-1 rounded-xl border px-3 py-2 text-sm font-medium transition-colors ${
+                              elStability === preset.value
+                                ? "border-primary/50 bg-primary/10 text-foreground"
+                                : "border-border/40 bg-background text-foreground-muted hover:bg-black/[0.04]"
+                            }`}
+                          >
+                            {preset.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-foreground-muted">
+                          Stability: {elStability.toFixed(2)}
+                        </label>
+                        <input
+                          type="range"
+                          min={EL_STABILITY_MIN}
+                          max={EL_STABILITY_MAX}
+                          step={EL_STABILITY_STEP}
+                          value={elStability}
+                          onChange={(e) => setElStability(Number(e.target.value))}
+                          className="w-full accent-primary"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-foreground-muted">
+                          Speed: {elSpeed.toFixed(2)}x
+                        </label>
+                        <input
+                          type="range"
+                          min={EL_SPEED_MIN}
+                          max={EL_SPEED_MAX}
+                          step={EL_SPEED_STEP}
+                          value={elSpeed}
+                          onChange={(e) => setElSpeed(Number(e.target.value))}
+                          className="w-full accent-primary"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Preview with custom text */}
+                  <div className="border-t border-border/20 pt-4">
+                    <p className="mb-1 text-xs font-medium text-foreground-muted">{t.video.testText}</p>
+                    <textarea
+                      value={testText}
+                      onChange={(e) => setTestText(e.target.value)}
+                      placeholder={t.video.testTextPlaceholder}
+                      rows={3}
+                      maxLength={PREVIEW_TEXT_MAX_LENGTH}
+                      className="w-full resize-none rounded-xl border border-border/40 bg-background px-3 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => void handleGenerateElPreview()}
+                      disabled={generatingElPreview || !testText.trim()}
+                      className="mt-2 flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-violet-500 disabled:opacity-50"
+                    >
+                      {generatingElPreview && <Loader2 className="h-4 w-4 animate-spin" />}
+                      {generatingElPreview ? t.video.generatingPreview : t.video.generatePreview}
+                    </button>
+                    <p className="mt-1.5 text-xs text-foreground-subtle">{t.video.elevenLabsPreviewCreditNote}</p>
+
+                    {elPreviewError && <p className="mt-2 text-xs text-danger">{elPreviewError}</p>}
+
+                    {elGeneratedPreviewUrl && (
+                      <div className="mt-2 rounded-xl border border-border/30 bg-background p-3">
+                        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                        <audio src={elGeneratedPreviewUrl} controls className="w-full" />
+                      </div>
+                    )}
                   </div>
 
                   {/* Preset name + save */}
