@@ -5,6 +5,7 @@ import { ContentAdaptPanel } from "@/features/content-adapt/components/ContentAd
 import { downloadAsZip } from "@/lib/download-zip";
 import { useT } from "@/lib/i18n/useTranslation";
 import {
+  AlertTriangle,
   Bookmark,
   CheckCircle2,
   Clock,
@@ -41,6 +42,18 @@ interface GenerationResult {
   market: string;
 }
 
+interface GenerationImageError {
+  id: string;
+  headline: string;
+  concept: string;
+  market: string;
+  error: string;
+  prompt?: string;
+  imageInput?: string[];
+  aspectRatio?: string;
+  resolution?: string;
+}
+
 interface BrandContext {
   brandName: string;
   logoUrl?: string | null;
@@ -63,6 +76,8 @@ interface GenerateProgressProps {
   isGenerating: boolean;
   steps: StepStatus[];
   results: GenerationResult[];
+  failedImages: GenerationImageError[];
+  onFailedImagesChange: (failed: GenerationImageError[]) => void;
   error: string | null;
   adCount: number;
   totalExpected: number;
@@ -118,6 +133,8 @@ export function GenerateProgress({
   isGenerating,
   steps,
   results,
+  failedImages,
+  onFailedImagesChange,
   error,
   adCount,
   totalExpected,
@@ -144,6 +161,74 @@ export function GenerateProgress({
   const [isSavingAll, setIsSavingAll] = useState(false);
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   const [showAdaptPanel, setShowAdaptPanel] = useState(false);
+  const [retryingIds, setRetryingIds] = useState<string[]>([]);
+
+  // Retry a single failed image via /api/regenerate-image. On success the image
+  // moves from the failed list into results; on failure the card's error updates.
+  const handleRetryImage = useCallback(
+    async (failed: GenerationImageError) => {
+      if (!failed.prompt || retryingIds.includes(failed.id)) return;
+      setRetryingIds((prev) => [...prev, failed.id]);
+      try {
+        const res = await fetch("/api/regenerate-image", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            prompt: failed.prompt,
+            imageInput: failed.imageInput,
+            aspectRatio: failed.aspectRatio,
+            resolution: failed.resolution,
+          }),
+        });
+        const json = (await res.json()) as {
+          success?: boolean;
+          imageUrl?: string;
+          taskId?: string;
+          error?: string;
+        };
+        if (json.success && json.imageUrl && json.taskId) {
+          onResultsChange([
+            ...results,
+            {
+              imageUrl: json.imageUrl,
+              taskId: json.taskId,
+              prompt: failed.prompt,
+              headline: failed.headline,
+              concept: failed.concept,
+              market: failed.market,
+            },
+          ]);
+          onFailedImagesChange(failedImages.filter((f) => f.id !== failed.id));
+        } else {
+          onFailedImagesChange(
+            failedImages.map((f) =>
+              f.id === failed.id
+                ? { ...f, error: json.error ?? "Retry failed" }
+                : f,
+            ),
+          );
+        }
+      } catch (err) {
+        onFailedImagesChange(
+          failedImages.map((f) =>
+            f.id === failed.id
+              ? {
+                  ...f,
+                  error: err instanceof Error ? err.message : "Network error",
+                }
+              : f,
+          ),
+        );
+      } finally {
+        setRetryingIds((prev) => prev.filter((id) => id !== failed.id));
+      }
+    },
+    [results, failedImages, onResultsChange, onFailedImagesChange, retryingIds],
+  );
+
+  function handleDismissError(id: string) {
+    onFailedImagesChange(failedImages.filter((f) => f.id !== id));
+  }
 
   // Reset save statuses when results change
   useEffect(() => {
@@ -259,13 +344,16 @@ export function GenerateProgress({
   );
 
   const expectedCount = totalExpected || adCount;
-  const remainingSkeletons = Math.max(0, expectedCount - results.length);
+  const remainingSkeletons = Math.max(
+    0,
+    expectedCount - results.length - failedImages.length,
+  );
   const unsavedCount = results.filter(
     (r) => saveStatuses[r.taskId] !== "saved",
   ).length;
 
   // Empty state
-  if (!isGenerating && results.length === 0 && !error) {
+  if (!isGenerating && results.length === 0 && failedImages.length === 0 && !error) {
     return (
       <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-foreground-subtle">
         <div className="w-24 h-24 rounded-2xl bg-background-elevated flex items-center justify-center mb-4">
@@ -427,7 +515,9 @@ export function GenerateProgress({
       })()}
 
       {/* Results + Skeletons — unified grid */}
-      {(results.length > 0 || (isGenerating && isAtGenerateStep)) && (
+      {(results.length > 0 ||
+        failedImages.length > 0 ||
+        (isGenerating && isAtGenerateStep)) && (
         <div>
           {/* Header with count + bulk actions */}
           <div className="flex items-center justify-between mb-3">
@@ -435,6 +525,11 @@ export function GenerateProgress({
               {isGenerating
                 ? `${results.length} / ${expectedCount} ${t.workspace.generated}`
                 : `${results.length} ${t.workspace.results}`}
+              {failedImages.length > 0 && (
+                <span className="ml-2 text-rose-400 normal-case">
+                  · {failedImages.length} {t.workspace.failed}
+                </span>
+              )}
             </p>
 
             {/* Bulk actions — visible when generation complete and results > 1 */}
@@ -562,6 +657,64 @@ export function GenerateProgress({
                         type="button"
                         onClick={() => handleDelete(result.taskId)}
                         className="px-2 py-1.5 rounded-lg border border-border text-foreground-subtle hover:text-rose-500 hover:border-rose-500/30 text-[10px] font-semibold transition-colors flex items-center justify-center"
+                        title={t.workspace.removeFromResults}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Failed image cards */}
+            {failedImages.map((failed) => {
+              const isRetrying = retryingIds.includes(failed.id);
+              return (
+                <div
+                  key={failed.id}
+                  className="bg-rose-500/5 rounded-xl border border-rose-500/30 shadow-sm overflow-hidden flex flex-col"
+                >
+                  <div className="aspect-square bg-rose-500/5 relative flex items-center justify-center p-4">
+                    <div className="flex flex-col items-center gap-2 text-center">
+                      <div className="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center">
+                        <AlertTriangle className="h-5 w-5 text-rose-500" />
+                      </div>
+                      <p className="text-[11px] font-semibold text-rose-400">
+                        {t.workspace.generationFailed}
+                      </p>
+                      <p className="text-[10px] text-rose-400/80 line-clamp-4">
+                        {failed.error}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    {failed.headline && (
+                      <p className="text-xs font-bold text-foreground mb-1.5 line-clamp-1">
+                        {failed.headline}
+                      </p>
+                    )}
+                    <div className="flex gap-1.5">
+                      {failed.prompt && (
+                        <button
+                          type="button"
+                          onClick={() => void handleRetryImage(failed)}
+                          disabled={isRetrying}
+                          className="flex-1 px-2 py-1.5 rounded-lg bg-primary text-white text-[10px] font-semibold text-center hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-1"
+                        >
+                          {isRetrying ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <RefreshCw className="h-3 w-3" />
+                          )}
+                          {isRetrying ? t.workspace.generating : t.workspace.retry}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleDismissError(failed.id)}
+                        disabled={isRetrying}
+                        className={`${failed.prompt ? "" : "flex-1"} px-2 py-1.5 rounded-lg border border-border text-foreground-subtle hover:text-rose-500 hover:border-rose-500/30 text-[10px] font-semibold transition-colors flex items-center justify-center disabled:opacity-50`}
                         title={t.workspace.removeFromResults}
                       >
                         <Trash2 className="h-3 w-3" />

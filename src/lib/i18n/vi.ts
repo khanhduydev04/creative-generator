@@ -247,6 +247,7 @@ export const vi = {
     generationFailed: "Tạo quảng cáo thất bại",
     generated: "đã tạo",
     results: "kết quả",
+    failed: "lỗi",
     removeFromResults: "Xoá khỏi kết quả",
     marketAndLanguage: "Thị trường & Ngôn ngữ",
     selectProductFirst: "Chọn sản phẩm trước.",

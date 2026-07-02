@@ -114,3 +114,17 @@ export interface StealthGenerationResult {
   sceneName: string;
   sceneId: string;
 }
+
+/** A single image that failed to generate (e.g. content-filtered by KIE). */
+export interface StealthImageError {
+  /** Stable client-side key for React lists and retry tracking. */
+  id: string;
+  sceneName: string;
+  sceneId: string;
+  error: string;
+  /** Retry payload — present when the failure is re-runnable. */
+  prompt?: string;
+  imageInput?: string[];
+  aspectRatio?: string;
+  resolution?: string;
+}

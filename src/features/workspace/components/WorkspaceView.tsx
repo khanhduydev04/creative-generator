@@ -25,7 +25,11 @@ import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import { useResultsCache } from "@/hooks/useResultsCache";
 import { useMemo, useState } from "react";
-import type { StealthGenerationResult, StealthScenePlan } from "@/features/stealth/types";
+import type {
+  StealthGenerationResult,
+  StealthImageError,
+  StealthScenePlan,
+} from "@/features/stealth/types";
 import { StealthProgress } from "@/features/stealth/components/StealthProgress";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -43,6 +47,18 @@ interface GenerationResult {
   headline: string;
   concept: string;
   market: string;
+}
+
+interface GenerationImageError {
+  id: string;
+  headline: string;
+  concept: string;
+  market: string;
+  error: string;
+  prompt?: string;
+  imageInput?: string[];
+  aspectRatio?: string;
+  resolution?: string;
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -143,6 +159,7 @@ export function WorkspaceView() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [steps, setSteps] = useState<StepStatus[]>([]);
   const [results, setResults] = useState<GenerationResult[]>([]);
+  const [failedImages, setFailedImages] = useState<GenerationImageError[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [totalExpected, setTotalExpected] = useState(0);
 
@@ -150,6 +167,7 @@ export function WorkspaceView() {
   const [isStealthGenerating, setIsStealthGenerating] = useState(false);
   const [stealthSteps, setStealthSteps] = useState<StepStatus[]>([]);
   const [stealthResults, setStealthResults] = useState<StealthGenerationResult[]>([]);
+  const [stealthFailedImages, setStealthFailedImages] = useState<StealthImageError[]>([]);
   const [stealthError, setStealthError] = useState<string | null>(null);
   const [stealthTotalExpected, setStealthTotalExpected] = useState(0);
 
@@ -198,6 +216,7 @@ export function WorkspaceView() {
     onResult: (result: unknown) => void,
     onError: (error: string) => void,
     onMeta?: (meta: { totalExpected: number }) => void,
+    onImageError?: (imageError: unknown) => void,
   ) {
     for (const sseEvent of events) {
       try {
@@ -211,6 +230,9 @@ export function WorkspaceView() {
             break;
           case "result":
             onResult(raw);
+            break;
+          case "imageError":
+            onImageError?.(raw);
             break;
           case "error":
             onError((raw as { error: string }).error);
@@ -230,6 +252,7 @@ export function WorkspaceView() {
     onResult: (result: unknown) => void,
     onError: (error: string) => void,
     onMeta?: (meta: { totalExpected: number }) => void,
+    onImageError?: (imageError: unknown) => void,
   ): Promise<void> {
     const reader = res.body?.getReader();
     if (!reader) {
@@ -248,8 +271,58 @@ export function WorkspaceView() {
       const { events, remaining } = parseSSEChunk(buffer);
       buffer = remaining;
 
-      processSseEvents(events, onStep, onResult, onError, onMeta);
+      processSseEvents(events, onStep, onResult, onError, onMeta, onImageError);
     }
+  }
+
+  // Build a GenerationImageError from a raw `imageError` SSE payload.
+  function toGenerationImageError(
+    raw: unknown,
+    keyPrefix: string,
+  ): GenerationImageError {
+    const e = raw as {
+      error: string;
+      headline?: string;
+      concept?: string;
+      market?: string;
+      prompt?: string;
+      imageInput?: string[];
+      aspectRatio?: string;
+      resolution?: string;
+    };
+    return {
+      id: `${keyPrefix}-${Math.random().toString(36).slice(2, 8)}`,
+      headline: e.headline ?? "",
+      concept: e.concept ?? "",
+      market: e.market ?? "",
+      error: e.error,
+      prompt: e.prompt,
+      imageInput: e.imageInput,
+      aspectRatio: e.aspectRatio,
+      resolution: e.resolution,
+    };
+  }
+
+  function toStealthImageError(raw: unknown): StealthImageError {
+    const e = raw as {
+      error: string;
+      sceneName?: string;
+      sceneId?: string;
+      prompt?: string;
+      imageInput?: string[];
+      aspectRatio?: string;
+      resolution?: string;
+    };
+    return {
+      id: `${e.sceneId ?? "scene"}-${Math.random().toString(36).slice(2, 8)}`,
+      sceneName: e.sceneName ?? "",
+      sceneId: e.sceneId ?? "",
+      error: e.error,
+      prompt: e.prompt,
+      imageInput: e.imageInput,
+      aspectRatio: e.aspectRatio,
+      resolution: e.resolution,
+    };
   }
 
   // ── Generate (SSE streaming) — concept & standard competitor ref ─
@@ -288,6 +361,7 @@ export function WorkspaceView() {
     setIsGenerating(true);
     setError(null);
     setResults([]);
+    setFailedImages([]);
     clearCache();
     setSteps(
       isCompetitorRef
@@ -406,6 +480,12 @@ export function WorkspaceView() {
         isPackMode
           ? undefined
           : (meta) => setTotalExpected(meta.totalExpected),
+        // onImageError
+        (raw) =>
+          setFailedImages((prev) => [
+            ...prev,
+            toGenerationImageError(raw, `err-${prev.length}`),
+          ]),
       );
     }
 
@@ -477,6 +557,11 @@ export function WorkspaceView() {
             },
             (errMsg) => setError(errMsg),
             (meta) => setTotalExpected(meta.totalExpected),
+            (raw) =>
+              setFailedImages((prev) => [
+                ...prev,
+                toGenerationImageError(raw, `err-${prev.length}`),
+              ]),
           );
         }
       } else {
@@ -513,6 +598,7 @@ export function WorkspaceView() {
     setIsStealthGenerating(true);
     setStealthError(null);
     setStealthResults([]);
+    setStealthFailedImages([]);
     clearStealthCache();
     setStealthSteps(STEALTH_STEPS.map((s) => ({ ...s })));
     setStealthTotalExpected(packTotal);
@@ -639,6 +725,9 @@ export function WorkspaceView() {
         isPackMode
           ? undefined
           : (meta) => setStealthTotalExpected(meta.totalExpected),
+        // onImageError
+        (raw) =>
+          setStealthFailedImages((prev) => [...prev, toStealthImageError(raw)]),
       );
     }
 
@@ -826,6 +915,8 @@ export function WorkspaceView() {
               isGenerating={isStealthGenerating}
               steps={stealthSteps}
               results={stealthResults}
+              failedImages={stealthFailedImages}
+              onFailedImagesChange={setStealthFailedImages}
               error={stealthError}
               totalExpected={stealthTotalExpected}
               brandId={selectedBrandId}
@@ -854,6 +945,8 @@ export function WorkspaceView() {
               isGenerating={isGenerating}
               steps={steps}
               results={results}
+              failedImages={failedImages}
+              onFailedImagesChange={setFailedImages}
               error={error}
               adCount={adCount}
               totalExpected={totalExpected}

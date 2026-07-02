@@ -5,6 +5,7 @@ import { useApp } from "@/features/app/context";
 import type { BrandProduct, Persona } from "@/features/brand/types";
 import type {
   StealthGenerationResult,
+  StealthImageError,
   StealthPlanCard,
   StealthScenePlan,
 } from "@/features/stealth/types";
@@ -83,6 +84,7 @@ export function StealthView() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [steps, setSteps] = useState<StepStatus[]>([]);
   const [results, setResults] = useState<StealthGenerationResult[]>([]);
+  const [failedImages, setFailedImages] = useState<StealthImageError[]>([]);
   const [genError, setGenError] = useState<string | null>(null);
   const [totalExpected, setTotalExpected] = useState(0);
 
@@ -380,6 +382,7 @@ export function StealthView() {
     setIsGenerating(true);
     setGenError(null);
     setResults([]);
+    setFailedImages([]);
     clearCache();
     setSteps([
       { step: "prepareImages", status: "pending", message: "Waiting..." },
@@ -458,6 +461,31 @@ export function StealthView() {
                   raw as StealthGenerationResult,
                 ]);
                 break;
+              case "imageError": {
+                const errRaw = raw as {
+                  error: string;
+                  sceneName: string;
+                  sceneId: string;
+                  prompt?: string;
+                  imageInput?: string[];
+                  aspectRatio?: string;
+                  resolution?: string;
+                };
+                setFailedImages((prev) => [
+                  ...prev,
+                  {
+                    id: `${errRaw.sceneId}-${prev.length}-${Math.random().toString(36).slice(2, 8)}`,
+                    sceneName: errRaw.sceneName,
+                    sceneId: errRaw.sceneId,
+                    error: errRaw.error,
+                    prompt: errRaw.prompt,
+                    imageInput: errRaw.imageInput,
+                    aspectRatio: errRaw.aspectRatio,
+                    resolution: errRaw.resolution,
+                  },
+                ]);
+                break;
+              }
               case "error": {
                 const errData = raw as { error: string };
                 setGenError(errData.error);
@@ -699,6 +727,8 @@ export function StealthView() {
             isGenerating={isGenerating}
             steps={steps}
             results={results}
+            failedImages={failedImages}
+            onFailedImagesChange={setFailedImages}
             error={genError}
             totalExpected={totalExpected}
             brandId={selectedBrandId}

@@ -893,6 +893,12 @@ export async function POST(request: NextRequest): Promise<Response> {
                 error: errMsg,
                 headline: entry.headline,
                 concept: entry.conceptLabel,
+                market: body.market || "",
+                // Retry payload — lets the client re-run just this one image.
+                prompt: entry.prompt,
+                imageInput: entry.imageInput,
+                aspectRatio: body.outputConfig.aspectRatio,
+                resolution: body.outputConfig.resolution ?? "1K",
               });
             });
         });

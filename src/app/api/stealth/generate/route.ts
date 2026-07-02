@@ -240,6 +240,11 @@ it MUST be that exact green pouch. Getting the product wrong = entire ad is wort
                 error: errMsg,
                 sceneName: entry.sceneName,
                 sceneId: entry.sceneId,
+                // Retry payload — lets the client re-run just this one image.
+                prompt: entry.prompt,
+                imageInput: entry.imageInput,
+                aspectRatio: body.aspectRatio ?? "1:1",
+                resolution: body.resolution ?? "1K",
               });
             });
         });

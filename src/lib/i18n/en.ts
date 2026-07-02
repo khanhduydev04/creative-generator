@@ -250,6 +250,7 @@ export const en: Dictionary = {
     generationFailed: "Generation failed",
     generated: "generated",
     results: "results",
+    failed: "failed",
     removeFromResults: "Remove from results",
     marketAndLanguage: "Market & Language",
     selectProductFirst: "Select a product first.",
